@@ -31,10 +31,11 @@ public class AuthController {
     private final WhatsAppService whatsAppService;
 
     public AuthController(
-            UsuarioRepository usuarioRepository,
-            JwtService jwtService,
-            PasswordEncoder passwordEncoder,
-            WhatsAppService whatsAppService) {
+        UsuarioRepository usuarioRepository,
+        JwtService jwtService,
+        PasswordEncoder passwordEncoder,
+        WhatsAppService whatsAppService
+    ) {
         this.usuarioRepository = usuarioRepository;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
@@ -89,32 +90,43 @@ public class AuthController {
     }
 
     @PostMapping("/send-code")
-    public ResponseEntity<?> sendCode(@RequestBody Map<String, String> request) {
-        String telefono = request.get("telefono");
-        if (telefono == null || telefono.isBlank()) {
-            return ResponseEntity.badRequest().body("Teléfono requerido");
-        }
+public ResponseEntity<?> sendCode(@RequestBody Map<String, String> request) {
+    String telefono = request.get("telefono");
 
-        Optional<Usuario> optionalUsuario = usuarioRepository.findByTelefono(telefono);
-        if (optionalUsuario.isEmpty()) {
-            return ResponseEntity.ok("Si el número existe, se enviará un código.");
-        }
+    if (telefono == null || telefono.isBlank()) {
+        return ResponseEntity.badRequest().body("Teléfono requerido");
+    }
 
+    Optional<Usuario> optionalUsuario = usuarioRepository.findByTelefono(telefono);
+
+    if (optionalUsuario.isEmpty()) {
+        return ResponseEntity.ok("Si el número existe, se enviará un código.");
+    }
+
+    try {
         Usuario usuario = optionalUsuario.get();
+
         String codigo = String.valueOf((int) (Math.random() * 900000) + 100000);
 
         usuario.setRecoveryCode(codigo);
         usuario.setRecoveryCodeExpiration(LocalDateTime.now().plusMinutes(5));
         usuarioRepository.save(usuario);
 
-        try {
-            whatsAppService.enviarCodigoRecuperacion(telefono, codigo);
-            return ResponseEntity.ok("Código enviado por WhatsApp correctamente.");
-        } catch (Exception ex) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("No se pudo enviar el código por WhatsApp. Verifica la configuración del token y del número.");
-        }
+        System.out.println("=== RECOVERY DEBUG ===");
+        System.out.println("Usuario encontrado: " + usuario.getNombre());
+        System.out.println("Telefono BD: " + usuario.getTelefono());
+        System.out.println("Telefono request: " + telefono);
+        System.out.println("Codigo generado: " + codigo);
+
+        whatsAppService.enviarCodigoRecuperacion(usuario.getTelefono(), codigo);
+
+        return ResponseEntity.ok("Código enviado por WhatsApp");
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error enviando el código por WhatsApp");
     }
+}
 
     @PostMapping("/verify-code")
     public ResponseEntity<?> verifyCode(@RequestBody Map<String, String> request) {

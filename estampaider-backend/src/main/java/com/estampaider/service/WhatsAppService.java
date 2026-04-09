@@ -32,7 +32,7 @@ public class WhatsAppService {
     }
 
     public void enviarCodigoRecuperacion(String numero, String codigo) {
-        String mensaje = "Tu codigo de recuperacion de Estampaider es: " + codigo
+        String mensaje = "Tu código de recuperación de Estampaider es: " + codigo
                 + ". Expira en 5 minutos. No lo compartas.";
         enviarTexto(numero, mensaje);
     }
@@ -67,7 +67,17 @@ public class WhatsAppService {
         body.put("text", text);
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+
+        System.out.println("=== WhatsApp DEBUG ===");
+        System.out.println("Phone Number ID: " + phoneNumberId);
+        System.out.println("Numero original: " + numero);
+        System.out.println("Numero normalizado: " + numeroNormalizado);
+        System.out.println("Mensaje: " + mensaje);
+
         ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
+
+        System.out.println("WhatsApp status: " + response.getStatusCode());
+        System.out.println("WhatsApp body: " + response.getBody());
 
         if (!response.getStatusCode().is2xxSuccessful()) {
             throw new RuntimeException("Error enviando mensaje por WhatsApp: " + response.getBody());
