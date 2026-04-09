@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Cuenta | Estampaider</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background:
+            linear-gradient(135deg, #8baff3, #ff4b2b);
+        }
+        </style>
+</head>
+<body>
+
+<div class="auth-container">
+    <h2>📝 Crear Cuenta</h2>
+
+    <form id="registerForm">
+        <input type="text" id="nombre" placeholder="Nombre completo" required>
+        <input type="text" id="telefono" placeholder="Número de teléfono" required>
+        <input type="password" id="password" placeholder="Contraseña" required>
+
+        <button type="submit">Registrarme</button>
+    </form>
+
+    <p class="error" id="error"></p>
+
+    <p style="margin-top:15px;">
+        ¿Ya tienes cuenta?
+        <a href="login.html">Inicia sesión</a>
+    </p>
+</div>
+
+<script src="register.js"></script>
+
+</body>
+</html>

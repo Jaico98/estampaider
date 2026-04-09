@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Estampaider - Personalización y estampados de alta calidad. Camisetas, mugs, gorras, carcasas y más.">
+    <title>Estampaider | Personalización y Estampados</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<audio id="sonido-carrito" src="./notification.mp3" preload="auto"></audio>
+
+<!-- ZONA DE HOVER PARA HEADER -->
+<div class="header-hover-zone"></div>
+
+<!-- HEADER -->
+<header class="header" role="banner">
+    <div class="header-container">
+
+        <div class="logo">
+            <a href="index.html" aria-label="Ir al inicio">
+                <img src="images/logo-estampaider.png" alt="Estampaider">
+            </a>
+        </div>
+
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú" aria-expanded="false">☰</button>
+
+        <nav class="menu" id="menu" role="navigation" aria-label="Menú principal">
+            <a href="index.html" class="active">Inicio</a>
+            <a href="productos.html">Productos</a>
+            <a href="nosotros.html">Nosotros</a>
+            <a href="contacto.html">Contacto</a>
+            <a href="carrito.html" class="carrito-icono" aria-label="Ver carrito">
+                🛒 <span id="contador-carrito">0</span>
+            </a>
+        </nav>
+
+    </div>
+</header>
+
+<!-- CONTENIDO PRINCIPAL -->
+<main id="contenido-principal">
+
+    <!-- HERO -->
+    <section class="hero fade-up" aria-label="Sección principal">
+        <h1>
+            Personaliza lo que usas.<br>
+            <span>Hazlo único con Estampaider</span>
+        </h1>
+
+        <p class="hero-desc">
+            Estampamos camisetas, mugs, gorras, carcasas y más.
+            Diseños personalizados para regalos, marcas, eventos y ocasiones especiales.
+        </p>
+
+        <a href="productos.html" class="btn-principal">
+            Explorar productos
+        </a>
+    </section>
+
+    <!-- BENEFICIOS -->
+    <section class="beneficios fade-up" aria-label="Por qué elegirnos">
+        <h2>¿Por qué elegir Estampaider?</h2>
+
+        <div class="beneficios-grid">
+
+            <div class="beneficio">
+                <span aria-hidden="true">🎨</span>
+                <h3>Diseños personalizados</h3>
+                <p>Creamos cada producto a tu gusto, sin plantillas genéricas.</p>
+            </div>
+
+            <div class="beneficio">
+                <span aria-hidden="true">🧵</span>
+                <h3>Materiales de calidad</h3>
+                <p>Usamos insumos durables y estampados que sí perduran.</p>
+            </div>
+
+            <div class="beneficio">
+                <span aria-hidden="true">⚡</span>
+                <h3>Entrega responsable</h3>
+                <p>Cumplimos tiempos y cuidamos cada detalle de tu pedido.</p>
+            </div>
+
+            <div class="beneficio">
+                <span aria-hidden="true">🤝</span>
+                <h3>Atención cercana</h3>
+                <p>Te acompañamos desde la idea hasta el producto final.</p>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- TRABAJOS REALIZADOS -->
+    <section class="trabajos fade-up" aria-label="Trabajos realizados">
+        <h2>Nuestros trabajos hablan por nosotros</h2>
+        <p class="trabajos-sub">
+            Algunos pedidos reales hechos para clientes reales ✨
+        </p>
+
+        <div class="trabajos-grid">
+
+            <div class="video-card">
+                <video autoplay muted loop playsinline title="Pocillos para docentes">
+                    <source src="videos/pocillosdocentes.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <div class="video-card">
+                <video autoplay muted loop playsinline title="Portarretratos mágicos">
+                    <source src="videos/magicoporta.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <div class="video-card">
+                <video autoplay muted loop playsinline title="Navidad">
+                    <source src="videos/navidad.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <div class="video-card">
+                <video autoplay muted loop playsinline title="Carcasas personalizadas">
+                    <source src="videos/carcasa.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <div class="video-card">
+                <video autoplay muted loop playsinline title="Mouse pad personalizado">
+                    <source src="videos/mausepad.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <div class="video-card">
+                <video autoplay muted loop playsinline title="Polos estampados">
+                    <source src="videos/polos.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <div class="video-card">
+                <video autoplay muted loop playsinline title="Camiseta piel durazno">
+                    <source src="videos/durazno.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <div class="video-card">
+                <video autoplay muted loop playsinline title="Camisetas">
+                    <source src="videos/cami.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <div class="video-card">
+                <video autoplay muted loop playsinline title="Navidad especial">
+                    <source src="videos/navi.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <div class="video-card">
+                <video autoplay muted loop playsinline title="Otro trabajo">
+                    <source src="videos/otra.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <div class="video-card">
+                <video autoplay muted loop playsinline title="Pedido mayor">
+                    <source src="videos/mayor.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <div class="video-card">
+                <video autoplay muted loop playsinline title="Piscina">
+                    <source src="videos/piscina.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <div class="video-card">
+                <video autoplay muted loop playsinline title="Taza claro">
+                    <source src="videos/claro.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <div class="video-card">
+                <video autoplay muted loop playsinline title="Taza oscuro">
+                    <source src="videos/oscuro.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <div class="video-card">
+                <video autoplay muted loop playsinline title="Caramañola">
+                    <source src="videos/cara.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <div class="video-card">
+                <video autoplay muted loop playsinline title="Carcasas">
+                    <source src="videos/carcas.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <div class="video-card">
+                <video autoplay muted loop playsinline title="Pocillos">
+                    <source src="videos/poci.mp4" type="video/mp4">
+                </video>
+            </div>
+
+            <div class="video-card">
+                <video autoplay muted loop playsinline title="Carcasa especial">
+                    <source src="videos/carcasa3.mp4" type="video/mp4">
+                </video>
+            </div>
+
+        </div>
+    </section>
+    <!-- FIN: TRABAJOS REALIZADOS -->
+
+    <!-- CONSULTAR PEDIDO -->
+    <section class="consultar-pedido fade-up" aria-label="Consulta tu pedido">
+        <h2>📦 Consulta tu pedido</h2>
+        <p>Ingresa tu número de WhatsApp y revisa el estado de tus pedidos.</p>
+
+        <div class="consulta-box">
+            <label for="telefonoConsulta" class="sr-only">Número de WhatsApp</label>
+            <input
+                type="tel"
+                id="telefonoConsulta"
+                placeholder="Ej: 3153625992"
+                maxlength="15"
+                autocomplete="tel"
+            >
+            <button id="btnConsultarPedido" type="button">
+                Consultar
+            </button>
+        </div>
+    </section>
+
+    <!-- CTA FINAL -->
+    <section class="cta-final fade-up" aria-label="Llamado a la acción">
+        <div class="cta-contenido">
+            <h2>¿Listo para personalizar algo único?</h2>
+            <p>
+                En Estampaider transformamos tus ideas en productos reales,
+                hechos con calidad, detalle y mucho estilo.
+            </p>
+
+            <div class="cta-botones">
+                <a href="productos.html" class="btn-principal">Explorar productos</a>
+                <a href="contacto.html" class="btn-secundario">Contáctanos</a>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- MODAL VIDEO -->
+<div id="videoModal" class="video-modal" role="dialog" aria-modal="true" aria-label="Reproducir video">
+    <button class="cerrar" id="cerrarModal" aria-label="Cerrar video">✕</button>
+    <video id="videoGrande" controls></video>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer" role="contentinfo">
+    <div class="footer-container">
+
+        <!-- INFO MARCA -->
+        <div class="footer-col">
+            <img src="images/logo-estampaider.png" alt="Estampaider" class="footer-logo">
+            <p>
+                Personalización y estampados con identidad.<br>
+                Creamos productos únicos que hablan por ti.
+            </p>
+        </div>
+
+        <!-- ENLACES -->
+        <div class="footer-col">
+            <h4>Explorar</h4>
+            <a href="index.html">Inicio</a>
+            <a href="productos.html">Productos</a>
+            <a href="nosotros.html">Nosotros</a>
+            <a href="contacto.html">Contacto</a>
+        </div>
+
+        <!-- CONTACTO -->
+        <div class="footer-col">
+            <h4>Contacto</h4>
+            <a href="https://wa.me/573153625992" target="_blank" rel="noopener noreferrer">📲 WhatsApp</a>
+            <p>📍 Colombia</p>
+            <p>⏱ Atención personalizada</p>
+        </div>
+
+        <!-- REDES -->
+        <div class="footer-col">
+            <h4>Redes</h4>
+            <a href="#" class="disabled" aria-disabled="true">TikTok (próximamente)</a>
+            <a href="#" class="disabled" aria-disabled="true">Instagram (próximamente)</a>
+            <a href="#" class="disabled" aria-disabled="true">Facebook (próximamente)</a>
+        </div>
+
+    </div>
+
+    <!-- DERECHOS -->
+    <div class="footer-bottom">
+        &copy; 2026 Estampaider &middot; Todos los derechos reservados
+    </div>
+</footer>
+
+<!-- TOAST GLOBAL -->
+<div id="toast-global" role="status" aria-live="polite"></div>
+
+<!-- SCRIPTS -->
+<script src="carrito-global.js"></script>
+
+<script>
+    // ── Menú hamburguesa ──
+    const toggle = document.getElementById("menuToggle");
+    const menu   = document.getElementById("menu");
+
+    toggle.addEventListener("click", () => {
+        const abierto = menu.classList.toggle("show");
+        toggle.setAttribute("aria-expanded", abierto);
+    });
+
+    // ── Header deslizable (solo desktop) ──
+    const header    = document.querySelector(".header");
+    const hoverZone = document.querySelector(".header-hover-zone");
+
+    if (hoverZone) {
+        hoverZone.addEventListener("mouseenter", () => header.classList.add("visible"));
+    }
+    if (header) {
+        header.addEventListener("mouseleave", () => header.classList.remove("visible"));
+    }
+
+    // ── Modal de video ──
+    const modal       = document.getElementById("videoModal");
+    const videoGrande = document.getElementById("videoGrande");
+    const cerrar      = document.getElementById("cerrarModal");
+
+    document.querySelectorAll(".video-card video").forEach(video => {
+        video.addEventListener("click", () => {
+            const src = video.querySelector("source").src;
+            videoGrande.src = src;
+            modal.classList.add("active");
+            videoGrande.play();
+        });
+    });
+
+    cerrar.addEventListener("click", () => {
+        videoGrande.pause();
+        videoGrande.src = "";
+        modal.classList.remove("active");
+    });
+
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) cerrar.click();
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && modal.classList.contains("active")) cerrar.click();
+    });
+
+    // ── Animaciones scroll ──
+    const fadeEls = document.querySelectorAll(".fade-up");
+    const scrollObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) entry.target.classList.add("show");
+        });
+    }, { threshold: 0.15 });
+
+    fadeEls.forEach(el => scrollObserver.observe(el));
+
+    // ── Consultar pedido ──
+    document.getElementById("btnConsultarPedido").addEventListener("click", () => {
+        const telefono       = document.getElementById("telefonoConsulta").value.trim();
+        const telefonoLimpio = telefono.replace(/\D/g, "");
+
+        if (telefonoLimpio.length < 10) {
+            alert("Ingresa un número de WhatsApp válido (mínimo 10 dígitos).");
+            return;
+        }
+
+        localStorage.setItem("telefonoConsulta", telefonoLimpio);
+        window.location.href = "mi-pedido.html";
+    });
+</script>
+
+</body>
+</html>

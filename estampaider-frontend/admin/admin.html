@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Panel Admin - Estampaider</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<header class="admin-header">
+    <h2>🛠 Panel de Administración</h2>
+    <p>Bienvenido, <strong id="adminNombre"></strong></p>
+    <button onclick="logout()">Cerrar sesión</button>
+</header>
+
+<nav class="admin-menu">
+    <button onclick="verPedidos()">📦 Pedidos</button>
+</nav>
+
+<main id="contenidoAdmin">
+    <p>Selecciona una opción del menú</p>
+</main>
+
+<script src="admin.js"></script>
+</body>
+</html>

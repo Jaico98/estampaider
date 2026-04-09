@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pedidos Admin | Estampaider</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+<body>
+    <script>
+        const auth = JSON.parse(sessionStorage.getItem("auth"));
+        if (!auth || auth.rol !== "ADMIN") {
+            window.location.href = "admin/login.html";
+        }
+    </script>
+    
+<h1>📦 Pedidos Estampaider</h1>
+
+<div class="buscador">
+    <input 
+        type="text" 
+        id="buscarPedido" 
+        placeholder="🔍 Buscar por pedido, cliente o teléfono..."
+    >
+</div>
+
+<div class="filtros">
+    <button data-estado="TODOS" class="activo">Todos</button>
+    <button data-estado="PENDIENTE">Pendientes</button>
+    <button data-estado="ENVIADO">Enviados</button>
+    <button data-estado="ENTREGADO">Entregados</button>
+</div>
+<div class="filtros-pago">
+    <button data-pago="TODOS" class="activo">💳 Todos</button>
+    <button data-pago="PAGADO">✅ Pagados</button>
+    <button data-pago="NO_PAGADO">⏳ No pagados</button>
+</div>
+<div class="filtros-metodo">
+    <button data-metodo="TODOS" class="activo">Todos</button>
+    <button data-metodo="Nequi">Nequi</button>
+    <button data-metodo="Código QR">Código QR</button>
+    <button data-metodo="Pago presencial">Pago presencial</button>
+</div>
+
+
+<button id="resetFiltros" class="reset">🔄 Reset</button>
+
+<button id="ordenFecha" class="orden">📅 Más recientes</button>
+<a href="mensajes.html" id="linkMensajes">
+    📩 Mensajes <span id="badgeMensajes"></span>
+</a>
+<!-- DASHBOARD -->
+<div class="dashboard">
+    <div class="card">
+        <h4>Total pedidos</h4>
+        <span id="statTotal">0</span>
+    </div>
+
+    <div class="card pendiente">
+        <h4>Pendientes</h4>
+        <span id="statPendientes">0</span>
+    </div>
+
+    <div class="card enviado">
+        <h4>Enviados</h4>
+        <span id="statEnviados">0</span>
+    </div>
+
+    <div class="card entregado">
+        <h4>Entregados</h4>
+        <span id="statEntregados">0</span>
+    </div>
+
+    <div class="card dinero">
+        <h4>Total ventas</h4>
+        <span id="statVentas">$0</span>
+    </div>
+
+    <div class="card promedio">
+        <h4>🎟️ Ticket promedio</h4>
+        <span id="statPromedio">$0</span>
+    </div>
+
+    <div class="card cliente-top">
+        <h4>👑 Cliente top</h4>
+        <span id="statClienteTop">—</span>
+    </div>
+</div>
+<div class="resumen-ventas">
+    💰 Total ventas pagadas:
+    <strong id="totalPagado">$0</strong>
+</div>
+<!-- GRÁFICAS -->
+<div class="graficas">
+    <div class="grafica-card">
+        <h3>📊 Pedidos por estado</h3>
+        <canvas id="graficaEstados"></canvas>
+    </div>
+
+    <div class="grafica-card">
+        <h3>💰 Ventas por fecha</h3>
+        <canvas id="graficaVentas"></canvas>
+    </div>
+</div>
+
+<div class="exportar">
+    <button id="exportExcel">📊 Exportar Excel</button>
+    <button id="exportPDF">📄 Exportar PDF</button>
+</div>
+
+<div id="pedidos"></div>
+
+<div class="paginacion">
+    <button id="prevPagina">⬅ Anterior</button>
+    <span id="infoPagina"></span>
+    <button id="nextPagina">Siguiente ➡</button>
+</div>
+
+<!-- MODAL -->
+<div id="modalHistorial" class="modal">
+    <div class="modal-contenido">
+        <span id="cerrarHistorial" class="cerrar">&times;</span>
+        <h2>🧾 Historial del Cliente</h2>
+        <p id="clienteHistorial"></p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Pedido</th>
+                    <th>Fecha</th>
+                    <th>Estado</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody id="tablaHistorial"></tbody>
+        </table>
+    </div>
+</div>
+
+<button id="logout" class="logout">🚪 Cerrar sesión</button>
+
+<div id="toast"></div>
+
+<!-- LIBRERÍAS -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.29/dist/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script src="pedidos.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Catálogo de productos personalizados de Estampaider: camisetas, mugs, gorras, carcasas y más.">
+    <title>Productos | Estampaider</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<audio id="sonido-carrito" src="notification.mp3" preload="auto"></audio>
+
+<!-- ZONA DE HOVER PARA HEADER -->
+<div class="header-hover-zone"></div>
+
+<!-- HEADER -->
+<header class="header" role="banner">
+    <div class="header-container">
+
+        <div class="logo">
+            <a href="index.html" aria-label="Ir al inicio">
+                <img src="images/logo-estampaider.png" alt="Estampaider">
+            </a>
+        </div>
+
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú" aria-expanded="false">☰</button>
+
+        <nav class="menu" id="menu" role="navigation" aria-label="Menú principal">
+            <a href="index.html">Inicio</a>
+            <a href="productos.html" class="active">Productos</a>
+            <a href="nosotros.html">Nosotros</a>
+            <a href="contacto.html">Contacto</a>
+            <a href="carrito.html" class="carrito-icono" aria-label="Ver carrito">
+                🛒 <span id="contador-carrito">0</span>
+            </a>
+        </nav>
+
+    </div>
+</header>
+
+<!-- HERO PRODUCTOS -->
+<section class="productos-hero" aria-label="Encabezado de productos">
+    <h1>Nuestros Productos</h1>
+    <p>
+        Personalización de alta calidad para cada ocasión.<br>
+        Elige tu producto y hazlo único ✨
+    </p>
+</section>
+
+<!-- LISTADO PRODUCTOS -->
+<main class="productos-main" id="contenido-principal">
+
+    <div class="productos-toolbar">
+        <a href="index.html" class="btn-volver">⬅ Volver al inicio</a>
+    </div>
+
+    <!-- FILTROS -->
+    <div class="filtrosp" role="group" aria-label="Filtrar productos">
+        <button data-filtro="todos" class="active">Todos</button>
+        <button data-filtro="camisetas">Camisetas</button>
+        <button data-filtro="mugs">Mugs</button>
+        <button data-filtro="otros">Otros</button>
+    </div>
+
+    <div id="productos-container" aria-live="polite">
+        <p>Cargando productos...</p>
+    </div>
+
+    <!-- CTA PRODUCTOS -->
+    <section class="productos-cta fade-up" aria-label="¿No encuentras lo que buscas?">
+        <h2>¿No encuentras lo que buscas?</h2>
+
+        <p>
+            Personalizamos camisetas, mugs, gorras, carcasas y más.
+            Escríbenos y creamos tu idea tal como la imaginas.
+        </p>
+
+        <div class="cta-beneficios">
+            <span>🎨 Diseño personalizado</span>
+            <span>🚚 Envíos a todo el país</span>
+            <span>💬 Atención directa por WhatsApp</span>
+        </div>
+
+        <div class="cta-botones">
+            <a
+              href="https://wa.me/573153625992"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn-whatsapp grande"
+            >
+                💬 Cotizar por WhatsApp
+            </a>
+
+            <a href="index.html" class="btn-secundario">
+                ⬅ Volver al inicio
+            </a>
+        </div>
+    </section>
+
+</main>
+
+<!-- MODAL PRODUCTO -->
+<div id="modalpProducto" class="modalp hidden" role="dialog" aria-modal="true" aria-labelledby="modalpNombre">
+    <div class="modalp-content">
+
+        <button class="cerrar-modalp" aria-label="Cerrar">✖</button>
+
+        <img id="modalpImagen" alt="Imagen del producto">
+
+        <h2 id="modalpNombre"></h2>
+        <p id="modalpPrecio"></p>
+        <p id="modalpDescripcion"></p>
+
+        <div class="modalp-cantidad">
+            <label for="modalpCantidad">Cantidad:</label>
+            <input type="number" id="modalpCantidad" min="1" value="1">
+        </div>
+
+        <button id="modalpCarrito" class="btn-principal">
+            Agregar al carrito 🛒
+        </button>
+
+        <a id="modalpWhatsapp" class="btn-whatsapp-producto" target="_blank" rel="noopener noreferrer">
+            💬 Cotizar por WhatsApp
+        </a>
+
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer" role="contentinfo">
+    <div class="footer-container">
+
+        <div class="footer-col">
+            <img src="images/logo-estampaider.png" alt="Estampaider" class="footer-logo">
+            <p>Personalización con estilo y calidad.</p>
+        </div>
+
+        <div class="footer-col">
+            <h4>Explorar</h4>
+            <a href="index.html">Inicio</a>
+            <a href="productos.html">Productos</a>
+            <a href="nosotros.html">Nosotros</a>
+            <a href="contacto.html">Contacto</a>
+        </div>
+
+        <div class="footer-col">
+            <h4>Contacto</h4>
+            <a href="https://wa.me/573153625992" target="_blank" rel="noopener noreferrer">📲 WhatsApp</a>
+            <p>📍 Colombia</p>
+            <p>⏱ Atención personalizada</p>
+        </div>
+
+        <div class="footer-col">
+            <h4>Redes</h4>
+            <a href="#" class="disabled" aria-disabled="true">TikTok (próximamente)</a>
+            <a href="#" class="disabled" aria-disabled="true">Instagram (próximamente)</a>
+            <a href="#" class="disabled" aria-disabled="true">Facebook (próximamente)</a>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        &copy; 2026 Estampaider &middot; Todos los derechos reservados
+    </div>
+</footer>
+
+<!-- TOAST GLOBAL -->
+<div id="toast-global" role="status" aria-live="polite"></div>
+
+<!-- SCRIPTS -->
+<script src="carrito-global.js"></script>
+<script src="productos.js"></script>
+
+<script>
+    // ── Menú hamburguesa ──
+    const toggle = document.getElementById("menuToggle");
+    const menu   = document.getElementById("menu");
+
+    toggle.addEventListener("click", () => {
+        const abierto = menu.classList.toggle("show");
+        toggle.setAttribute("aria-expanded", abierto);
+    });
+
+    // ── Header deslizable (solo desktop) ──
+    const header    = document.querySelector(".header");
+    const hoverZone = document.querySelector(".header-hover-zone");
+
+    if (hoverZone) {
+        hoverZone.addEventListener("mouseenter", () => header.classList.add("visible"));
+    }
+    if (header) {
+        header.addEventListener("mouseleave", () => header.classList.remove("visible"));
+    }
+
+    // ── Animaciones scroll ──
+    const fadeEls = document.querySelectorAll(".fade-up");
+    const scrollObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) entry.target.classList.add("show");
+        });
+    }, { threshold: 0.15 });
+
+    fadeEls.forEach(el => scrollObserver.observe(el));
+</script>
+
+</body>
+</html>

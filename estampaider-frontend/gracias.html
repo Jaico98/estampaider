@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="¡Gracias por tu compra en Estampaider! Tu pedido fue registrado correctamente.">
+    <title>¡Gracias por tu compra! | Estampaider</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        .gracias-section {
+            min-height: 70vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            background: #f7f7f7;
+        }
+
+        .gracias-card {
+            max-width: 520px;
+            width: 100%;
+            text-align: center;
+            background: #fff;
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.12);
+        }
+
+        .gracias-card .icono {
+            font-size: 4rem;
+            margin-bottom: 16px;
+        }
+
+        .gracias-card h1 {
+            color: #2e7d32;
+            font-size: 1.8rem;
+            margin-bottom: 14px;
+            border: none;
+            text-transform: none;
+            letter-spacing: normal;
+        }
+
+        .gracias-card p {
+            color: #555;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+
+        .pedido-numero {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #14a6d6;
+            margin: 20px 0;
+            padding: 14px;
+            background: #e8f4fd;
+            border-radius: 10px;
+        }
+
+        .gracias-acciones {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .btn-secundario {
+    display: inline-block;
+    padding: 14px 34px;
+    border-radius: 40px;
+    background: rgba(250, 246, 229, 0.15);
+    color: rgb(50, 63, 247);
+    font-size: 1.05rem;
+    font-weight: bold;
+    text-decoration: none;
+    border: 2px solid rgba(255,255,255,0.6);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.2s ease;
+    cursor: pointer;
+}
+    </style>
+</head>
+<body>
+
+<!-- ZONA DE HOVER PARA HEADER -->
+<div class="header-hover-zone"></div>
+
+<!-- HEADER -->
+<header class="header" role="banner">
+    <div class="header-container">
+
+        <div class="logo">
+            <a href="index.html" aria-label="Ir al inicio">
+                <img src="images/logo-estampaider.png" alt="Estampaider">
+            </a>
+        </div>
+
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú" aria-expanded="false">☰</button>
+
+        <nav class="menu" id="menu" role="navigation" aria-label="Menú principal">
+            <a href="index.html">Inicio</a>
+            <a href="productos.html">Productos</a>
+            <a href="nosotros.html">Nosotros</a>
+            <a href="contacto.html">Contacto</a>
+            <a href="carrito.html" class="carrito-icono" aria-label="Ver carrito">
+                🛒 <span id="contador-carrito">0</span>
+            </a>
+        </nav>
+
+    </div>
+</header>
+
+<!-- CONTENIDO PRINCIPAL -->
+<main id="contenido-principal">
+    <section class="gracias-section">
+        <div class="gracias-card">
+            <div class="icono" aria-hidden="true">🎉</div>
+            <h1>¡Gracias por tu compra!</h1>
+            <p>Tu pedido fue registrado correctamente.</p>
+
+            <div class="pedido-numero">
+                🧾 Pedido #<span id="pedidoId">—</span>
+            </div>
+
+            <p>📲 En breve nos comunicaremos contigo por WhatsApp para confirmar los detalles.</p>
+
+            <div class="gracias-acciones">
+                <button class="btn-principal" onclick="volver()">🏠 Volver a la tienda</button>
+                <button class="btn-secundario" onclick="verPedido()">📄 Ver mi pedido</button>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer" role="contentinfo">
+    <div class="footer-container">
+
+        <div class="footer-col">
+            <img src="images/logo-estampaider.png" alt="Estampaider" class="footer-logo">
+            <p>Personalización con estilo y calidad.</p>
+        </div>
+
+        <div class="footer-col">
+            <h4>Explorar</h4>
+            <a href="index.html">Inicio</a>
+            <a href="productos.html">Productos</a>
+            <a href="nosotros.html">Nosotros</a>
+            <a href="contacto.html">Contacto</a>
+        </div>
+
+        <div class="footer-col">
+            <h4>Contacto</h4>
+            <a href="https://wa.me/573153625992" target="_blank" rel="noopener noreferrer">📲 WhatsApp</a>
+            <p>📍 Colombia</p>
+            <p>⏱ Atención personalizada</p>
+        </div>
+
+        <div class="footer-col">
+            <h4>Redes</h4>
+            <a href="#" class="disabled" aria-disabled="true">TikTok (próximamente)</a>
+            <a href="#" class="disabled" aria-disabled="true">Instagram (próximamente)</a>
+            <a href="#" class="disabled" aria-disabled="true">Facebook (próximamente)</a>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        &copy; 2026 Estampaider &middot; Todos los derechos reservados
+    </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script src="carrito-global.js"></script>
+
+<script>
+    // ── Menú hamburguesa ──
+    const toggle = document.getElementById("menuToggle");
+    const menu   = document.getElementById("menu");
+
+    toggle.addEventListener("click", () => {
+        const abierto = menu.classList.toggle("show");
+        toggle.setAttribute("aria-expanded", abierto);
+    });
+
+    // ── Header deslizable (solo desktop) ──
+    const header    = document.querySelector(".header");
+    const hoverZone = document.querySelector(".header-hover-zone");
+
+    if (hoverZone) {
+        hoverZone.addEventListener("mouseenter", () => header.classList.add("visible"));
+    }
+    if (header) {
+        header.addEventListener("mouseleave", () => header.classList.remove("visible"));
+    }
+
+    // ── Pedido ──
+    const pedidoId = localStorage.getItem("pedidoId");
+
+    if (pedidoId) {
+        document.getElementById("pedidoId").textContent = pedidoId;
+    }
+
+    function volver() {
+        localStorage.removeItem("pedidoId");
+        window.location.href = "index.html";
+    }
+
+    function verPedido() {
+        if (!pedidoId) {
+            alert("No se encontró el número de pedido.");
+            return;
+        }
+        window.location.href = `mi-pedido.html?id=${pedidoId}`;
+    }
+</script>
+
+</body>
+</html>

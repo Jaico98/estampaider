@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión | Estampaider</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #8baff3, #ff4b2b);
+        }
+    </style>
+</head>
+<body>
+
+<div class="auth-container">
+    <h2>🔐 Iniciar Sesión</h2>
+
+    <form id="loginForm" autocomplete="on">
+        <input 
+            type="text" 
+            id="usuario" 
+            placeholder="Número de teléfono"
+            autocomplete="username"
+            required>
+
+        <input 
+            type="password" 
+            id="password" 
+            placeholder="Contraseña"
+            autocomplete="current-password"
+            required>
+
+        <button type="submit">Ingresar</button>
+    </form>
+
+    <p class="error" id="error"></p>
+
+    <p style="margin-top:15px;">
+        <a href="forgot-password.html">¿Olvidaste tu contraseña?</a>
+    </p>
+
+    <p style="margin-top:10px;">
+        ¿No tienes cuenta?
+        <a href="register.html">Crear cuenta</a>
+    </p>
+</div>
+
+<script src="login.js"></script>
+
+</body>
+</html>
