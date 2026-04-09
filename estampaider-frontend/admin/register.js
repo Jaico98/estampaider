@@ -31,15 +31,13 @@ form.addEventListener("submit", async (e) => {
 
         const data = await response.json();
 
-        // 🔐 Guardar sesión igual que login
         sessionStorage.setItem("auth", JSON.stringify({
             rol: data.rol,
             nombre: data.nombre,
             token: data.token
         }));
 
-        // 🚀 Redirigir automáticamente
-        window.location.href = "/mi-pedido.html";
+        window.location.href = "../mi-pedido.html";
 
     } catch (err) {
         console.error(err);

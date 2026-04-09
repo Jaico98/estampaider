@@ -23,7 +23,6 @@ form.addEventListener("submit", async (e) => {
 
         const data = await response.json();
 
-        // 🔐 Guardar sesión (AHORA EN SESSION STORAGE)
         sessionStorage.setItem("auth", JSON.stringify({
             ok: data.ok,
             rol: data.rol,
@@ -32,7 +31,6 @@ form.addEventListener("submit", async (e) => {
             token: data.token
         }));
 
-        // 🔁 Verificar si hay redirección pendiente
         const redirect = sessionStorage.getItem("redirectAfterLogin");
 
         if (redirect) {
@@ -41,7 +39,6 @@ form.addEventListener("submit", async (e) => {
             return;
         }
 
-        // 🚦 Redirección según rol
         if (data.rol === "ADMIN") {
             window.location.href = "../pedidos.html";
         } else {
