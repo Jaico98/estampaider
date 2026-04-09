@@ -1,17 +1,32 @@
-const auth = JSON.parse(localStorage.getItem("auth"));
+(function () {
+  const authRaw = sessionStorage.getItem("auth");
+  const auth = authRaw ? JSON.parse(authRaw) : null;
 
-if (!auth || !auth.nombre) {
+  if (!auth || !auth.token) {
     window.location.href = "login.html";
-    throw new Error("No hay sesión activa");
-}
+    return;
+  }
 
-document.getElementById("adminNombre").textContent = auth.nombre;
+  const nombreEl = document.getElementById("adminNombre");
+  if (nombreEl) {
+    nombreEl.textContent = auth.nombre || "Administrador";
+  }
 
-function logout() {
-    localStorage.removeItem("auth");
+  window.logout = function logout() {
+    sessionStorage.removeItem("auth");
+    sessionStorage.removeItem("redirectAfterLogin");
     window.location.href = "login.html";
-}
+  };
 
-function verPedidos() {
-    window.location.href = "/pedidos.html";
-}
+  window.verPanel = function verPanel() {
+    window.location.href = "admin.html";
+  };
+
+  window.verPedidos = function verPedidos() {
+    window.location.href = "../pedidos.html";
+  };
+
+  window.verMensajes = function verMensajes() {
+    window.location.href = "../mensajes.html";
+  };
+})();

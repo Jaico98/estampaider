@@ -1,26 +1,40 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Panel Admin - Estampaider</title>
-    <link rel="stylesheet" href="../styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Admin - Estampaider</title>
+  <link rel="stylesheet" href="../styles.css">
 </head>
 <body>
+  <header class="admin-header">
+    <div>
+      <h2>Panel de Administración</h2>
+      <p>Bienvenido, <strong id="adminNombre">Administrador</strong></p>
+    </div>
+    <button type="button" onclick="logout()">Cerrar sesión</button>
+  </header>
 
-<header class="admin-header">
-    <h2>🛠 Panel de Administración</h2>
-    <p>Bienvenido, <strong id="adminNombre"></strong></p>
-    <button onclick="logout()">Cerrar sesión</button>
-</header>
+  <nav class="admin-menu">
+    <button type="button" onclick="verPedidos()">Pedidos</button>
+    <button type="button" onclick="verMensajes()">Mensajes</button>
+    <button type="button" onclick="verPanel()">Inicio</button>
+  </nav>
 
-<nav class="admin-menu">
-    <button onclick="verPedidos()">📦 Pedidos</button>
-</nav>
+  <main id="contenidoAdmin" class="dashboard">
+    <div class="card">
+      <h3>Gestión rápida</h3>
+      <p>Desde aquí puedes administrar pedidos y revisar los mensajes del cliente.</p>
+    </div>
+    <div class="card">
+      <h3>Acciones</h3>
+      <div class="admin-menu" style="margin-top: 12px;">
+        <button type="button" onclick="verPedidos()">Ir a pedidos</button>
+        <button type="button" onclick="verMensajes()">Ir a mensajes</button>
+      </div>
+    </div>
+  </main>
 
-<main id="contenidoAdmin">
-    <p>Selecciona una opción del menú</p>
-</main>
-
-<script src="admin.js"></script>
+  <script src="admin.js"></script>
 </body>
 </html>

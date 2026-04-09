@@ -1,212 +1,174 @@
-// ============================================================
-//  productos.js  —  Estampaider
-//  Carga productos desde la API, maneja filtros y modal
-// ============================================================
-
 const API_URL = "http://localhost:8080/api/productos";
+const WHATSAPP_NUMBER = "573153625992";
+
+const emojiPorCategoria = {
+  camisetas: "👕",
+  mugs: "☕",
+  otros: "🎁"
+};
+
+let productosCache = [];
+let productoModalActual = null;
+
+function formatearPrecio(valor) {
+  return `$${(Number(valor) || 0).toLocaleString("es-CO")}`;
+}
+
+function actualizarContadorCarritoLocal() {
+  if (typeof actualizarContadorCarrito === "function") {
+    actualizarContadorCarrito();
+  }
+}
+
+function agregarAlCarrito(producto, cantidad = 1) {
+  const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+  const existente = carrito.find(item => item.id === producto.id);
+
+  if (existente) {
+    existente.cantidad += cantidad;
+  } else {
+    carrito.push({
+      id: producto.id,
+      nombre: producto.nombre,
+      precio: Number(producto.precio) || 0,
+      cantidad,
+      imagenUrl: producto.imagenUrl || "",
+      categoria: producto.categoria || "otros"
+    });
+  }
+
+  localStorage.setItem("carrito", JSON.stringify(carrito));
+  actualizarContadorCarritoLocal();
+
+  if (typeof mostrarToastGlobal === "function") {
+    mostrarToastGlobal(`${producto.nombre} agregado al carrito`);
+  } else {
+    alert("Producto agregado al carrito");
+  }
+}
+
+function abrirModal(producto) {
+  productoModalActual = producto;
+  const modal = document.getElementById("productoModal");
+  document.getElementById("modalNombre").textContent = producto.nombre;
+  document.getElementById("modalDescripcion").textContent = producto.descripcion || "Producto personalizado listo para cotizar o comprar.";
+  document.getElementById("modalImagen").textContent = emojiPorCategoria[(producto.categoria || "otros").toLowerCase()] || "🛍️";
+  document.getElementById("modalCantidad").value = 1;
+  document.getElementById("modalWhatsapp").href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hola Estampaider, quiero cotizar este producto:%0A%0A${producto.nombre}%0APrecio: ${formatearPrecio(producto.precio)}`)}`;
+  modal.classList.add("show");
+  modal.setAttribute("aria-hidden", "false");
+}
+
+function cerrarModal() {
+  const modal = document.getElementById("productoModal");
+  modal.classList.remove("show");
+  modal.setAttribute("aria-hidden", "true");
+  productoModalActual = null;
+}
+
+function crearTarjetaProducto(producto) {
+  const card = document.createElement("article");
+  card.className = "product-card";
+  card.dataset.categoria = (producto.categoria || "otros").toLowerCase();
+
+  const categoria = (producto.categoria || "otros").toLowerCase();
+  const emoji = emojiPorCategoria[categoria] || "🛍️";
+
+  card.innerHTML = `
+    <div class="product-media">${emoji}</div>
+    <div class="product-content">
+      <span class="badge-pill">${categoria === "camisetas" ? "Más pedido" : categoria === "mugs" ? "Regalo ideal" : "Personalizable"}</span>
+      <h3>${producto.nombre}</h3>
+      <p>${producto.descripcion || "Personalización de alta calidad para cada ocasión."}</p>
+      <div class="product-price">${formatearPrecio(producto.precio)}</div>
+      <div class="qty-wrap">
+        <label>Cantidad</label>
+        <input type="number" min="1" value="1" aria-label="Cantidad" />
+      </div>
+      <div class="product-actions">
+        <button class="btn btn-primary btn-agregar" type="button">Agregar al carrito</button>
+        <button class="btn btn-secondary btn-ver" type="button">Ver detalle</button>
+        <a class="whatsapp-btn" target="_blank" rel="noopener noreferrer">Cotizar por WhatsApp</a>
+      </div>
+    </div>
+  `;
+
+  const inputCantidad = card.querySelector("input");
+  const btnAgregar = card.querySelector(".btn-agregar");
+  const btnVer = card.querySelector(".btn-ver");
+  const btnWhatsapp = card.querySelector(".whatsapp-btn");
+
+  btnAgregar.addEventListener("click", () => {
+    agregarAlCarrito(producto, Math.max(1, parseInt(inputCantidad.value, 10) || 1));
+  });
+
+  btnVer.addEventListener("click", () => abrirModal(producto));
+  btnWhatsapp.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Hola Estampaider, quiero cotizar este producto:%0A%0A${producto.nombre}%0APrecio: ${formatearPrecio(producto.precio)}`)}`;
+
+  return card;
+}
+
+function renderizarProductos(filtro = "todos") {
+  const contenedor = document.getElementById("productos-container");
+  contenedor.innerHTML = "";
+
+  const productosFiltrados = filtro === "todos"
+    ? productosCache
+    : productosCache.filter(p => (p.categoria || "otros").toLowerCase() === filtro);
+
+  if (!productosFiltrados.length) {
+    contenedor.innerHTML = '<div class="empty-state">No hay productos disponibles para esta categoría.</div>';
+    return;
+  }
+
+  productosFiltrados.forEach(producto => contenedor.appendChild(crearTarjetaProducto(producto)));
+}
+
+function inicializarFiltros() {
+  const botones = document.querySelectorAll(".filter-btn");
+  botones.forEach(btn => {
+    btn.addEventListener("click", () => {
+      botones.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderizarProductos(btn.dataset.filter || "todos");
+    });
+  });
+}
+
+async function cargarProductos() {
+  const contenedor = document.getElementById("productos-container");
+  contenedor.innerHTML = '<div class="notice">Cargando productos...</div>';
+
+  try {
+    const response = await fetch(API_URL);
+    if (!response.ok) throw new Error("No se pudo cargar el catálogo");
+    productosCache = await response.json();
+
+    if (!Array.isArray(productosCache)) {
+      productosCache = [];
+    }
+
+    renderizarProductos();
+  } catch (error) {
+    console.error(error);
+    contenedor.innerHTML = '<div class="empty-state">Error al cargar productos. Verifica que el backend esté encendido.</div>';
+  }
+}
 
 document.addEventListener("DOMContentLoaded", () => {
+  inicializarFiltros();
+  cargarProductos();
+  actualizarContadorCarritoLocal();
 
-    const contenedor = document.getElementById("productos-container");
+  document.getElementById("cerrarModal").addEventListener("click", cerrarModal);
+  document.getElementById("productoModal").addEventListener("click", (e) => {
+    if (e.target.id === "productoModal") cerrarModal();
+  });
 
-    // ── Cargar productos ──────────────────────────────────────
-    fetch(API_URL)
-        .then(response => {
-            if (!response.ok) throw new Error("Error al consultar la API");
-            return response.json();
-        })
-        .then(productos => {
-            contenedor.innerHTML = "";
-
-            if (!Array.isArray(productos) || productos.length === 0) {
-                contenedor.innerHTML = "<p>No hay productos disponibles.</p>";
-                return;
-            }
-
-            productos.forEach(producto => {
-                const card = document.createElement("div");
-                card.classList.add("producto-card");
-                // Guardar categoría como data attribute para filtros
-                card.dataset.categoria = (producto.categoria || "otros").toLowerCase();
-
-                // 🏷️ BADGE
-                const badge = document.createElement("span");
-                badge.classList.add("badge", producto.precio >= 30000 ? "top" : "nuevo");
-                badge.textContent = producto.precio >= 30000 ? "Más vendido" : "Nuevo";
-                card.appendChild(badge);
-
-                // 🖼️ IMAGEN
-                const imagen = document.createElement("img");
-                imagen.src   = `images/${producto.imagenUrl || "placeholder.jpg"}`;
-                imagen.alt   = producto.nombre;
-                imagen.loading = "lazy";
-
-                // 🏷️ NOMBRE
-                const nombre = document.createElement("h3");
-                nombre.textContent = producto.nombre;
-
-                // 💲 PRECIO
-                const precioValor = Number(producto.precio) || 0;
-                const precio = document.createElement("p");
-                precio.textContent = `$${precioValor.toLocaleString("es-CO")}`;
-
-                // 🔢 CANTIDAD
-                const cantidad = document.createElement("input");
-                cantidad.type  = "number";
-                cantidad.min   = 1;
-                cantidad.value = 1;
-                cantidad.setAttribute("aria-label", "Cantidad");
-
-                // 🛒 BOTÓN CARRITO
-                const botonCarrito = document.createElement("button");
-                botonCarrito.textContent = "Agregar al carrito 🛒";
-                botonCarrito.onclick = () => {
-                    agregarAlCarrito(producto, parseInt(cantidad.value) || 1);
-                };
-
-                // 👁️ VER PRODUCTO (MODAL)
-                const botonVer = document.createElement("button");
-                botonVer.textContent = "Ver producto 👁️";
-                botonVer.onclick = () => abrirModalp(producto, precioValor);
-
-                // 💬 WHATSAPP
-                const botonWhatsapp = document.createElement("a");
-                botonWhatsapp.href = `https://wa.me/573153625992?text=${encodeURIComponent(
-                    `Hola 👋 quiero cotizar este producto:\n\n${producto.nombre}\nPrecio: $${precioValor.toLocaleString("es-CO")}`
-                )}`;
-                botonWhatsapp.target    = "_blank";
-                botonWhatsapp.rel       = "noopener noreferrer";
-                botonWhatsapp.className = "btn-whatsapp-producto";
-                botonWhatsapp.textContent = "💬 Cotizar por WhatsApp";
-
-                card.append(imagen, nombre, precio, cantidad, botonCarrito, botonVer, botonWhatsapp);
-                contenedor.appendChild(card);
-            });
-
-            // Inicializar filtros después de cargar los productos
-            inicializarFiltros();
-        })
-        .catch(err => {
-            console.error(err);
-            contenedor.innerHTML = "<p>Error al cargar productos. Intenta más tarde 😢</p>";
-        });
-
-    // ── Animaciones scroll ────────────────────────────────────
-    document.querySelectorAll(".fade-up").forEach(el => {
-        el.classList.add("visible");
-    });
-});
-
-// ── Filtros ───────────────────────────────────────────────────
-function inicializarFiltros() {
-    document.querySelectorAll(".filtrosp button").forEach(btn => {
-        btn.addEventListener("click", () => {
-
-            document.querySelectorAll(".filtrosp button")
-                .forEach(b => b.classList.remove("active"));
-
-            btn.classList.add("active");
-
-            const filtro = btn.dataset.filtro;
-
-            document.querySelectorAll(".producto-card").forEach(card => {
-                const nombre    = (card.querySelector("h3")?.textContent || "").toLowerCase();
-                const categoria = card.dataset.categoria || "";
-
-                let visible = false;
-
-                if (filtro === "todos") {
-                    visible = true;
-                } else if (filtro === "camisetas") {
-                    visible = nombre.includes("camiseta") || categoria.includes("camiseta");
-                } else if (filtro === "mugs") {
-                    visible = nombre.includes("mug") || nombre.includes("pocillo") || categoria.includes("mug");
-                } else if (filtro === "otros") {
-                    visible = !nombre.includes("camiseta") && !nombre.includes("mug") && !nombre.includes("pocillo");
-                }
-
-                card.style.display = visible ? "block" : "none";
-            });
-        });
-    });
-}
-
-// ── Agregar al carrito ────────────────────────────────────────
-function agregarAlCarrito(producto, cantidad) {
-    if (!cantidad || cantidad <= 0) {
-        alert("Ingresa una cantidad válida.");
-        return;
-    }
-
-    let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
-    const existente = carrito.find(p => p.id === producto.id);
-
-    if (existente) {
-        existente.cantidad += cantidad;
-    } else {
-        carrito.push({ ...producto, cantidad });
-    }
-
-    localStorage.setItem("carrito", JSON.stringify(carrito));
-
-    if (typeof actualizarContadorCarrito === "function") {
-        actualizarContadorCarrito();
-    }
-
-    if (typeof mostrarToastGlobal === "function") {
-        mostrarToastGlobal(`"${producto.nombre}" agregado al carrito 🛒`);
-    }
-
-    // Sonido de notificación
-    const sonido = document.getElementById("sonido-carrito");
-    if (sonido) {
-        sonido.currentTime = 0;
-        sonido.play().catch(() => {});
-    }
-}
-
-// ── Modal de producto ─────────────────────────────────────────
-function abrirModalp(producto, precioValor) {
-    const modalp = document.getElementById("modalpProducto");
-
-    document.getElementById("modalpImagen").src =
-        `images/${producto.imagenUrl || "placeholder.jpg"}`;
-
-    document.getElementById("modalpNombre").textContent = producto.nombre;
-    document.getElementById("modalpPrecio").textContent =
-        `$${precioValor.toLocaleString("es-CO")}`;
-
-    document.getElementById("modalpDescripcion").textContent =
-        producto.descripcion || "Producto personalizable a tu gusto.";
-
-    const inputCantidad = document.getElementById("modalpCantidad");
-    inputCantidad.value = 1;
-
-    document.getElementById("modalpCarrito").onclick = () => {
-        agregarAlCarrito(producto, parseInt(inputCantidad.value) || 1);
-        modalp.classList.add("hidden");
-    };
-
-    document.getElementById("modalpWhatsapp").href =
-        `https://wa.me/573153625992?text=${encodeURIComponent(
-            `Hola 👋 quiero cotizar este producto:\n\n${producto.nombre}\nPrecio: $${precioValor.toLocaleString("es-CO")}`
-        )}`;
-
-    modalp.classList.remove("hidden");
-}
-
-// ── Cerrar modal ──────────────────────────────────────────────
-document.addEventListener("click", (e) => {
-    if (e.target.classList.contains("cerrar-modalp")) {
-        document.getElementById("modalpProducto").classList.add("hidden");
-    }
-    if (e.target.id === "modalpProducto") {
-        e.target.classList.add("hidden");
-    }
-});
-
-document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-        document.getElementById("modalpProducto")?.classList.add("hidden");
-    }
+  document.getElementById("modalAgregar").addEventListener("click", () => {
+    if (!productoModalActual) return;
+    const cantidad = Math.max(1, parseInt(document.getElementById("modalCantidad").value, 10) || 1);
+    agregarAlCarrito(productoModalActual, cantidad);
+    cerrarModal();
+  });
 });

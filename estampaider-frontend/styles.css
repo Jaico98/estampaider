@@ -2,714 +2,714 @@
    🔄 RESET Y BASE GLOBAL
 ================================ */
 *, *::before, *::after {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 :root {
-    --azul-estampaider: #14a6d6;
-    --azul-oscuro: #0d8ab5;
-    --negro: #000000;
-    --gris-header: #39d7e2;
-    --blanco: #ffffff;
-    --borde: 1px solid #ddd;
-    --gris: #f3f4f6;
-    --verde-whatsapp: #25D366;
-    --sombra-suave: 0 8px 25px rgba(0,0,0,0.08);
-    --sombra-media: 0 10px 30px rgba(0,0,0,0.12);
-    --radio: 14px;
-    --fuente: 'Segoe UI', Arial, Helvetica, sans-serif;
+  --azul-estampaider: #14a6d6;
+  --azul-oscuro: #0d8ab5;
+  --negro: #000000;
+  --gris-header: #39d7e2;
+  --blanco: #ffffff;
+  --borde: 1px solid #ddd;
+  --gris: #f3f4f6;
+  --verde-whatsapp: #25D366;
+  --sombra-suave: 0 8px 25px rgba(0,0,0,0.08);
+  --sombra-media: 0 10px 30px rgba(0,0,0,0.12);
+  --radio: 14px;
+  --fuente: 'Segoe UI', Arial, Helvetica, sans-serif;
 }
 
 body {
-    font-family: var(--fuente);
-    background-color: #f7f7f7;
-    color: #222;
-    line-height: 1.6;
+  font-family: var(--fuente);
+  background-color: #f7f7f7;
+  color: #222;
+  line-height: 1.6;
 }
 
 /* Clase de accesibilidad: oculta visualmente pero accesible para lectores de pantalla */
 .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0,0,0,0);
-    white-space: nowrap;
-    border: 0;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* =========================
-   TÍTULOS PRINCIPALES
+ TÍTULOS PRINCIPALES
 ========================= */
 main h1,
 main h2 {
-    color: #000;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 20px;
-    border-bottom: var(--borde);
-    padding-bottom: 10px;
-    text-align: center;
+  color: #000;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 20px;
+  border-bottom: var(--borde);
+  padding-bottom: 10px;
+  text-align: center;
 }
 
 /* =========================
-   HEADER DESLIZABLE (DESKTOP)
+ HEADER DESLIZABLE (DESKTOP)
 ========================= */
 .header {
-    position: fixed;
-    top: -90px;
-    left: 0;
-    width: 100%;
-    z-index: 1000;
-    background: var(--gris-header);
-    transition: top 0.35s ease;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+  position: fixed;
+  top: -90px;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  background: var(--gris-header);
+  transition: top 0.35s ease;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
 }
 
 .header.visible {
-    top: 0;
+  top: 0;
 }
 
 .header-hover-zone {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 25px;
-    z-index: 999;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 25px;
+  z-index: 999;
 }
 
 .header-container {
-    max-width: 1200px;
-    margin: auto;
-    padding: 0 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  max-width: 1200px;
+  margin: auto;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 /* LOGO */
 .logo a {
-    display: inline-flex;
-    align-items: center;
+  display: inline-flex;
+  align-items: center;
 }
 
 .logo img {
-    height: 55px;
+  height: 55px;
 }
 
 /* MENÚ */
 .menu {
-    display: flex;
-    gap: 20px;
-    align-items: center;
+  display: flex;
+  gap: 20px;
+  align-items: center;
 }
 
 .menu a {
-    color: white;
-    text-decoration: none;
-    margin-left: 20px;
-    font-weight: bold;
-    transition: color 0.3s;
-    position: relative;
+  color: white;
+  text-decoration: none;
+  margin-left: 20px;
+  font-weight: bold;
+  transition: color 0.3s;
+  position: relative;
 }
 
 .menu a::after {
-    content: "";
-    position: absolute;
-    width: 0%;
-    height: 2px;
-    left: 0;
-    bottom: -4px;
-    background: #fff;
-    transition: width 0.3s ease;
+  content: "";
+  position: absolute;
+  width: 0%;
+  height: 2px;
+  left: 0;
+  bottom: -4px;
+  background: #fff;
+  transition: width 0.3s ease;
 }
 
 .menu a:hover::after,
 .menu a.active::after {
-    width: 100%;
+  width: 100%;
 }
 
 .menu a:hover {
-    color: var(--azul-estampaider);
+  color: var(--azul-estampaider);
 }
 
 .menu a.active {
-    color: #fff;
-    text-decoration: underline;
-    text-underline-offset: 4px;
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 4px;
 }
 
 /* BOTÓN HAMBURGUESA */
 .menu-toggle {
-    display: none;
-    font-size: 28px;
-    background: none;
-    border: none;
-    color: white;
-    cursor: pointer;
+  display: none;
+  font-size: 28px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
 }
 
 /* RESPONSIVE HEADER */
 @media (max-width: 768px) {
-    .header {
-        top: 0 !important;
-    }
+  .header {
+      top: 0 !important;
+  }
 
-    .header-hover-zone {
-        display: none;
-    }
+  .header-hover-zone {
+      display: none;
+  }
 
-    .menu {
-        display: none;
-        flex-direction: column;
-        background: #000;
-        position: absolute;
-        top: 70px;
-        right: 0;
-        padding: 15px;
-        min-width: 180px;
-        border-radius: 0 0 10px 10px;
-    }
+  .menu {
+      display: none;
+      flex-direction: column;
+      background: #000;
+      position: absolute;
+      top: 70px;
+      right: 0;
+      padding: 15px;
+      min-width: 180px;
+      border-radius: 0 0 10px 10px;
+  }
 
-    .menu.show {
-        display: flex;
-    }
+  .menu.show {
+      display: flex;
+  }
 
-    .menu-toggle {
-        display: block;
-    }
+  .menu-toggle {
+      display: block;
+  }
 
-    .menu a {
-        margin-left: 0;
-    }
+  .menu a {
+      margin-left: 0;
+  }
 }
 
 /* ===============================
-   🌟 HERO PRINCIPAL
+ 🌟 HERO PRINCIPAL
 ================================ */
 .hero {
-    min-height: 85vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 40px 20px;
-    background: linear-gradient(
-        rgba(0,0,0,0.55),
-        rgba(0,0,0,0.55)
-    ),
-    url("images/hero-bg.jpg") center/cover no-repeat;
-    color: white;
+  min-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 40px 20px;
+  background: linear-gradient(
+      rgba(0,0,0,0.55),
+      rgba(0,0,0,0.55)
+  ),
+  url("images/hero-bg.jpg") center/cover no-repeat;
+  color: white;
 }
 
 .hero h1 {
-    font-size: 3rem;
-    max-width: 900px;
-    line-height: 1.2;
-    margin-bottom: 20px;
-    text-transform: none;
-    letter-spacing: normal;
-    border: none;
+  font-size: 3rem;
+  max-width: 900px;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  text-transform: none;
+  letter-spacing: normal;
+  border: none;
 }
 
 .hero h1 span {
-    color: var(--azul-estampaider);
+  color: var(--azul-estampaider);
 }
 
 .hero-desc {
-    font-size: 1.2rem;
-    max-width: 700px;
-    margin-bottom: 30px;
-    opacity: 0.95;
+  font-size: 1.2rem;
+  max-width: 700px;
+  margin-bottom: 30px;
+  opacity: 0.95;
 }
 
 @media (max-width: 768px) {
-    .hero h1 {
-        font-size: 2.2rem;
-    }
+  .hero h1 {
+      font-size: 2.2rem;
+  }
 
-    .hero-desc {
-        font-size: 1.05rem;
-    }
+  .hero-desc {
+      font-size: 1.05rem;
+  }
 }
 
 /* ===============================
-   BOTONES PRINCIPALES
+ BOTONES PRINCIPALES
 ================================ */
 .btn-principal {
-    display: inline-block;
-    background: var(--azul-estampaider);
-    color: white;
-    padding: 14px 34px;
-    border-radius: 40px;
-    font-size: 1.05rem;
-    font-weight: bold;
-    text-decoration: none;
-    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.2s ease;
-    border: none;
-    cursor: pointer;
+  display: inline-block;
+  background: var(--azul-estampaider);
+  color: white;
+  padding: 14px 34px;
+  border-radius: 40px;
+  font-size: 1.05rem;
+  font-weight: bold;
+  text-decoration: none;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.2s ease;
+  border: none;
+  cursor: pointer;
 }
 
 .btn-principal:hover {
-    background: var(--azul-oscuro);
-    transform: translateY(-3px);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+  background: var(--azul-oscuro);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.25);
 }
 
 .btn-secundario {
-    display: inline-block;
-    padding: 14px 34px;
-    border-radius: 40px;
-    background: rgba(255,255,255,0.15);
-    color: white;
-    font-size: 1.05rem;
-    font-weight: bold;
-    text-decoration: none;
-    border: 2px solid rgba(255,255,255,0.6);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.2s ease;
-    cursor: pointer;
+  display: inline-block;
+  padding: 14px 34px;
+  border-radius: 40px;
+  background: rgba(255,255,255,0.15);
+  color: white;
+  font-size: 1.05rem;
+  font-weight: bold;
+  text-decoration: none;
+  border: 2px solid rgba(255,255,255,0.6);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.2s ease;
+  cursor: pointer;
 }
 
 .btn-secundario:hover {
-    background: rgba(255,255,255,0.25);
-    transform: translateY(-3px);
-    box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+  background: rgba(255,255,255,0.25);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.2);
 }
 
 /* ===============================
-   ⭐ BENEFICIOS
+ ⭐ BENEFICIOS
 ================================ */
 .beneficios {
-    padding: 80px 20px;
-    text-align: center;
-    background: #ffffff;
+  padding: 80px 20px;
+  text-align: center;
+  background: #ffffff;
 }
 
 .beneficios h2 {
-    font-size: 2.2rem;
-    margin-bottom: 50px;
-    color: #222;
-    border: none;
-    text-transform: uppercase;
-    letter-spacing: 2px;
+  font-size: 2.2rem;
+  margin-bottom: 50px;
+  color: #222;
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 .beneficios-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 30px;
-    max-width: 1100px;
-    margin: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 30px;
+  max-width: 1100px;
+  margin: auto;
 }
 
 .beneficio {
-    background: #f9f9f9;
-    border-radius: 18px;
-    padding: 30px 20px;
-    box-shadow: var(--sombra-suave);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: #f9f9f9;
+  border-radius: 18px;
+  padding: 30px 20px;
+  box-shadow: var(--sombra-suave);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .beneficio:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 16px 40px rgba(0,0,0,0.15);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.15);
 }
 
 .beneficio span {
-    font-size: 40px;
-    display: block;
-    margin-bottom: 15px;
+  font-size: 40px;
+  display: block;
+  margin-bottom: 15px;
 }
 
 .beneficio h3 {
-    margin-bottom: 10px;
-    font-size: 1.2rem;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
 }
 
 .beneficio p {
-    font-size: 0.95rem;
-    color: #555;
+  font-size: 0.95rem;
+  color: #555;
 }
 
 /* ===============================
-   🎥 TRABAJOS REALIZADOS
+ 🎥 TRABAJOS REALIZADOS
 ================================ */
 .trabajos {
-    padding: 90px 20px;
-    background: #f7f7f7;
-    text-align: center;
+  padding: 90px 20px;
+  background: #f7f7f7;
+  text-align: center;
 }
 
 .trabajos h2 {
-    font-size: 2.2rem;
-    margin-bottom: 10px;
-    border: none;
-    text-transform: uppercase;
-    letter-spacing: 2px;
+  font-size: 2.2rem;
+  margin-bottom: 10px;
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 .trabajos-sub {
-    color: #555;
-    margin-bottom: 40px;
+  color: #555;
+  margin-bottom: 40px;
 }
 
 .trabajos-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
-    max-width: 1200px;
-    margin: 30px auto;
-    padding: 0 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  max-width: 1200px;
+  margin: 30px auto;
+  padding: 0 20px;
 }
 
 /* TARJETA VIDEO */
 .video-card {
-    background: #000;
-    border-radius: 18px;
-    overflow: hidden;
-    aspect-ratio: 4 / 3;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-    position: relative;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background: #000;
+  border-radius: 18px;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .video-card.vertical {
-    aspect-ratio: 9 / 16;
+  aspect-ratio: 9 / 16;
 }
 
 .video-card:hover {
-    transform: scale(1.03);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+  transform: scale(1.03);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.35);
 }
 
 .video-card video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    cursor: pointer;
-    z-index: 2;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+  z-index: 2;
 }
 
 @media (max-width: 768px) {
-    .video-card {
-        height: 240px;
-    }
+  .video-card {
+      height: 240px;
+  }
 }
 
 /* MODAL VIDEO */
 .video-modal {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.85);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
 }
 
 .video-modal video {
-    max-width: 90%;
-    max-height: 90%;
-    border-radius: 16px;
+  max-width: 90%;
+  max-height: 90%;
+  border-radius: 16px;
 }
 
 .video-modal.active {
-    display: flex;
+  display: flex;
 }
 
 .cerrar {
-    position: absolute;
-    top: 20px;
-    right: 30px;
-    color: white;
-    font-size: 2rem;
-    cursor: pointer;
-    background: none;
-    border: none;
-    line-height: 1;
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+  background: none;
+  border: none;
+  line-height: 1;
 }
 
 /* ===============================
-   📦 CONSULTAR PEDIDO
+ 📦 CONSULTAR PEDIDO
 ================================ */
 .consultar-pedido {
-    text-align: center;
-    padding: 60px 20px;
-    background: #000000;
-    color: white;
+  text-align: center;
+  padding: 60px 20px;
+  background: #000000;
+  color: white;
 }
 
 .consultar-pedido h2 {
-    color: #fff;
-    font-size: 1.8rem;
-    border: none;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 12px;
+  color: #fff;
+  font-size: 1.8rem;
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
 }
 
 .consulta-box {
-    margin-top: 20px;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .consulta-box input {
-    padding: 11px 16px;
-    width: 260px;
-    border-radius: 8px;
-    border: none;
-    font-size: 1rem;
+  padding: 11px 16px;
+  width: 260px;
+  border-radius: 8px;
+  border: none;
+  font-size: 1rem;
 }
 
 .consulta-box button {
-    padding: 11px 22px;
-    background: #22c55e;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 1rem;
-    color: white;
-    transition: background 0.2s ease;
+  padding: 11px 22px;
+  background: #22c55e;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 1rem;
+  color: white;
+  transition: background 0.2s ease;
 }
 
 .consulta-box button:hover {
-    background: #16a34a;
+  background: #16a34a;
 }
 
 /* ===============================
-   🚀 CTA FINAL
+ 🚀 CTA FINAL
 ================================ */
 .cta-final {
-    background: linear-gradient(135deg, #7ec7d8, #4bb3c7);
-    padding: 100px 20px;
-    text-align: center;
-    color: white;
+  background: linear-gradient(135deg, #7ec7d8, #4bb3c7);
+  padding: 100px 20px;
+  text-align: center;
+  color: white;
 }
 
 .cta-contenido {
-    max-width: 900px;
-    margin: auto;
+  max-width: 900px;
+  margin: auto;
 }
 
 .cta-final h2 {
-    font-size: 2.4rem;
-    margin-bottom: 20px;
-    border: none;
-    text-transform: uppercase;
-    letter-spacing: 2px;
+  font-size: 2.4rem;
+  margin-bottom: 20px;
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 .cta-final p {
-    font-size: 1.1rem;
-    opacity: 0.95;
-    margin-bottom: 40px;
+  font-size: 1.1rem;
+  opacity: 0.95;
+  margin-bottom: 40px;
 }
 
 .cta-botones {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    flex-wrap: wrap;
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 /* ===============================
-   FOOTER PROFESIONAL
+ FOOTER PROFESIONAL
 ================================ */
 .footer {
-    background: #0f2f38;
-    color: #fff;
-    padding: 60px 20px 20px;
+  background: #0f2f38;
+  color: #fff;
+  padding: 60px 20px 20px;
 }
 
 .footer-container {
-    max-width: 1200px;
-    margin: auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 40px;
+  max-width: 1200px;
+  margin: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 40px;
 }
 
 .footer-col h4 {
-    margin-bottom: 15px;
-    font-size: 1.1rem;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
 }
 
 .footer-col p,
 .footer-col a {
-    font-size: 0.95rem;
-    color: #d0d0d0;
-    text-decoration: none;
-    display: block;
-    margin-bottom: 8px;
+  font-size: 0.95rem;
+  color: #d0d0d0;
+  text-decoration: none;
+  display: block;
+  margin-bottom: 8px;
 }
 
 .footer-col a:hover {
-    color: #4bb3c7;
+  color: #4bb3c7;
 }
 
 .footer-logo {
-    width: 120px;
-    margin-bottom: 15px;
+  width: 120px;
+  margin-bottom: 15px;
 }
 
 .footer-bottom {
-    text-align: center;
-    margin-top: 40px;
-    font-size: 0.85rem;
-    color: #aaa;
-    border-top: 1px solid rgba(255,255,255,0.1);
-    padding-top: 15px;
+  text-align: center;
+  margin-top: 40px;
+  font-size: 0.85rem;
+  color: #aaa;
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 15px;
 }
 
 .disabled {
-    opacity: 0.5;
-    pointer-events: none;
-    cursor: default;
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: default;
 }
 
 /* ===============================
-   ANIMACIONES SCROLL
+ ANIMACIONES SCROLL
 ================================ */
 .fade-up {
-    opacity: 0;
-    transform: translateY(40px);
-    transition: all 0.8s ease;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: all 0.8s ease;
 }
 
 .fade-up.show,
 .fade-up.visible {
-    opacity: 1;
-    transform: translateY(0);
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ===============================
-   🛍️ HERO PRODUCTOS
+ 🛍️ HERO PRODUCTOS
 ================================ */
 .productos-hero {
-    padding: 90px 20px 60px;
-    text-align: center;
-    background: linear-gradient(135deg, #87c2d1, #14a6d6);
-    color: white;
+  padding: 90px 20px 60px;
+  text-align: center;
+  background: linear-gradient(135deg, #87c2d1, #14a6d6);
+  color: white;
 }
 
 .productos-hero h1 {
-    font-size: 2.6rem;
-    margin-bottom: 10px;
-    border: none;
-    text-transform: uppercase;
-    letter-spacing: 2px;
+  font-size: 2.6rem;
+  margin-bottom: 10px;
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 .productos-hero p {
-    max-width: 600px;
-    margin: auto;
-    font-size: 1.1rem;
-    opacity: 0.95;
+  max-width: 600px;
+  margin: auto;
+  font-size: 1.1rem;
+  opacity: 0.95;
 }
 
 /* ===============================
-   🧱 CONTENEDOR PRODUCTOS
+ 🧱 CONTENEDOR PRODUCTOS
 ================================ */
 .productos-main {
-    padding: 60px 20px;
-    max-width: 1200px;
-    margin: auto;
+  padding: 60px 20px;
+  max-width: 1200px;
+  margin: auto;
 }
 
 .productos-toolbar {
-    display: flex;
-    justify-content: flex-start;
-    margin-bottom: 30px;
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 30px;
 }
 
 /* ===============================
-   🛒 TARJETA PRODUCTO
+ 🛒 TARJETA PRODUCTO
 ================================ */
 #productos-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px;
-    max-width: 1100px;
-    margin: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  max-width: 1100px;
+  margin: auto;
 }
 
 .producto-card {
-    background: white;
-    border-radius: 16px;
-    padding: 18px;
-    text-align: center;
-    box-shadow: var(--sombra-suave);
-    transition: transform .25s ease, box-shadow .25s ease;
-    position: relative;
+  background: white;
+  border-radius: 16px;
+  padding: 18px;
+  text-align: center;
+  box-shadow: var(--sombra-suave);
+  transition: transform .25s ease, box-shadow .25s ease;
+  position: relative;
 }
 
 .producto-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 16px 35px rgba(0,0,0,.15);
+  transform: translateY(-6px);
+  box-shadow: 0 16px 35px rgba(0,0,0,.15);
 }
 
 .producto-card img {
-    width: 100%;
-    max-width: 180px;
-    height: 180px;
-    object-fit: contain;
-    margin-bottom: 14px;
-    transition: transform 0.3s ease;
+  width: 100%;
+  max-width: 180px;
+  height: 180px;
+  object-fit: contain;
+  margin-bottom: 14px;
+  transition: transform 0.3s ease;
 }
 
 .producto-card:hover img {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 .producto-card h3 {
-    font-size: 1.1rem;
-    margin-bottom: 6px;
+  font-size: 1.1rem;
+  margin-bottom: 6px;
 }
 
 .producto-card p {
-    font-size: 1.05rem;
-    color: #2e7d32;
-    font-weight: bold;
+  font-size: 1.05rem;
+  color: #2e7d32;
+  font-weight: bold;
 }
 
 .producto-card button {
-    margin-top: 12px;
-    width: 100%;
-    padding: 10px;
-    background: var(--azul-estampaider);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: background 0.2s ease;
+  margin-top: 12px;
+  width: 100%;
+  padding: 10px;
+  background: var(--azul-estampaider);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s ease;
 }
 
 .producto-card button:hover {
-    background: var(--azul-oscuro);
+  background: var(--azul-oscuro);
 }
 
 /* BADGE */
 .badge {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: bold;
-    color: white;
-    z-index: 2;
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  z-index: 2;
 }
 
 .badge.nuevo { background: #28c76f; }
@@ -717,437 +717,437 @@ main h2 {
 
 /* FILTROS PRODUCTOS */
 .filtrosp {
-    display: flex;
-    gap: 12px;
-    justify-content: center;
-    margin: 40px 0;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin: 40px 0;
+  flex-wrap: wrap;
 }
 
 .filtrosp button {
-    border: none;
-    padding: 10px 20px;
-    border-radius: 20px;
-    background: #eee;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background 0.2s ease, color 0.2s ease;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 20px;
+  background: #eee;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .filtrosp button.active,
 .filtrosp button:hover {
-    background: var(--azul-estampaider);
-    color: white;
+  background: var(--azul-estampaider);
+  color: white;
 }
 
 /* BOTÓN WHATSAPP PRODUCTO */
 .btn-whatsapp-producto {
-    display: block;
-    margin-top: 12px;
-    background: var(--verde-whatsapp);
-    color: white;
-    text-align: center;
-    padding: 10px;
-    border-radius: 25px;
-    font-weight: 600;
-    text-decoration: none;
-    transition: transform 0.2s ease;
+  display: block;
+  margin-top: 12px;
+  background: var(--verde-whatsapp);
+  color: white;
+  text-align: center;
+  padding: 10px;
+  border-radius: 25px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: transform 0.2s ease;
 }
 
 .btn-whatsapp-producto:hover {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 /* BOTÓN VOLVER */
 .btn-volver {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: #ffffff;
-    color: var(--azul-estampaider);
-    font-weight: 600;
-    padding: 12px 20px;
-    border-radius: 30px;
-    text-decoration: none;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  color: var(--azul-estampaider);
+  font-weight: 600;
+  padding: 12px 20px;
+  border-radius: 30px;
+  text-decoration: none;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
 }
 
 .btn-volver:hover {
-    background: var(--azul-estampaider);
-    color: #fff;
-    transform: translateY(-2px);
-    box-shadow: 0 12px 25px rgba(0,0,0,0.2);
+  background: var(--azul-estampaider);
+  color: #fff;
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.2);
 }
 
 /* ===============================
-   MODAL PRODUCTO
+ MODAL PRODUCTO
 ================================ */
 .modalp {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.75);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
 }
 
 .modalp.hidden {
-    display: none;
+  display: none;
 }
 
 .modalp-content {
-    background: #fff;
-    border-radius: 18px;
-    padding: 20px;
-    width: 100%;
-    max-width: 380px;
-    text-align: center;
-    position: relative;
-    animation: zoomIn 0.25s ease;
+  background: #fff;
+  border-radius: 18px;
+  padding: 20px;
+  width: 100%;
+  max-width: 380px;
+  text-align: center;
+  position: relative;
+  animation: zoomIn 0.25s ease;
 }
 
 .modalp-content img {
-    width: 100%;
-    max-height: 260px;
-    object-fit: contain;
-    border-radius: 12px;
-    margin-bottom: 12px;
+  width: 100%;
+  max-height: 260px;
+  object-fit: contain;
+  border-radius: 12px;
+  margin-bottom: 12px;
 }
 
 .cerrar-modalp {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    border: none;
-    background: none;
-    font-size: 22px;
-    cursor: pointer;
-    color: #555;
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  border: none;
+  background: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #555;
 }
 
 .modalp-cantidad {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin: 12px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
 }
 
 .modalp-cantidad input {
-    width: 70px;
-    padding: 6px;
-    text-align: center;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+  width: 70px;
+  padding: 6px;
+  text-align: center;
+  border-radius: 6px;
+  border: 1px solid #ccc;
 }
 
 @keyframes zoomIn {
-    from { transform: scale(0.9); opacity: 0; }
-    to   { transform: scale(1);   opacity: 1; }
+  from { transform: scale(0.9); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
 }
 
 /* ===============================
-   CTA FINAL PRODUCTOS
+ CTA FINAL PRODUCTOS
 ================================ */
 .productos-cta {
-    background: linear-gradient(135deg, #585858, #222);
-    color: #fff;
-    text-align: center;
-    padding: 80px 20px;
-    margin-top: 80px;
-    border-radius: 30px 30px 0 0;
+  background: linear-gradient(135deg, #585858, #222);
+  color: #fff;
+  text-align: center;
+  padding: 80px 20px;
+  margin-top: 80px;
+  border-radius: 30px 30px 0 0;
 }
 
 .productos-cta h2 {
-    font-size: 2.2rem;
-    margin-bottom: 15px;
-    border: none;
-    text-transform: uppercase;
-    letter-spacing: 2px;
+  font-size: 2.2rem;
+  margin-bottom: 15px;
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: 2px;
 }
 
 .productos-cta p {
-    max-width: 700px;
-    margin: 0 auto 30px;
-    color: #ccc;
-    font-size: 1.1rem;
+  max-width: 700px;
+  margin: 0 auto 30px;
+  color: #ccc;
+  font-size: 1.1rem;
 }
 
 .cta-beneficios {
-    display: flex;
-    justify-content: center;
-    gap: 25px;
-    flex-wrap: wrap;
-    margin-bottom: 35px;
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  flex-wrap: wrap;
+  margin-bottom: 35px;
 }
 
 .cta-beneficios span {
-    background: rgba(255,255,255,0.08);
-    padding: 10px 18px;
-    border-radius: 30px;
-    font-size: 0.95rem;
+  background: rgba(255,255,255,0.08);
+  padding: 10px 18px;
+  border-radius: 30px;
+  font-size: 0.95rem;
 }
 
 /* ===============================
-   🔔 TOAST GLOBAL
+ 🔔 TOAST GLOBAL
 ================================ */
 #toast-global {
-    position: fixed;
-    bottom: 25px;
-    right: 25px;
-    background: #1f2933;
-    color: #fff;
-    padding: 14px 20px;
-    border-radius: 10px;
-    font-size: 14px;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all 0.3s ease;
-    z-index: 9999;
-    pointer-events: none;
-    max-width: 300px;
+  position: fixed;
+  bottom: 25px;
+  right: 25px;
+  background: #1f2933;
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s ease;
+  z-index: 9999;
+  pointer-events: none;
+  max-width: 300px;
 }
 
 #toast-global.show {
-    opacity: 1;
-    transform: translateY(0);
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* ===============================
-   🛒 CONTADOR CARRITO
+ 🛒 CONTADOR CARRITO
 ================================ */
 .carrito-icono {
-    position: relative;
-    font-size: 18px;
-    text-decoration: none;
-    color: #fff;
+  position: relative;
+  font-size: 18px;
+  text-decoration: none;
+  color: #fff;
 }
 
 #contador-carrito {
-    background: crimson;
-    color: white;
-    border-radius: 50%;
-    min-width: 22px;
-    height: 22px;
-    font-size: 13px;
-    font-weight: bold;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin-left: 6px;
-    transition: transform 0.2s ease;
+  background: crimson;
+  color: white;
+  border-radius: 50%;
+  min-width: 22px;
+  height: 22px;
+  font-size: 13px;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  transition: transform 0.2s ease;
 }
 
 #contador-carrito.pop {
-    animation: pop 0.3s ease;
+  animation: pop 0.3s ease;
 }
 
 @keyframes pop {
-    0%   { transform: scale(1);   }
-    50%  { transform: scale(1.4); }
-    100% { transform: scale(1);   }
+  0%   { transform: scale(1);   }
+  50%  { transform: scale(1.4); }
+  100% { transform: scale(1);   }
 }
 
 /* ===============================
-   NOSOTROS
+ NOSOTROS
 ================================ */
 .nosotros-hero {
-    padding: 120px 20px;
-    background: linear-gradient(135deg, #6ec1d1, #4bb3c3);
-    color: #000;
-    text-align: center;
+  padding: 120px 20px;
+  background: linear-gradient(135deg, #6ec1d1, #4bb3c3);
+  color: #000;
+  text-align: center;
 }
 
 .nosotros-hero h1 {
-    font-size: 3rem;
-    margin-bottom: 10px;
-    border: none;
+  font-size: 3rem;
+  margin-bottom: 10px;
+  border: none;
 }
 
 .nosotros-historia {
-    max-width: 900px;
-    margin: 80px auto;
-    padding: 0 20px;
-    text-align: center;
+  max-width: 900px;
+  margin: 80px auto;
+  padding: 0 20px;
+  text-align: center;
 }
 
 .nosotros-historia h2 {
-    margin-bottom: 20px;
+  margin-bottom: 20px;
 }
 
 .nosotros-historia p {
-    margin-bottom: 15px;
-    color: #444;
-    line-height: 1.7;
+  margin-bottom: 15px;
+  color: #444;
+  line-height: 1.7;
 }
 
 .nosotros-valores {
-    background: #f7f7f7;
-    padding: 80px 20px;
-    text-align: center;
+  background: #f7f7f7;
+  padding: 80px 20px;
+  text-align: center;
 }
 
 .valores-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 25px;
-    max-width: 1000px;
-    margin: 40px auto 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 25px;
+  max-width: 1000px;
+  margin: 40px auto 0;
 }
 
 .valor-card {
-    background: #fff;
-    padding: 30px;
-    border-radius: 18px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-    transition: transform 0.3s ease;
+  background: #fff;
+  padding: 30px;
+  border-radius: 18px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
 }
 
 .valor-card:hover {
-    transform: translateY(-8px);
+  transform: translateY(-8px);
 }
 
 /* ===============================
-   CONTACTO
+ CONTACTO
 ================================ */
 .contacto-hero {
-    padding: 120px 20px;
-    background: linear-gradient(135deg, #6ec1d1, #4bb3c3);
-    text-align: center;
-    color: #000;
+  padding: 120px 20px;
+  background: linear-gradient(135deg, #6ec1d1, #4bb3c3);
+  text-align: center;
+  color: #000;
 }
 
 .contacto-hero h1 {
-    font-size: 2.8rem;
-    margin-bottom: 10px;
-    border: none;
+  font-size: 2.8rem;
+  margin-bottom: 10px;
+  border: none;
 }
 
 .contacto-contenido {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 40px;
-    max-width: 1100px;
-    margin: 80px auto;
-    padding: 0 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 40px;
+  max-width: 1100px;
+  margin: 80px auto;
+  padding: 0 20px;
 }
 
 .contacto-info h2,
 .contacto-form h2 {
-    margin-bottom: 15px;
+  margin-bottom: 15px;
 }
 
 .btn-whatsapp {
-    display: inline-block;
-    margin: 20px 0;
-    padding: 14px 28px;
-    background: var(--verde-whatsapp);
-    color: #fff;
-    font-weight: bold;
-    border-radius: 30px;
-    text-decoration: none;
-    transition: transform 0.3s ease;
+  display: inline-block;
+  margin: 20px 0;
+  padding: 14px 28px;
+  background: var(--verde-whatsapp);
+  color: #fff;
+  font-weight: bold;
+  border-radius: 30px;
+  text-decoration: none;
+  transition: transform 0.3s ease;
 }
 
 .btn-whatsapp:hover {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 
 .btn-whatsapp.grande {
-    font-size: 1.1rem;
-    padding: 15px 28px;
+  font-size: 1.1rem;
+  padding: 15px 28px;
 }
 
 .contacto-nota {
-    font-size: 0.9rem;
-    color: #555;
+  font-size: 0.9rem;
+  color: #555;
 }
 
 .contacto-form form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .contacto-form input,
 .contacto-form textarea {
-    padding: 14px;
-    border-radius: 12px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
-    font-family: var(--fuente);
-    transition: border-color 0.2s ease;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  font-family: var(--fuente);
+  transition: border-color 0.2s ease;
 }
 
 .contacto-form input:focus,
 .contacto-form textarea:focus {
-    outline: none;
-    border-color: var(--azul-estampaider);
-    box-shadow: 0 0 0 3px rgba(20,166,214,0.15);
+  outline: none;
+  border-color: var(--azul-estampaider);
+  box-shadow: 0 0 0 3px rgba(20,166,214,0.15);
 }
 
 .contacto-form textarea {
-    min-height: 120px;
-    resize: vertical;
+  min-height: 120px;
+  resize: vertical;
 }
 
 .contacto-form button {
-    padding: 14px;
-    border: none;
-    background: var(--azul-estampaider);
-    color: #fff;
-    font-weight: bold;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 1rem;
-    transition: background 0.2s ease;
+  padding: 14px;
+  border: none;
+  background: var(--azul-estampaider);
+  color: #fff;
+  font-weight: bold;
+  border-radius: 25px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.2s ease;
 }
 
 .contacto-form button:hover {
-    background: var(--azul-oscuro);
+  background: var(--azul-oscuro);
 }
 
 .respuesta-contacto {
-    margin-top: 15px;
-    font-weight: 500;
-    text-align: center;
+  margin-top: 15px;
+  font-weight: 500;
+  text-align: center;
 }
 
 .respuesta-contacto.ok    { color: #2e7d32; }
 .respuesta-contacto.error { color: #c62828; }
 
 /* ===============================
-   🧾 ADMIN PEDIDOS
+ 🧾 ADMIN PEDIDOS
 ================================ */
 .admin-container {
-    max-width: 1100px;
-    margin: 40px auto;
+  max-width: 1100px;
+  margin: 40px auto;
 }
 
 #pedidos {
-    max-width: 900px;
-    margin: auto;
+  max-width: 900px;
+  margin: auto;
 }
 
 /* ===============================
-   🧾 TARJETA PEDIDO
+ 🧾 TARJETA PEDIDO
 ================================ */
 .pedido-card {
-    background: #ffffff;
-    border-radius: var(--radio);
-    padding: 18px;
-    margin-bottom: 20px;
-    box-shadow: var(--sombra-suave);
-    border-left: 8px solid #ccc;
-    transition: transform .2s ease, box-shadow .2s ease;
-    animation: fadeInUp 0.4s ease forwards;
+  background: #ffffff;
+  border-radius: var(--radio);
+  padding: 18px;
+  margin-bottom: 20px;
+  box-shadow: var(--sombra-suave);
+  border-left: 8px solid #ccc;
+  transition: transform .2s ease, box-shadow .2s ease;
+  animation: fadeInUp 0.4s ease forwards;
 }
 
 .pedido-card:hover {
-    box-shadow: var(--sombra-media);
-    transform: translateY(-2px);
+  box-shadow: var(--sombra-media);
+  transform: translateY(-2px);
 }
 
 .pedido-card ul { padding-left: 18px; }
@@ -1155,8 +1155,8 @@ main h2 {
 .pedido-card h3 { margin-bottom: 10px; }
 
 .pedido-card .total {
-    font-size: 18px;
-    margin-top: 10px;
+  font-size: 18px;
+  margin-top: 10px;
 }
 
 /* ESTADOS */
@@ -1167,13 +1167,13 @@ main h2 {
 
 /* BADGE ESTADO */
 .estado-badge {
-    display: inline-block;
-    margin-bottom: 6px;
-    padding: 6px 12px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: bold;
-    color: white;
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: bold;
+  color: white;
 }
 
 .estado-PENDIENTE { background: #fbc02d; }
@@ -1183,19 +1183,19 @@ main h2 {
 
 /* BOTONES PEDIDO */
 .pedido-card button {
-    margin: 6px 4px 0 0;
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: bold;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin: 6px 4px 0 0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .pedido-card button:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
 .whatsapp { background: #25D366; color: white; }
@@ -1203,124 +1203,124 @@ main h2 {
 .eliminar { background: #e53935; color: white; }
 
 .acciones button.estado:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-    transform: none;
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* ===============================
-   🎛️ FILTROS ADMIN
+ 🎛️ FILTROS ADMIN
 ================================ */
 .filtros {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
 .filtros button {
-    padding: 10px 14px;
-    border-radius: 6px;
-    cursor: pointer;
-    background: #eee;
-    font-weight: bold;
-    color: #333;
-    border: var(--borde);
-    text-transform: uppercase;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  background: #eee;
+  font-weight: bold;
+  color: #333;
+  border: var(--borde);
+  text-transform: uppercase;
 }
 
 .filtros button.activo {
-    background: #1976d2;
-    color: white;
-    border-color: #1976d2;
+  background: #1976d2;
+  color: white;
+  border-color: #1976d2;
 }
 
 /* ===============================
-   🔍 BUSCADOR
+ 🔍 BUSCADOR
 ================================ */
 .buscador {
-    max-width: 400px;
-    margin: 0 auto 20px;
+  max-width: 400px;
+  margin: 0 auto 20px;
 }
 
 .buscador input {
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 10px;
-    border: 2px solid #ddd;
-    font-size: 15px;
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 2px solid #ddd;
+  font-size: 15px;
 }
 
 /* ===============================
-   🔄 ORDEN
+ 🔄 ORDEN
 ================================ */
 .orden {
-    padding: 8px 14px;
-    border-radius: 6px;
-    border: none;
-    background: #8892c2;
-    color: #fff;
-    cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  background: #8892c2;
+  color: #fff;
+  cursor: pointer;
 }
 
 .orden:hover { background: #222; }
 
 /* ===============================
-   📄 PAGINACIÓN
+ 📄 PAGINACIÓN
 ================================ */
 .paginacion {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
-    margin: 30px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 30px 0;
 }
 
 .paginacion button {
-    padding: 8px 14px;
-    border: none;
-    border-radius: 6px;
-    background: #1976d2;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #1976d2;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
 }
 
 .paginacion button:disabled {
-    background: #ccc;
-    cursor: not-allowed;
+  background: #ccc;
+  cursor: not-allowed;
 }
 
 #infoPagina { font-weight: bold; }
 
 /* ===============================
-   📊 DASHBOARD
+ 📊 DASHBOARD
 ================================ */
 .dashboard {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
 }
 
 .dashboard .card {
-    background: #ffffff;
-    padding: 20px;
-    border-radius: var(--radio);
-    box-shadow: var(--sombra-suave);
-    text-align: center;
-    cursor: pointer;
+  background: #ffffff;
+  padding: 20px;
+  border-radius: var(--radio);
+  box-shadow: var(--sombra-suave);
+  text-align: center;
+  cursor: pointer;
 }
 
 .dashboard .card h4 {
-    margin: 0 0 10px;
-    font-size: 15px;
-    color: #555;
+  margin: 0 0 10px;
+  font-size: 15px;
+  color: #555;
 }
 
 .dashboard .card span {
-    font-size: 28px;
-    font-weight: bold;
+  font-size: 28px;
+  font-weight: bold;
 }
 
 .dashboard .pendiente span { color: #fbc02d; }
@@ -1329,65 +1329,65 @@ main h2 {
 .dashboard .dinero span    { color: #2ecc71; }
 
 .card.promedio {
-    background: linear-gradient(135deg, #a855f7, #7c3aed);
-    color: white;
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  color: white;
 }
 
 .card.cliente-top {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
 }
 
 /* ===============================
-   📈 GRÁFICAS
+ 📈 GRÁFICAS
 ================================ */
 .graficas {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    margin-top: 30px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 30px;
 }
 
 .grafica-card {
-    padding: 20px;
-    border-radius: var(--radio);
-    box-shadow: 0 6px 16px rgba(0,0,0,.08);
+  padding: 20px;
+  border-radius: var(--radio);
+  box-shadow: 0 6px 16px rgba(0,0,0,.08);
 }
 
 /* ===============================
-   📤 EXPORTAR
+ 📤 EXPORTAR
 ================================ */
 .exportar {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 20px;
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 #exportExcel { background: #2ecc71; color: white; }
 #exportPDF   { background: #e74c3c; color: white; }
 
 /* ===============================
-   🔔 TOAST ADMIN
+ 🔔 TOAST ADMIN
 ================================ */
 #toast {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    min-width: 260px;
-    padding: 15px 20px;
-    border-radius: 10px;
-    color: white;
-    font-weight: bold;
-    box-shadow: 0 10px 25px rgba(0,0,0,.25);
-    opacity: 0;
-    transform: translateY(20px);
-    transition: all .4s ease;
-    z-index: 9999;
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  min-width: 260px;
+  padding: 15px 20px;
+  border-radius: 10px;
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 10px 25px rgba(0,0,0,.25);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all .4s ease;
+  z-index: 9999;
 }
 
 #toast.show {
-    opacity: 1;
-    transform: translateY(0);
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .toast-success { background: #2e7d32; }
@@ -1395,91 +1395,91 @@ main h2 {
 .toast-info    { background: #1976d2; }
 
 /* ===============================
-   🧾 MODAL HISTORIAL
+ 🧾 MODAL HISTORIAL
 ================================ */
 .modal {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    z-index: 2000;
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 2000;
 }
 
 .modal-contenido {
-    background: white;
-    width: 90%;
-    max-width: 600px;
-    margin: 5% auto;
-    padding: 20px;
-    border-radius: 12px;
+  background: white;
+  width: 90%;
+  max-width: 600px;
+  margin: 5% auto;
+  padding: 20px;
+  border-radius: 12px;
 }
 
 /* ===============================
-   ✨ ANIMACIONES
+ ✨ ANIMACIONES
 ================================ */
 @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(10px); }
-    to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes pulse {
-    0%   { transform: scale(1);    }
-    50%  { transform: scale(1.02); }
-    100% { transform: scale(1);    }
+  0%   { transform: scale(1);    }
+  50%  { transform: scale(1.02); }
+  100% { transform: scale(1);    }
 }
 
 .pedido-card.actualizado {
-    border: 2px solid #22c55e;
-    animation: pulse 0.6s ease;
-    opacity: 0.6;
+  border: 2px solid #22c55e;
+  animation: pulse 0.6s ease;
+  opacity: 0.6;
 }
 
 /* ===============================
-   👤 CLIENTE BADGE
+ 👤 CLIENTE BADGE
 ================================ */
 .cliente-badge {
-    display: inline-block;
-    margin-bottom: 6px;
-    padding: 4px 10px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: 600;
+  display: inline-block;
+  margin-bottom: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .cliente-badge.vip {
-    background: linear-gradient(135deg, #facc15, #eab308);
-    color: #422006;
+  background: linear-gradient(135deg, #facc15, #eab308);
+  color: #422006;
 }
 
 .cliente-badge.recurrente {
-    background: #dbeafe;
-    color: #1e40af;
+  background: #dbeafe;
+  color: #1e40af;
 }
 
 .cliente-badge.nuevo {
-    background: #dcfce7;
-    color: #166534;
+  background: #dcfce7;
+  color: #166534;
 }
 
 /* ===============================
-   💳 ESTADOS DE PAGO
+ 💳 ESTADOS DE PAGO
 ================================ */
 .nota-pago {
-    margin-top: 20px;
-    padding: 14px;
-    background: #f1f8ff;
-    border-left: 4px solid #1976d2;
-    border-radius: 8px;
-    font-size: 14px;
-    color: #333;
+  margin-top: 20px;
+  padding: 14px;
+  background: #f1f8ff;
+  border-left: 4px solid #1976d2;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #333;
 }
 
 .pago-badge {
-    margin-top: 6px;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    display: inline-block;
+  margin-top: 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  display: inline-block;
 }
 
 .pago-badge.pagado   { background: #22c55e; color: white; }
@@ -1488,185 +1488,185 @@ main h2 {
 button.pagar { background: #61dae2; color: white; }
 
 .filtros-pago {
-    display: flex;
-    gap: 8px;
-    margin: 10px 0;
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
 }
 
 .filtros-pago button.activo {
-    background: #16a34a;
-    color: white;
+  background: #16a34a;
+  color: white;
 }
 
 .filtros-metodo {
-    display: flex;
-    gap: 8px;
-    margin: 10px 0;
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
 }
 
 .filtros-metodo button.activo {
-    background: #d4851e;
-    color: white;
+  background: #d4851e;
+  color: white;
 }
 
 /* ===============================
-   📋 ESTADO CHECKLIST
+ 📋 ESTADO CHECKLIST
 ================================ */
 .estado-checklist {
-    display: flex;
-    justify-content: space-between;
-    margin: 15px 0;
+  display: flex;
+  justify-content: space-between;
+  margin: 15px 0;
 }
 
 .estado-checklist .check {
-    flex: 1;
-    text-align: center;
-    padding: 6px;
-    font-size: 12px;
-    border-radius: 20px;
-    background: #e0e0e0;
-    color: #777;
-    margin: 0 3px;
+  flex: 1;
+  text-align: center;
+  padding: 6px;
+  font-size: 12px;
+  border-radius: 20px;
+  background: #e0e0e0;
+  color: #777;
+  margin: 0 3px;
 }
 
 .estado-checklist .check.activo {
-    background: #2cdd53;
-    color: white;
-    font-weight: bold;
+  background: #2cdd53;
+  color: white;
+  font-weight: bold;
 }
 
 /* ===============================
-   🔐 AUTH (LOGIN / REGISTRO)
+ 🔐 AUTH (LOGIN / REGISTRO)
 ================================ */
 .auth-container {
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(15px);
-    padding: 40px;
-    border-radius: 20px;
-    width: 350px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-    text-align: center;
-    color: white;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(15px);
+  padding: 40px;
+  border-radius: 20px;
+  width: 350px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+  text-align: center;
+  color: white;
 }
 
 .auth-container h2 {
-    margin-bottom: 20px;
-    font-size: 26px;
+  margin-bottom: 20px;
+  font-size: 26px;
 }
 
 .auth-container input {
-    width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    border: none;
-    border-radius: 10px;
-    outline: none;
-    font-family: var(--fuente);
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: none;
+  border-radius: 10px;
+  outline: none;
+  font-family: var(--fuente);
 }
 
 .auth-container button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 10px;
-    border: none;
-    border-radius: 10px;
-    background: #000;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.3s;
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 10px;
+  background: #000;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
 .auth-container button:hover {
-    background: #222;
-    transform: scale(1.05);
+  background: #222;
+  transform: scale(1.05);
 }
 
 .auth-container a {
-    color: #fff;
-    font-weight: bold;
-    text-decoration: none;
+  color: #fff;
+  font-weight: bold;
+  text-decoration: none;
 }
 
 .auth-container a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 .error {
-    color: #ffe6e6;
-    margin-top: 10px;
+  color: #ffe6e6;
+  margin-top: 10px;
 }
 
 /* MODAL AUTH */
 .modalr {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    justify-content: center;
-    align-items: center;
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  justify-content: center;
+  align-items: center;
 }
 
 .modal-content {
-    background: white;
-    padding: 30px;
-    border-radius: 15px;
-    width: 300px;
-    text-align: center;
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  width: 300px;
+  text-align: center;
 }
 
 .modal-content input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
 }
 
 .modal-content button {
-    background: #ff416c;
+  background: #ff416c;
 }
 
 /* ===============================
-   📱 RESPONSIVE GENERAL
+ 📱 RESPONSIVE GENERAL
 ================================ */
 @media (max-width: 600px) {
-    .pedido-card {
-        padding: 15px;
-    }
+  .pedido-card {
+      padding: 15px;
+  }
 
-    .estado-checklist .check {
-        font-size: 10px;
-        padding: 5px;
-    }
+  .estado-checklist .check {
+      font-size: 10px;
+      padding: 5px;
+  }
 
-    .consulta-box input {
-        width: 100%;
-    }
+  .consulta-box input {
+      width: 100%;
+  }
 }
 
 .pago.pagado   { color: green; font-weight: bold; }
 .pago.pendiente { color: orange; font-weight: bold; }
 
 .no-leido {
-    border-left: 5px solid #22c55e;
-    background: #f0fdf4;
+  border-left: 5px solid #22c55e;
+  background: #f0fdf4;
 }
 
 .btn-eliminar {
-    background-color: #c62828;
-    color: white;
-    border: none;
-    padding: 6px 10px;
-    cursor: pointer;
-    margin-top: 5px;
-    border-radius: 6px;
+  background-color: #c62828;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+  margin-top: 5px;
+  border-radius: 6px;
 }
 .nuevo-pedido {
-    border: 2px solid #22c55e;
-    background: rgba(34, 197, 94, 0.1);
-    animation: parpadeo 1s infinite alternate;
+  border: 2px solid #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+  animation: parpadeo 1s infinite alternate;
 }
 
 @keyframes parpadeo {
-    from { box-shadow: 0 0 5px #22c55e; }
-    to { box-shadow: 0 0 15px #22c55e; }
+  from { box-shadow: 0 0 5px #22c55e; }
+  to { box-shadow: 0 0 15px #22c55e; }
 }
