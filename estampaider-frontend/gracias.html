@@ -7,78 +7,6 @@
     <title>¡Gracias por tu compra! | Estampaider</title>
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="styles.css">
-
-    <style>
-        .gracias-section {
-            min-height: 70vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 60px 20px;
-            background: #f7f7f7;
-        }
-
-        .gracias-card {
-            max-width: 520px;
-            width: 100%;
-            text-align: center;
-            background: #fff;
-            padding: 50px 40px;
-            border-radius: 20px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.12);
-        }
-
-        .gracias-card .icono {
-            font-size: 4rem;
-            margin-bottom: 16px;
-        }
-
-        .gracias-card h1 {
-            color: #2e7d32;
-            font-size: 1.8rem;
-            margin-bottom: 14px;
-            border: none;
-            text-transform: none;
-            letter-spacing: normal;
-        }
-
-        .gracias-card p {
-            color: #555;
-            margin-bottom: 12px;
-            font-size: 1rem;
-        }
-
-        .pedido-numero {
-            font-size: 1.2rem;
-            font-weight: bold;
-            color: #14a6d6;
-            margin: 20px 0;
-            padding: 14px;
-            background: #e8f4fd;
-            border-radius: 10px;
-        }
-
-        .gracias-acciones {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 28px;
-        }
-
-        .btn-secundario {
-    display: inline-block;
-    padding: 14px 34px;
-    border-radius: 40px;
-    background: rgba(250, 246, 229, 0.15);
-    color: rgb(50, 63, 247);
-    font-size: 1.05rem;
-    font-weight: bold;
-    text-decoration: none;
-    border: 2px solid rgba(255,255,255,0.6);
-    transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.2s ease;
-    cursor: pointer;
-}
-    </style>
 </head>
 <body>
 
@@ -112,21 +40,31 @@
 
 <!-- CONTENIDO PRINCIPAL -->
 <main id="contenido-principal">
-    <section class="gracias-section">
+    <section class="gracias-section" aria-label="Pedido confirmado">
         <div class="gracias-card">
             <div class="icono" aria-hidden="true">🎉</div>
+
+            <span class="eyebrow">Pedido confirmado</span>
+
             <h1>¡Gracias por tu compra!</h1>
-            <p>Tu pedido fue registrado correctamente.</p>
+            <p>Tu pedido fue registrado correctamente y ya quedó en nuestro sistema.</p>
 
             <div class="pedido-numero">
                 🧾 Pedido #<span id="pedidoId">—</span>
             </div>
 
-            <p>📲 En breve nos comunicaremos contigo por WhatsApp para confirmar los detalles.</p>
+            <p class="gracias-texto">
+                En breve nos comunicaremos contigo por WhatsApp para confirmar los detalles de entrega y pago.
+            </p>
 
             <div class="gracias-acciones">
-                <button class="btn-principal" onclick="volver()">🏠 Volver a la tienda</button>
-                <button class="btn-secundario" onclick="verPedido()">📄 Ver mi pedido</button>
+                <button class="btn-principal" type="button" onclick="volver()">
+                    🏠 Volver a la tienda
+                </button>
+
+                <button class="btn-secundario gracias-btn-secundario" type="button" onclick="verPedido()">
+                    📄 Ver mi pedido
+                </button>
             </div>
         </div>
     </section>
@@ -170,13 +108,12 @@
     </div>
 </footer>
 
-<!-- SCRIPTS -->
 <script src="carrito-global.js"></script>
 
 <script>
     // ── Menú hamburguesa ──
     const toggle = document.getElementById("menuToggle");
-    const menu   = document.getElementById("menu");
+    const menu = document.getElementById("menu");
 
     toggle.addEventListener("click", () => {
         const abierto = menu.classList.toggle("show");
@@ -184,7 +121,7 @@
     });
 
     // ── Header deslizable (solo desktop) ──
-    const header    = document.querySelector(".header");
+    const header = document.querySelector(".header");
     const hoverZone = document.querySelector(".header-hover-zone");
 
     if (hoverZone) {
@@ -196,9 +133,12 @@
 
     // ── Pedido ──
     const pedidoId = localStorage.getItem("pedidoId");
+    const pedidoIdSpan = document.getElementById("pedidoId");
 
-    if (pedidoId) {
-        document.getElementById("pedidoId").textContent = pedidoId;
+    if (!pedidoId) {
+        window.location.href = "index.html";
+    } else {
+        pedidoIdSpan.textContent = pedidoId;
     }
 
     function volver() {
@@ -208,7 +148,7 @@
 
     function verPedido() {
         if (!pedidoId) {
-            alert("No se encontró el número de pedido.");
+            window.location.href = "index.html";
             return;
         }
         window.location.href = `mi-pedido.html?id=${pedidoId}`;

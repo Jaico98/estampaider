@@ -1,10 +1,4 @@
-// ============================================================
-//  contacto.js  —  Estampaider
-//  Gestiona el envío del formulario de contacto
-// ============================================================
-
 document.addEventListener("DOMContentLoaded", () => {
-
     const form = document.getElementById("formContacto");
     if (!form) return;
 
@@ -12,13 +6,13 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
 
         const respuesta = document.getElementById("respuestaContacto");
+        const boton = form.querySelector('button[type="submit"]');
 
         const nombre   = document.getElementById("nombre").value.trim();
         const correo   = document.getElementById("correo").value.trim();
         const whatsapp = document.getElementById("whatsapp").value.trim();
         const mensaje  = document.getElementById("mensaje").value.trim();
 
-        // ── Validación básica ──────────────────────────────
         if (!nombre || !correo || !whatsapp || !mensaje) {
             respuesta.textContent = "⚠️ Por favor completa todos los campos.";
             respuesta.className   = "respuesta-contacto error";
@@ -39,9 +33,10 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        // ── Enviar ─────────────────────────────────────────
         respuesta.textContent = "⏳ Enviando mensaje...";
         respuesta.className   = "respuesta-contacto";
+        boton.disabled = true;
+        boton.textContent = "Enviando...";
 
         try {
             const res = await fetch("http://localhost:8080/api/mensajes", {
@@ -54,14 +49,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
             respuesta.textContent = "✅ Mensaje enviado correctamente. Te contactaremos pronto.";
             respuesta.className   = "respuesta-contacto ok";
-
             form.reset();
 
         } catch (err) {
             respuesta.textContent = "❌ Error al enviar el mensaje. Intenta por WhatsApp.";
             respuesta.className   = "respuesta-contacto error";
             console.error(err);
+        } finally {
+            boton.disabled = false;
+            boton.textContent = "Enviar mensaje";
         }
     });
-
 });

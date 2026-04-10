@@ -5,197 +5,100 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mis Pedidos | Estampaider</title>
   <link rel="icon" href="favicon.ico">
-  <style>
-    :root{
-      --bg:#f4f7fb;
-      --card:#ffffff;
-      --text:#1f2937;
-      --muted:#6b7280;
-      --line:#e5e7eb;
-      --brand:#ec4899;
-      --brand-2:#8b5cf6;
-      --brand-soft:#fdf2f8;
-      --ok:#16a34a;
-      --shadow:0 18px 40px rgba(15,23,42,.08);
-      --radius:24px;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-      color:var(--text);
-      background:
-        radial-gradient(circle at top left, rgba(236,72,153,.15), transparent 28%),
-        radial-gradient(circle at top right, rgba(139,92,246,.12), transparent 24%),
-        linear-gradient(180deg,#fbfdff 0%, var(--bg) 100%);
-    }
-    a{text-decoration:none;color:inherit}
-    .shell{max-width:1280px;margin:0 auto;padding:22px}
-    .topbar{
-      display:flex;justify-content:space-between;align-items:center;gap:16px;
-      background:rgba(255,255,255,.82);backdrop-filter:blur(10px);
-      border:1px solid rgba(255,255,255,.8);border-radius:24px;padding:16px 18px;box-shadow:var(--shadow);
-      position:sticky;top:12px;z-index:20;
-    }
-    .brand{display:flex;align-items:center;gap:14px}
-    .brand-mark{
-      width:46px;height:46px;border-radius:16px;color:#fff;display:grid;place-items:center;font-weight:800;
-      background:linear-gradient(135deg,var(--brand),var(--brand-2));box-shadow:0 14px 28px rgba(236,72,153,.28)
-    }
-    .brand small{display:block;color:var(--muted)}
-    .brand strong{display:block;font-size:1.05rem}
-    .actions{display:flex;gap:10px;flex-wrap:wrap}
-    .btn{
-      border:none;border-radius:16px;padding:12px 16px;font-weight:700;cursor:pointer;
-      background:#fff;color:var(--text);border:1px solid var(--line);box-shadow:0 10px 22px rgba(15,23,42,.04);
-      transition:.18s transform ease,.18s box-shadow ease,.18s opacity ease;
-    }
-    .btn:hover{transform:translateY(-1px)}
-    .btn-primario{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;border:none;box-shadow:0 16px 30px rgba(139,92,246,.25)}
-    .hero{
-      display:grid;grid-template-columns:1.2fr .8fr;gap:22px;margin:24px 0;
-    }
-    .hero-card,.panel,.chat-card,.pedido-card{
-      background:rgba(255,255,255,.96);border:1px solid rgba(226,232,240,.9);border-radius:var(--radius);box-shadow:var(--shadow)
-    }
-    .hero-card{padding:28px}
-    .hero-title{margin:0 0 10px;font-size:clamp(1.8rem,3vw,2.8rem);line-height:1.02}
-    .hero p{margin:0;color:var(--muted);max-width:60ch}
-    .hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:22px}
-    .stat{
-      padding:16px;border-radius:20px;background:linear-gradient(180deg,#fff,#f8fafc);border:1px solid var(--line)
-    }
-    .stat strong{display:block;font-size:1.15rem;margin-top:6px}
-    .welcome{padding:24px;background:linear-gradient(135deg,#111827,#1f2937);color:#fff;position:relative;overflow:hidden}
-    .welcome::after{
-      content:"";position:absolute;inset:auto -10% -35% auto;width:210px;height:210px;border-radius:999px;background:rgba(255,255,255,.08)
-    }
-    .welcome small{display:block;color:rgba(255,255,255,.72);margin-bottom:8px}
-    .layout{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(340px,.9fr);gap:22px;align-items:start}
-    .panel{padding:22px}
-    .panel h2,.chat-card h2{margin:0 0 6px}
-    .panel p,.chat-top p{margin:0;color:var(--muted)}
-    .search{
-      margin:18px 0 10px;display:flex;gap:10px;flex-wrap:wrap
-    }
-    .search input,.chat-composer textarea{
-      width:100%;border:1px solid var(--line);border-radius:18px;padding:14px 16px;font:inherit;background:#fff;
-      box-shadow:inset 0 1px 2px rgba(15,23,42,.03)
-    }
-    .pedidos-grid{display:grid;gap:14px;margin-top:16px}
-    .pedido-card{padding:18px 18px 16px}
-    .pedido-card h3{margin:0 0 12px}
-    .pedido-card p,.pedido-card li,.pedido-card small{color:#475569}
-    .pedido-card ul{padding-left:18px;margin:12px 0}
-    .estado-checklist{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 14px}
-    .estado-checklist span{
-      padding:8px 12px;border-radius:999px;background:#f3f4f6;color:#64748b;font-size:.9rem;font-weight:700;border:1px solid #e5e7eb
-    }
-    .estado-checklist span.activo{background:var(--brand-soft);border-color:#f9a8d4;color:#be185d}
-    .chat-card{padding:0;overflow:hidden;position:sticky;top:110px}
-    .chat-top{
-      padding:20px 20px 16px;background:linear-gradient(135deg,#0f172a,#1e293b);color:#fff
-    }
-    .chat-top p{color:rgba(255,255,255,.7)}
-    .chat-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.12);margin-top:12px;font-size:.92rem}
-    .chat-badge::before{content:"";width:10px;height:10px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 4px rgba(34,197,94,.18)}
-    #chat-mensajes{
-      height:470px;overflow:auto;padding:20px;background:linear-gradient(180deg,#fcfdff,#f7f9fc);display:flex;flex-direction:column;gap:12px
-    }
-    .msg-cliente,.msg-admin{
-      max-width:82%;padding:12px 14px;border-radius:18px;line-height:1.45;box-shadow:0 10px 18px rgba(15,23,42,.06);position:relative
-    }
-    .msg-cliente{align-self:flex-end;background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;border-bottom-right-radius:6px}
-    .msg-admin{align-self:flex-start;background:#fff;color:var(--text);border:1px solid #e8edf5;border-bottom-left-radius:6px}
-    .msg-meta{display:block;margin-top:6px;font-size:.74rem;opacity:.78}
-    .typing{font-style:italic;opacity:.92}
-    .chat-composer{padding:16px;border-top:1px solid var(--line);background:#fff}
-    .chat-composer .row{display:flex;gap:10px;align-items:flex-end}
-    .chat-composer textarea{min-height:56px;max-height:140px;resize:vertical}
-    .chat-help{margin-top:8px;color:var(--muted);font-size:.9rem}
-    .empty{
-      padding:26px;border-radius:20px;border:1px dashed #cbd5e1;background:#fff;color:var(--muted);text-align:center
-    }
-    .footer-note{padding:16px 0 10px;text-align:center;color:var(--muted)}
-    @media (max-width: 980px){
-      .hero,.layout{grid-template-columns:1fr}
-      .chat-card{position:static}
-      .hero-stats{grid-template-columns:1fr}
-    }
-    @media (max-width: 640px){
-      .shell{padding:14px}
-      .topbar{padding:14px}
-      .actions{width:100%}
-      .actions .btn{flex:1}
-      .chat-composer .row{flex-direction:column}
-      .chat-composer .row .btn{width:100%}
-      .msg-cliente,.msg-admin{max-width:92%}
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="shell">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark">E</div>
+
+  <div class="mis-pedidos-shell">
+    <header class="mis-pedidos-topbar">
+      <div class="mis-pedidos-brand">
+        <div class="mis-pedidos-brand-mark">E</div>
         <div>
           <small>Zona de clientes</small>
           <strong>Estampaider</strong>
         </div>
       </div>
-      <div class="actions">
+
+      <div class="mis-pedidos-actions">
         <button class="btn" type="button" onclick="volver()">Volver a la tienda</button>
         <button class="btn btn-primario" type="button" onclick="cerrarSesion()">Cerrar sesión</button>
       </div>
     </header>
 
-    <section class="hero">
-      <article class="hero-card">
-        <h1 class="hero-title">Tus pedidos y tu chat de soporte en un solo lugar.</h1>
-        <p>Consulta el estado de cada pedido, revisa el historial y conversa con el equipo de Estampaider con una interfaz más clara, limpia y cómoda.</p>
-        <div class="hero-stats">
-          <div class="stat"><span>Estado</span><strong>En tiempo real</strong></div>
-          <div class="stat"><span>Chat</span><strong>Soporte directo</strong></div>
-          <div class="stat"><span>Seguimiento</span><strong>Más ordenado</strong></div>
+    <section class="mis-pedidos-hero">
+      <article class="mis-pedidos-hero-card">
+        <h1 class="mis-pedidos-hero-title">Tus pedidos y tu chat de soporte en un solo lugar.</h1>
+        <p>
+          Consulta el estado de cada pedido, revisa el historial y conversa con el equipo
+          de Estampaider con una interfaz más clara, limpia y cómoda.
+        </p>
+
+        <div class="mis-pedidos-stats">
+          <div class="mis-pedidos-stat">
+            <span>Estado</span>
+            <strong>En tiempo real</strong>
+          </div>
+          <div class="mis-pedidos-stat">
+            <span>Chat</span>
+            <strong>Soporte directo</strong>
+          </div>
+          <div class="mis-pedidos-stat">
+            <span>Seguimiento</span>
+            <strong>Más ordenado</strong>
+          </div>
         </div>
       </article>
-      <aside class="hero-card welcome">
+
+      <aside class="mis-pedidos-hero-card mis-pedidos-welcome">
         <small>Hola de nuevo</small>
-        <h2 style="margin:0 0 10px">Bienvenido<span id="nombreUsuario"></span></h2>
-        <p style="margin:0;max-width:34ch;color:rgba(255,255,255,.8)">Aquí puedes ver el resumen de tus pedidos y escribirnos si necesitas ayuda con diseños, pagos o entregas.</p>
+        <h2>Bienvenido<span id="nombreUsuario"></span></h2>
+        <p>
+          Aquí puedes ver el resumen de tus pedidos y escribirnos si necesitas ayuda
+          con diseños, pagos o entregas.
+        </p>
       </aside>
     </section>
 
-    <section class="layout">
-      <article class="panel">
+    <section class="mis-pedidos-layout">
+      <article class="mis-pedidos-panel">
         <h2>Mis pedidos</h2>
         <p>Filtra por número de pedido para encontrarlo más rápido.</p>
-        <div class="search">
+
+        <div class="mis-pedidos-search">
           <input type="text" id="buscarPedido" placeholder="Buscar por número de pedido">
         </div>
-        <div id="pedidos" class="pedidos-grid">
-          <div class="empty">Cargando tus pedidos...</div>
+
+        <div id="pedidos" class="mis-pedidos-grid">
+          <div class="mis-pedidos-empty">Cargando tus pedidos...</div>
         </div>
       </article>
 
-      <aside class="chat-card" id="chat-section">
-        <div class="chat-top">
+      <aside class="mis-pedidos-chat-card" id="chat-section">
+        <div class="mis-pedidos-chat-top">
           <h2>Soporte Estampaider</h2>
           <p>Escríbenos sobre tu pedido, personalización o cambios.</p>
-          <div class="chat-badge">Chat activo</div>
+          <div class="mis-pedidos-chat-badge">Chat activo</div>
         </div>
+
         <div id="chat-mensajes"></div>
-        <div class="chat-composer">
-          <div class="row">
+
+        <div class="mis-pedidos-chat-composer">
+          <div class="mis-pedidos-chat-row">
             <textarea id="chat-input" placeholder="Escribe tu mensaje aquí..."></textarea>
-            <button id="btn-enviar" class="btn btn-primario" type="button" onclick="enviarMensaje()" disabled>Enviar</button>
+            <button id="btn-enviar" class="btn btn-primario" type="button" onclick="enviarMensaje()" disabled>
+              ➤
+            </button>
           </div>
-          <div class="chat-help">Pulsa Enter para enviar. Usa Shift + Enter para un salto de línea.</div>
+          <div class="mis-pedidos-chat-help">
+            Pulsa Enter para enviar. Usa Shift + Enter para un salto de línea.
+          </div>
         </div>
       </aside>
     </section>
 
-    <div class="footer-note">© 2026 Estampaider · Seguimiento y soporte personalizados.</div>
+    <div class="mis-pedidos-footer-note">
+      © 2026 Estampaider · Seguimiento y soporte personalizados.
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>

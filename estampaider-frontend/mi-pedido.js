@@ -62,7 +62,10 @@ function agregarMensaje(msg) {
     <span class="msg-meta">${formatearHora(msg.fecha)}</span>
   `;
   chatBox.appendChild(div);
-  chatBox.scrollTop = chatBox.scrollHeight;
+  chatBox.scrollTo({
+    top: chatBox.scrollHeight,
+    behavior: "smooth"
+  });
 }
 
 function quitarTypingCliente() {
@@ -143,7 +146,7 @@ function conectarChat() {
 
 function enviarMensaje() {
   if (!stompClient?.connected) {
-    alert("Chat conectándose. Intenta de nuevo en un segundo.");
+    estadoChat("Chat conectándose. Intenta de nuevo en un segundo.");
     return;
   }
 
@@ -186,7 +189,8 @@ function mostrarTypingCliente(remitenteTipo) {
 document.addEventListener("DOMContentLoaded", async () => {
   const contenedor = document.getElementById("pedidos");
   const token = authData.token;
-  document.getElementById("nombreUsuario").textContent = `, ${authData.nombre}`;
+  const nombre = authData?.nombre || "";
+  document.getElementById("nombreUsuario").textContent = nombre ? `, ${nombre}` : "";
 
   try {
     const res = await fetch(`${API_BASE}/api/pedidos/mis-pedidos`, {
@@ -205,7 +209,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const pedidos = await res.json();
     if (!pedidos.length) {
-      contenedor.innerHTML = `<div class="empty"><p>Aún no tienes pedidos registrados.</p><button class="btn" onclick="volver()">Ir a la tienda</button></div>`;
+      contenedor.innerHTML = `<div class="empty"><p>"Aún no tienes pedidos. ¡Explora nuestros productos y crea el primero!"</p><button class="btn" onclick="volver()">Ir a la tienda</button></div>`;
     } else {
       contenedor.innerHTML = pedidos.map((pedido) => {
         const fecha = pedido.fecha ? new Date(pedido.fecha).toLocaleString("es-CO") : "—";

@@ -13,13 +13,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     
     function getAuthHeaders() {
-    const auth = JSON.parse(sessionStorage.getItem("auth"));
-
-    return {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + auth.token
-    };
-}   
+        const auth = JSON.parse(sessionStorage.getItem("auth"));
+    
+        if (!auth || !auth.token) {
+            window.location.href = "admin/login.html";
+            throw new Error("Sesión no válida");
+        }
+    
+        return {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + auth.token
+        };
+    }  
 
     function logout() {
         sessionStorage.removeItem("auth");
@@ -533,17 +538,20 @@ function aplicarFiltroDashboard(estado) {
 
         pedidosPagina.forEach(pedido => {
             const div = document.createElement("div");
+        const tipoCliente = obtenerTipoCliente(pedido.telefono);
 
-            if (pedidosNuevos.has(pedido.id)) {
-                div.classList.add("nuevo-pedido");
-            }
-            if (!pedido.visto) {
-             div.style.border = "2px solid #22c55e";
-              }
-            const tipoCliente = obtenerTipoCliente(pedido.telefono);
-            div.className = `pedido-card estado-${pedido.estado}${
-                tipoCliente ? `cliente-${tipoCliente.clase}`:""
-        }`;
+        const clases = [`pedido-card`, `estado-${pedido.estado}`];
+
+        if (tipoCliente) {
+          clases.push(`cliente-${tipoCliente.clase}`);
+        }
+        if (pedidosNuevos.has(pedido.id)) {
+          clases.push("nuevo-pedido");
+        }
+        if (!pedido.visto) {
+          clases.push("no-leido");
+        }
+     div.className = clases.join(" ");
 
             div.innerHTML = `
                 <div class="estado-badge estado-${pedido.estado}">${pedido.estado}</div>
