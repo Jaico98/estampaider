@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administrar productos | Estampaider</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    .admin-productos-wrap{
+      max-width:1100px;
+      margin:40px auto;
+      padding:20px;
+    }
+
+    .admin-productos-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      margin-bottom:24px;
+      flex-wrap:wrap;
+    }
+
+    .admin-productos-header h1{
+      margin:0;
+    }
+
+    .admin-actions-top{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .panel-productos{
+      display:grid;
+      grid-template-columns: 360px 1fr;
+      gap:24px;
+    }
+
+    .card-admin{
+      background:#fff;
+      border-radius:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,.08);
+      padding:20px;
+    }
+
+    .card-admin h2{
+      margin-top:0;
+    }
+
+    .form-admin{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .form-admin input,
+    .form-admin textarea,
+    .form-admin select{
+      width:100%;
+      padding:12px 14px;
+      border:1px solid #dbe2ea;
+      border-radius:12px;
+      font-size:15px;
+      box-sizing:border-box;
+    }
+
+    .form-admin textarea{
+      min-height:100px;
+      resize:vertical;
+    }
+
+    .acciones-form{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn-admin{
+      border:none;
+      border-radius:12px;
+      padding:12px 16px;
+      cursor:pointer;
+      font-weight:600;
+    }
+
+    .btn-primario-admin{
+      background:#14a6d6;
+      color:#fff;
+    }
+
+    .btn-secundario-admin{
+      background:#e5eef3;
+      color:#14213d;
+    }
+
+    .btn-danger-admin{
+      background:#dc2626;
+      color:#fff;
+    }
+
+    .grid-productos-admin{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+      gap:16px;
+    }
+
+    .producto-admin-card{
+      background:#fff;
+      border-radius:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,.08);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .producto-admin-card img{
+      width:100%;
+      height:200px;
+      object-fit:cover;
+      background:#f3f4f6;
+    }
+
+    .producto-admin-body{
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .producto-admin-body h3{
+      margin:0;
+      font-size:18px;
+    }
+
+    .producto-admin-body p{
+      margin:0;
+      color:#475569;
+      font-size:14px;
+    }
+
+    .producto-admin-precio{
+      font-weight:700;
+      color:#0f172a !important;
+    }
+
+    .producto-admin-acciones{
+      display:flex;
+      gap:8px;
+      margin-top:10px;
+      flex-wrap:wrap;
+    }
+
+    .mini-btn{
+      border:none;
+      border-radius:10px;
+      padding:10px 12px;
+      cursor:pointer;
+      font-weight:600;
+    }
+
+    .mini-editar{
+      background:#dbeafe;
+      color:#1d4ed8;
+    }
+
+    .mini-eliminar{
+      background:#fee2e2;
+      color:#b91c1c;
+    }
+
+    .estado-admin{
+      margin-top:10px;
+      font-size:14px;
+      min-height:20px;
+    }
+
+    .estado-ok{ color:#15803d; }
+    .estado-error{ color:#b91c1c; }
+    .estado-info{ color:#334155; }
+
+    .preview-imagen{
+      width:100%;
+      height:180px;
+      object-fit:cover;
+      border-radius:14px;
+      background:#f1f5f9;
+      border:1px solid #e2e8f0;
+    }
+
+    .empty-admin{
+      padding:30px;
+      text-align:center;
+      color:#64748b;
+      background:#fff;
+      border-radius:18px;
+      box-shadow:0 10px 30px rgba(0,0,0,.08);
+    }
+
+    @media (max-width: 900px){
+      .panel-productos{
+        grid-template-columns:1fr;
+      }
+    }
+    .badge-estado-producto{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+  width:fit-content;
+}
+
+.badge-activo{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.badge-inactivo{
+  background:#fee2e2;
+  color:#991b1b;
+}
+
+.mini-toggle{
+  background:#ede9fe;
+  color:#6d28d9;
+}
+
+.mini-activar{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.toast-admin-productos{
+  position:fixed;
+  top:20px;
+  right:20px;
+  z-index:9999;
+  background:#0f172a;
+  color:#fff;
+  padding:14px 18px;
+  border-radius:14px;
+  box-shadow:0 12px 30px rgba(0,0,0,.18);
+  opacity:0;
+  transform:translateY(-8px);
+  pointer-events:none;
+  transition:all .22s ease;
+  font-weight:600;
+}
+
+.toast-admin-productos.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+.toast-admin-productos.ok{
+  background:#15803d;
+}
+
+.toast-admin-productos.error{
+  background:#b91c1c;
+}
+
+.toast-admin-productos.info{
+  background:#0f172a;
+}
+.producto-admin-card.draggable {
+  cursor: grab;
+}
+
+.producto-admin-card.dragging {
+  opacity: 0.55;
+  transform: scale(0.98);
+}
+
+.producto-admin-card.drag-over {
+  outline: 2px dashed #14a6d6;
+  outline-offset: 3px;
+}
+.panel-derecho-productos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.texto-ayuda-orden {
+  margin: 0 0 10px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.grid-productos-admin {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  align-content: start;
+}
+.panel-derecho-productos {
+  min-height: 500px;
+}
+  </style>
+</head>
+<body>
+  <script>
+    const auth = JSON.parse(sessionStorage.getItem("auth"));
+    if (!auth || auth.rol !== "ADMIN" || !auth.token) {
+      sessionStorage.setItem("redirectAfterLogin", "productos-admin.html");
+      window.location.href = "admin/login.html";
+    }
+  </script>
+
+  <div class="admin-productos-wrap">
+    <div class="admin-productos-header">
+      <h1>🛍️ Administrar productos</h1>
+      <div class="admin-actions-top">
+        <button class="btn-admin btn-secundario-admin" onclick="window.location.href='pedidos.html'">← Volver a pedidos</button>
+        <button class="btn-admin btn-danger-admin" id="btnCerrarSesion">Cerrar sesión</button>
+      </div>
+    </div>
+
+    <div class="panel-productos">
+      <section class="card-admin">
+        <h2 id="tituloFormulario">Nuevo producto</h2>
+
+        <form id="formProducto" class="form-admin">
+          <input type="hidden" id="productoId" />
+
+          <div>
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" placeholder="Ej: Camiseta personalizada" required />
+          </div>
+
+          <div>
+            <label for="precio">Precio</label>
+            <input type="number" id="precio" min="1" step="0.01" placeholder="Ej: 35000" required />
+          </div>
+
+          <div>
+            <label for="etiqueta">Etiqueta visual</label>
+            <select id="etiqueta">
+              <option value="">Sin etiqueta</option>
+              <option value="MAS_VENDIDO">Más vendido</option>
+              <option value="NUEVO">Nuevo</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="categoria">Categoría</label>
+            <select id="categoria">
+              <option value="">Selecciona una categoría</option>
+              <option value="camisetas">Camisetas</option>
+              <option value="mugs">Mugs</option>
+              <option value="otros">Otros</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="imagenArchivo">Subir imagen</label>
+            <input type="file" id="imagenArchivo" accept="image/*" />
+          </div>
+          
+          <div>
+            <label for="imagenUrl">Ruta de imagen</label>
+            <input type="text" id="imagenUrl" placeholder="Se llena automáticamente al subir o puedes escribir una URL" required />
+          </div>
+          
+          <img id="previewImagen" class="preview-imagen" src="images/placeholder.jpg" alt="Vista previa" />
+          
+          <div class="acciones-form">
+            <button type="button" class="btn-admin btn-secundario-admin" id="btnSubirImagen">
+              Subir imagen
+            </button>
+          </div>
+
+          <div>
+            <label for="descripcion">Descripción</label>
+            <textarea id="descripcion" placeholder="Describe el producto"></textarea>
+          </div>
+
+          <div class="acciones-form">
+            <button type="submit" class="btn-admin btn-primario-admin" id="btnGuardar">Guardar producto</button>
+            <button type="button" class="btn-admin btn-secundario-admin" id="btnCancelarEdicion">Cancelar edición</button>
+          </div>
+
+          <div id="estadoFormulario" class="estado-admin"></div>
+        </form>     
+        <section class="panel-derecho-productos">
+        <div class="acciones-form" style="margin-bottom:12px;">
+        <button type="button" class="btn-admin btn-primario-admin" id="btnGuardarOrden">
+          Guardar orden
+        </button>
+      </div>  
+          <p style="margin:0 0 14px; color:#64748b; font-size:14px;">
+        Arrastra las tarjetas para reorganizar cómo se muestran en la tienda.
+      </p>
+      </section>
+      </section>
+ 
+      
+
+      <section>
+        <div id="listaProductos" class="grid-productos-admin"></div>
+      </section>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="branding.js"></script>
+  <script src="productos-admin.js"></script>
+  <div id="toastAdminProductos" class="toast-admin-productos"></div>
+</body>
+</html>

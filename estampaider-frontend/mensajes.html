@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Mensajes Admin | Estampaider</title>
+  <link rel="icon" href="../favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="styles.css">
   <style>
     :root {
@@ -18,13 +19,15 @@
       --success-soft: #dcfce7;
       --warn: #f59e0b;
       --warn-soft: #fef3c7;
+      --danger: #dc2626;
+      --danger-soft: #fee2e2;
       --shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
       --radius: 20px;
     }
 
     body { background: linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%); color: var(--text); }
     .mensajes-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(360px, .9fr); gap: 24px; align-items: start; }
-    .toolbar, .filtros, .chat-header, .chat-footer { display: flex; gap: 10px; flex-wrap: wrap; }
+    .toolbar, .filtros, .chat-header, .chat-footer, .mensaje-acciones, .paginacion-mensajes { display: flex; gap: 10px; flex-wrap: wrap; }
     .toolbar input, .chat-footer textarea {
       flex: 1;
       min-width: 240px;
@@ -64,6 +67,7 @@
     .topbar a:hover, button:hover { transform: translateY(-1px); }
     button:disabled { opacity: .55; cursor: not-allowed; transform: none; }
     .btn-secundario { background: #eef2ff; color: #334155; box-shadow: none; }
+    .btn-peligro { background: var(--danger); color: #fff; box-shadow: 0 10px 20px rgba(220, 38, 38, .14); }
     .filtros { margin-bottom: 12px; }
     .filtros button { background: #fff; color: #475569; border: 1px solid var(--line); box-shadow: none; }
     .filtros button.activo { background: var(--brand); color: #fff; border-color: var(--brand); }
@@ -102,6 +106,7 @@
       margin-bottom: 0;
       line-height: 1.45;
       position: relative;
+      word-break: break-word;
     }
     .msg-admin {
       background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
@@ -127,11 +132,11 @@
     .mensaje-card:hover { transform: translateY(-2px); box-shadow: 0 18px 35px rgba(15,23,42,.08); border-color: #cbd5e1; }
     .mensaje-card.no-leido { border-left: 5px solid var(--brand); }
     .mensaje-card h3 { margin: 0 0 4px; }
+    .mensaje-card p { margin: 6px 0; color: #475569; }
     .mensaje-top { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 8px; }
     .mensaje-chip { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
     .chip-ok { background: var(--success-soft); color: var(--success); }
     .chip-alerta { background: var(--warn-soft); color: #b45309; }
-    .mensaje-acciones { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
     .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
     .stat-card { padding: 16px 18px; }
     .stat-label { display: block; color: var(--muted); font-size: .92rem; margin-bottom: 6px; }
@@ -158,6 +163,7 @@
     .typing-dots i:nth-child(3) { animation-delay: .3s; }
     .vacio { padding: 28px; text-align: center; color: var(--muted); }
     .check { font-weight: 700; }
+    .paginacion-mensajes { justify-content: center; margin-top: 12px; align-items: center; }
     @keyframes saltar {
       0%, 80%, 100% { transform: scale(.7); opacity: .45; }
       40% { transform: scale(1); opacity: 1; }
@@ -198,13 +204,13 @@
         </div>
 
         <div class="filtros">
-          <button type="button" data-filtro="TODOS" class="activo">Todos</button>
-          <button type="button" data-filtro="NO_LEIDOS">No leídos</button>
-          <button type="button" data-filtro="LEIDOS">Leídos</button>
+          <button type="button" data-filtro-mensaje="TODOS" class="activo">Todos</button>
+          <button type="button" data-filtro-mensaje="NO_LEIDOS">No leídos</button>
+          <button type="button" data-filtro-mensaje="LEIDOS">Leídos</button>
         </div>
 
         <div id="mensajes"></div>
-        <div id="paginacion" class="toolbar" style="justify-content: center; margin-top: 12px;"></div>
+        <div id="paginacion" class="paginacion-mensajes"></div>
       </section>
 
       <aside id="chat-container" class="chat-panel hidden">
@@ -213,12 +219,17 @@
             <strong id="chat-nombre">Cliente</strong>
             <span id="chat-estado" class="chat-estado">Selecciona una conversación</span>
           </div>
-          <button type="button" onclick="cerrarChat()" class="btn-secundario">✖ Cerrar</button>
+          <div class="toolbar">
+            <button type="button" id="btnEliminarChat" class="btn-peligro">🗑 Eliminar chat</button>
+            <button type="button" id="btnCerrarChat" class="btn-secundario">✖ Cerrar</button>
+          </div>
         </div>
-        <div id="chat-mensajes" class="chat-body"></div>
+        <div id="chat-mensajes" class="chat-body">
+          <div class="vacio">Abre una conversación para ver los mensajes.</div>
+        </div>
         <div class="chat-footer">
           <textarea id="chat-input" rows="3" placeholder="Escribe tu respuesta"></textarea>
-          <button type="button" onclick="enviarMensajeChat()">Enviar</button>
+          <button type="button" id="btnEnviarChat">Enviar</button>
         </div>
       </aside>
     </div>
@@ -229,6 +240,9 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+  <script src="config.js"></script>
+  <script src="branding.js"></script>
+  <script src="carrito-global.js"></script>
   <script src="mensajes.js"></script>
 </body>
 </html>

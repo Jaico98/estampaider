@@ -1,12 +1,48 @@
-const authData = sessionStorage.getItem("auth") ? JSON.parse(sessionStorage.getItem("auth")) : null;
+const authData = sessionStorage.getItem("auth")
+  ? JSON.parse(sessionStorage.getItem("auth"))
+  : null;
+
 if (!authData || !authData.token) {
   window.location.href = "admin/login.html";
 }
 
-const API_BASE = "http://localhost:8080";
+const API_BASE = resolverApiBase();
 let stompClient = null;
 let telefonoCliente = null;
 let reconnectTimer = null;
+
+function resolverApiBase() {
+  const configurada = window.API_BASE_URL || window.__API_BASE__;
+  if (configurada) {
+    return String(configurada).replace(/\/$/, "");
+  }
+
+  const { protocol, hostname, port, host } = window.location;
+
+  if (protocol === "file:") {
+    return "http://localhost:8080";
+  }
+
+  const esLocal = hostname === "localhost" || hostname === "127.0.0.1";
+  if (esLocal && port && port !== "8080") {
+    return `${protocol}//${hostname}:8080`;
+  }
+
+  return `${protocol}//${host}`;
+}
+
+function textoSeguro(valor) {
+  return String(valor ?? "");
+}
+
+function escapeHtml(valor) {
+  return textoSeguro(valor)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll("\"", "&quot;")
+    .replaceAll("'", "&#39;");
+}
 
 function volver() {
   window.location.href = "index.html";
@@ -28,22 +64,49 @@ function checklistEstado(estado) {
     { key: "ENVIADO", label: "Enviado" },
     { key: "ENTREGADO", label: "Entregado" },
   ];
+
   const actual = estados.findIndex((e) => e.key === estado);
+
   return `
     <div class="estado-checklist">
-      ${estados.map((e, index) => `<span class="${index <= actual ? "activo" : ""}">${e.label}</span>`).join("")}
+      ${estados
+        .map(
+          (e, index) =>
+            `<span class="${index <= actual ? "activo" : ""}">${e.label}</span>`
+        )
+        .join("")}
     </div>
   `;
 }
 
 function formatearHora(fechaIso) {
   const fecha = fechaIso ? new Date(fechaIso) : new Date();
-  return fecha.toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
+  return fecha.toLocaleTimeString("es-CO", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 
 function estadoChat(texto) {
   const badge = document.querySelector(".chat-badge");
   if (badge) badge.textContent = texto;
+}
+
+function crearBurbujaMensaje(texto, tipo, fecha, id) {
+  const div = document.createElement("div");
+
+  if (id) div.dataset.id = id;
+  div.className = tipo === "CLIENTE" ? "msg-cliente" : "msg-admin";
+
+  const contenido = document.createElement("div");
+  contenido.textContent = textoSeguro(texto);
+
+  const meta = document.createElement("span");
+  meta.className = "msg-meta";
+  meta.textContent = formatearHora(fecha);
+
+  div.append(contenido, meta);
+  return div;
 }
 
 function agregarMensaje(msg) {
@@ -54,18 +117,30 @@ function agregarMensaje(msg) {
 
   quitarTypingCliente();
 
-  const div = document.createElement("div");
-  if (msg.id) div.dataset.id = msg.id;
-  div.className = msg.tipo === "CLIENTE" ? "msg-cliente" : "msg-admin";
-  div.innerHTML = `
-    <div>${msg.mensaje}</div>
-    <span class="msg-meta">${formatearHora(msg.fecha)}</span>
-  `;
-  chatBox.appendChild(div);
+  const burbuja = crearBurbujaMensaje(msg.mensaje, msg.tipo, msg.fecha, msg.id);
+  chatBox.appendChild(burbuja);
   chatBox.scrollTo({
     top: chatBox.scrollHeight,
-    behavior: "smooth"
+    behavior: "smooth",
   });
+}
+
+function agregarMensajeSistema(texto, metaTexto = "Ahora") {
+  const chatBox = document.getElementById("chat-mensajes");
+  if (!chatBox) return;
+
+  const div = document.createElement("div");
+  div.className = "msg-admin";
+
+  const contenido = document.createElement("div");
+  contenido.textContent = texto;
+
+  const meta = document.createElement("span");
+  meta.className = "msg-meta";
+  meta.textContent = metaTexto;
+
+  div.append(contenido, meta);
+  chatBox.appendChild(div);
 }
 
 function quitarTypingCliente() {
@@ -75,19 +150,30 @@ function quitarTypingCliente() {
 async function cargarHistorial() {
   const chatBox = document.getElementById("chat-mensajes");
   if (!chatBox || !telefonoCliente) return;
+
   chatBox.innerHTML = "";
+
   try {
     const res = await fetch(`${API_BASE}/api/chat/${telefonoCliente}`);
     if (!res.ok) return;
+
     const historial = await res.json();
+
     if (!historial.length) {
-      chatBox.innerHTML = '<div class="msg-admin"><div>Hola, soy el soporte de Estampaider 👋 Cuéntanos en qué podemos ayudarte con tu pedido.</div><span class="msg-meta">Ahora</span></div>';
+      agregarMensajeSistema(
+        "Hola, soy el soporte de Estampaider 👋 Cuéntanos en qué podemos ayudarte con tu pedido.",
+        "Ahora"
+      );
       return;
     }
+
     historial.forEach(agregarMensaje);
   } catch (error) {
     console.error("Error cargando historial:", error);
-    chatBox.innerHTML = '<div class="msg-admin"><div>No pudimos cargar el historial del chat. Puedes escribirnos de todos modos.</div><span class="msg-meta">Aviso</span></div>';
+    agregarMensajeSistema(
+      "No pudimos cargar el historial del chat. Puedes escribirnos de todos modos.",
+      "Aviso"
+    );
   }
 }
 
@@ -95,7 +181,12 @@ function conectarChat() {
   if (!authData?.telefono) {
     const chatSection = document.getElementById("chat-section");
     if (chatSection) {
-      chatSection.innerHTML = `<div style="padding:24px"><p>Para usar el chat debes iniciar sesión nuevamente.</p><button class="btn btn-primario" onclick="irLogin()">Iniciar sesión</button></div>`;
+      chatSection.innerHTML = `
+        <div style="padding:24px">
+          <p>Para usar el chat debes iniciar sesión nuevamente.</p>
+          <button class="btn btn-primario" onclick="irLogin()">Iniciar sesión</button>
+        </div>
+      `;
     }
     return;
   }
@@ -111,37 +202,53 @@ function conectarChat() {
   stompClient = Stomp.over(socket);
   stompClient.debug = () => {};
 
-  stompClient.connect({}, async () => {
-    clearTimeout(reconnectTimer);
-    estadoChat("Chat activo");
-    const btn = document.getElementById("btn-enviar");
-    if (btn) btn.disabled = false;
+  stompClient.connect(
+    {},
+    async () => {
+      clearTimeout(reconnectTimer);
+      estadoChat("Chat activo");
 
-    stompClient.subscribe(`/topic/chat/${telefonoCliente}`, (frame) => {
-      const data = JSON.parse(frame.body);
-      agregarMensaje(data);
-    });
+      const btn = document.getElementById("btn-enviar");
+      if (btn) btn.disabled = false;
 
-    stompClient.subscribe(`/topic/chat/${telefonoCliente}/typing`, (frame) => {
-      let data;
-      try {
-        data = JSON.parse(frame.body);
-      } catch {
-        data = { tipo: frame.body, telefono: telefonoCliente };
-      }
-      if (data.telefono && data.telefono !== telefonoCliente) return;
-      mostrarTypingCliente(data.tipo);
-    });
+      stompClient.subscribe(`/topic/chat/${telefonoCliente}`, (frame) => {
+        const data = JSON.parse(frame.body);
+        agregarMensaje(data);
+      });
 
-    await cargarHistorial();
-    stompClient.send("/app/chat/online", {}, telefonoCliente);
-  }, (error) => {
-    console.error("Error WS:", error);
-    estadoChat("Reconectando...");
-    const btn = document.getElementById("btn-enviar");
-    if (btn) btn.disabled = true;
-    reconnectTimer = setTimeout(conectarChat, 3000);
-  });
+      stompClient.subscribe(`/topic/chat/${telefonoCliente}/typing`, (frame) => {
+        let data;
+        try {
+          data = JSON.parse(frame.body);
+        } catch {
+          data = { tipo: frame.body, telefono: telefonoCliente };
+        }
+
+        if (data.telefono && data.telefono !== telefonoCliente) return;
+        mostrarTypingCliente(data.tipo);
+      });
+
+      await cargarHistorial();
+      stompClient.send("/app/chat/online", {}, telefonoCliente);
+    },
+    (error) => {
+      console.error("Error WS:", error);
+      estadoChat("Reconectando...");
+
+      const btn = document.getElementById("btn-enviar");
+      if (btn) btn.disabled = true;
+
+      reconnectTimer = setTimeout(conectarChat, 3000);
+    }
+  );
+}
+
+function generarIdTemporal() {
+  if (window.crypto?.randomUUID) {
+    return crypto.randomUUID();
+  }
+
+  return `msg-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
 function enviarMensaje() {
@@ -151,11 +258,13 @@ function enviarMensaje() {
   }
 
   const input = document.getElementById("chat-input");
+  if (!input) return;
+
   const texto = input.value.trim();
   if (!texto) return;
 
   const mensaje = {
-    id: crypto.randomUUID(),
+    id: generarIdTemporal(),
     nombre: authData.nombre,
     mensaje: texto,
     telefono: telefonoCliente,
@@ -165,14 +274,17 @@ function enviarMensaje() {
 
   agregarMensaje(mensaje);
   stompClient.send("/app/chat", {}, JSON.stringify(mensaje));
+
   input.value = "";
   input.style.height = "56px";
 }
 
 function mostrarTypingCliente(remitenteTipo) {
   if (remitenteTipo !== "ADMIN") return;
+
   const chatBox = document.getElementById("chat-mensajes");
   if (!chatBox) return;
+
   let typing = document.getElementById("typing-cliente");
   if (!typing) {
     typing = document.createElement("div");
@@ -181,16 +293,69 @@ function mostrarTypingCliente(remitenteTipo) {
     typing.textContent = "Soporte escribiendo...";
     chatBox.appendChild(typing);
   }
+
   chatBox.scrollTop = chatBox.scrollHeight;
   clearTimeout(typing._timeout);
   typing._timeout = setTimeout(() => typing.remove(), 1600);
+}
+
+function renderizarPedidos(contenedor, pedidos) {
+  contenedor.innerHTML = pedidos
+    .map((pedido) => {
+      const fecha = pedido.fecha
+        ? new Date(pedido.fecha).toLocaleString("es-CO")
+        : "—";
+
+      const detallesHTML =
+        pedido.detalles?.length
+          ? pedido.detalles
+              .map((d) => {
+                const producto = escapeHtml(d.producto);
+                const cantidad = Number(d.cantidad || 0);
+                const subtotal = Number(d.precioUnitario || 0) * cantidad;
+                const nota = d.notaPersonalizacion
+                  ? `<br><small>Personalización: ${escapeHtml(
+                      d.notaPersonalizacion
+                    )}</small>`
+                  : "";
+
+                return `
+                  <li>
+                    <strong>${producto}</strong> x ${cantidad} — $${subtotal.toLocaleString("es-CO")}
+                    ${nota}
+                  </li>
+                `;
+              })
+              .join("")
+          : "<li>Sin productos</li>";
+
+      return `
+        <article class="pedido-card">
+          <h3>Pedido #${Number(pedido.id || 0)}</h3>
+          ${checklistEstado(textoSeguro(pedido.estado))}
+          <p><strong>Fecha:</strong> ${escapeHtml(fecha)}</p>
+          <p><strong>Estado:</strong> ${escapeHtml(pedido.estado)}</p>
+          <p><strong>Pago:</strong> ${
+            pedido.estadoPago === "PAGADO" ? "✅ Pagado" : "⏳ Pendiente"
+          }</p>
+          <p><strong>Método:</strong> ${escapeHtml(pedido.metodoPago || "No definido")}</p>
+          <ul>${detallesHTML}</ul>
+          <p><strong>Total:</strong> $${Number(pedido.total || 0).toLocaleString("es-CO")}</p>
+        </article>
+      `;
+    })
+    .join("");
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
   const contenedor = document.getElementById("pedidos");
   const token = authData.token;
   const nombre = authData?.nombre || "";
-  document.getElementById("nombreUsuario").textContent = nombre ? `, ${nombre}` : "";
+
+  const nombreUsuario = document.getElementById("nombreUsuario");
+  if (nombreUsuario) {
+    nombreUsuario.textContent = nombre ? `, ${nombre}` : "";
+  }
 
   try {
     const res = await fetch(`${API_BASE}/api/pedidos/mis-pedidos`, {
@@ -199,7 +364,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (res.status === 401) {
       sessionStorage.removeItem("auth");
-      contenedor.innerHTML = `<div class="empty"><p>Tu sesión ha expirado.</p><button class="btn btn-primario" onclick="irLogin()">Iniciar sesión nuevamente</button></div>`;
+      contenedor.innerHTML = `
+        <div class="empty">
+          <p>Tu sesión ha expirado.</p>
+          <button class="btn btn-primario" onclick="irLogin()">Iniciar sesión nuevamente</button>
+        </div>
+      `;
       return;
     }
 
@@ -208,33 +378,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const pedidos = await res.json();
-    if (!pedidos.length) {
-      contenedor.innerHTML = `<div class="empty"><p>"Aún no tienes pedidos. ¡Explora nuestros productos y crea el primero!"</p><button class="btn" onclick="volver()">Ir a la tienda</button></div>`;
-    } else {
-      contenedor.innerHTML = pedidos.map((pedido) => {
-        const fecha = pedido.fecha ? new Date(pedido.fecha).toLocaleString("es-CO") : "—";
-        const detallesHTML = pedido.detalles?.length
-          ? pedido.detalles.map((d) => `
-              <li>
-                <strong>${d.producto}</strong> x ${d.cantidad} — $${(d.precioUnitario * d.cantidad).toLocaleString("es-CO")}
-                ${d.notaPersonalizacion ? `<br><small>Personalización: ${d.notaPersonalizacion}</small>` : ""}
-              </li>
-            `).join("")
-          : "<li>Sin productos</li>";
 
-        return `
-          <article class="pedido-card">
-            <h3>Pedido #${pedido.id}</h3>
-            ${checklistEstado(pedido.estado)}
-            <p><strong>Fecha:</strong> ${fecha}</p>
-            <p><strong>Estado:</strong> ${pedido.estado}</p>
-            <p><strong>Pago:</strong> ${pedido.estadoPago === "PAGADO" ? "✅ Pagado" : "⏳ Pendiente"}</p>
-            <p><strong>Método:</strong> ${pedido.metodoPago || "No definido"}</p>
-            <ul>${detallesHTML}</ul>
-            <p><strong>Total:</strong> $${Number(pedido.total || 0).toLocaleString("es-CO")}</p>
-          </article>
-        `;
-      }).join("");
+    if (!pedidos.length) {
+      contenedor.innerHTML = `
+        <div class="empty">
+          <p>Aún no tienes pedidos. ¡Explora nuestros productos y crea el primero!</p>
+          <button class="btn" onclick="volver()">Ir a la tienda</button>
+        </div>
+      `;
+    } else {
+      renderizarPedidos(contenedor, pedidos);
     }
   } catch (error) {
     console.error(error);
@@ -247,8 +400,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     const area = event.target;
     area.style.height = "56px";
     area.style.height = `${Math.min(area.scrollHeight, 140)}px`;
+
     if (stompClient?.connected && telefonoCliente) {
-      stompClient.send("/app/chat/typing", {}, JSON.stringify({ telefono: telefonoCliente, tipo: "CLIENTE" }));
+      stompClient.send(
+        "/app/chat/typing",
+        {},
+        JSON.stringify({ telefono: telefonoCliente, tipo: "CLIENTE" })
+      );
     }
   });
 
@@ -262,6 +420,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 document.addEventListener("input", (e) => {
   if (e.target.id !== "buscarPedido") return;
+
   const texto = e.target.value.toLowerCase();
   document.querySelectorAll(".pedido-card").forEach((card) => {
     const titulo = card.querySelector("h3")?.textContent.toLowerCase() || "";

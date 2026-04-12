@@ -1,5 +1,5 @@
 package com.estampaider.model;
-import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -14,19 +14,46 @@ public class Producto {
     private String nombre;
 
     @Column(nullable = false)
-    private String imagenUrl;   // ✅ ahora sí es imagen
+    private String imagenUrl;
 
     @Column(nullable = false)
     private double precio;
 
-    public Producto() {}
+    @Column(length = 1000)
+    private String descripcion;
+
+    @Column(length = 100)
+    private String categoria;
+
+    @Column(nullable = false)
+    private boolean activo = true;
+
+    @Column(length = 30)
+    private String etiqueta;
+
+    @Column(nullable = false)
+    private Integer orden = 0;
+
+    public Producto() {
+    }
 
     public Producto(String nombre, String imagenUrl, double precio) {
         this.nombre = nombre;
         this.imagenUrl = imagenUrl;
         this.precio = precio;
+        this.activo = true;
+        this.orden = 0;
     }
-    /* ===================== GETTERS Y SETTERS ===================== */
+
+    public Producto(String nombre, String imagenUrl, double precio, String descripcion, String categoria) {
+        this.nombre = nombre;
+        this.imagenUrl = imagenUrl;
+        this.precio = precio;
+        this.descripcion = descripcion;
+        this.categoria = categoria;
+        this.activo = true;
+        this.orden = 0;
+    }
 
     public Long getId() {
         return id;
@@ -39,17 +66,60 @@ public class Producto {
     public void setNombre(String nombre) {
         this.nombre = nombre;
     }
-    public String getImagenUrl() { 
-        return imagenUrl; 
+
+    public String getImagenUrl() {
+        return imagenUrl;
     }
+
     public void setImagenUrl(String imagenUrl) {
-         this.imagenUrl = imagenUrl; 
-        }
+        this.imagenUrl = imagenUrl;
+    }
+
     public double getPrecio() {
         return precio;
     }
 
     public void setPrecio(double precio) {
         this.precio = precio;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public String getCategoria() {
+        return categoria;
+    }
+
+    public void setCategoria(String categoria) {
+        this.categoria = categoria;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
+
+    public String getEtiqueta() {
+        return etiqueta;
+    }
+
+    public void setEtiqueta(String etiqueta) {
+        this.etiqueta = etiqueta;
+    }
+
+    public Integer getOrden() {
+        return orden;
+    }
+
+    public void setOrden(Integer orden) {
+        this.orden = orden;
     }
 }

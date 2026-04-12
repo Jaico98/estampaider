@@ -1,42 +1,45 @@
 package com.estampaider.controller;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.Map;
 import com.estampaider.dto.CrearPedidoRequest;
+import com.estampaider.model.Cotizacion;
 import com.estampaider.model.DetallePedido;
 import com.estampaider.model.Pedido;
-import com.estampaider.service.PedidoService;
 import com.estampaider.repository.CotizacionRepository;
-import com.estampaider.model.Cotizacion;
-import org.springframework.http.ResponseEntity;
+import com.estampaider.service.PedidoService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.security.core.Authentication;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/pedidos")
 public class PedidoController {
 
     private final PedidoService pedidoService;
-
     private final CotizacionRepository cotizacionRepository;
 
     private static final Set<String> ESTADOS_VALIDOS = Set.of(
-            "RECIBIDO", "PENDIENTE", "ENVIADO", "ENTREGADO", "CANCELADO"
+        "RECIBIDO",
+        "PENDIENTE",
+        "ENVIADO",
+        "ENTREGADO",
+        "CANCELADO"
     );
 
-    public PedidoController(PedidoService pedidoService,
-        CotizacionRepository cotizacionRepository) {
+    public PedidoController(PedidoService pedidoService, CotizacionRepository cotizacionRepository) {
         this.pedidoService = pedidoService;
         this.cotizacionRepository = cotizacionRepository;
-}
+    }
 
     /**
-     * 🔐 Listar todos los pedidos
-     * Seguridad controlada por SecurityConfig (ADMIN)
+     * Listar todos los pedidos
+     * Seguridad principal controlada por SecurityConfig (ADMIN)
      */
     @GetMapping
     public ResponseEntity<List<Pedido>> listarPedidos() {
@@ -44,236 +47,215 @@ public class PedidoController {
     }
 
     /**
-     * 🔐 Listar pedidos por estado (ADMIN)
+     * Listar pedidos por estado (ADMIN)
      */
     @GetMapping("/estado/{estado}")
-    public ResponseEntity<List<Pedido>> listarPorEstado(
-            @PathVariable String estado) {
-
+    public ResponseEntity<List<Pedido>> listarPorEstado(@PathVariable String estado) {
         String estadoNormalizado = estado.toUpperCase();
         validarEstado(estadoNormalizado);
-
-        return ResponseEntity.ok(
-                pedidoService.listarPorEstado(estadoNormalizado)
-        );
+        return ResponseEntity.ok(pedidoService.listarPorEstado(estadoNormalizado));
     }
 
     /**
-     * 🔐 Obtener pedido por ID (ADMIN)
+     * Obtener pedido por ID
+     * Defensa en profundidad:
+     * - ADMIN puede ver cualquiera
+     * - CLIENTE solo puede ver su propio pedido
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Pedido> obtenerPedidoPorId(
-            @PathVariable Long id) {
+    public ResponseEntity<Pedido> obtenerPedidoPorId(@PathVariable Long id, Authentication authentication) {
+        if (authentication == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No autenticado");
+        }
 
-        return pedidoService.obtenerPorId(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        Pedido pedido = pedidoService.obtenerPorId(id)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
+
+        if (esAdmin(authentication) || esPropietario(authentication, pedido)) {
+            return ResponseEntity.ok(pedido);
+        }
+
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes acceso a este pedido");
     }
 
     /**
-     * 🔐 Listar pedidos por cliente (CLIENTE / ADMIN)
+     * Endpoint legado bloqueado
      */
     @GetMapping("/cliente/{clienteId}")
     @Deprecated
-    public ResponseEntity<List<Pedido>> listarPorCliente(
-        @PathVariable String clienteId) {
+    public ResponseEntity<List<Pedido>> listarPorCliente(@PathVariable String clienteId) {
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Endpoint no permitido");
+    }
 
-    throw new ResponseStatusException(
-            HttpStatus.FORBIDDEN,
-            "Endpoint no permitido"
-    );
-}
     /**
-     * 🔐 Crear pedido (USUARIO / ADMIN)
+     * Crear pedido (CLIENTE / ADMIN)
      */
     @PostMapping
-public ResponseEntity<Pedido> guardarPedido(
-        @RequestBody CrearPedidoRequest request,
-        Authentication authentication) {
+    public ResponseEntity<Pedido> guardarPedido(@RequestBody CrearPedidoRequest request, Authentication authentication) {
+        if (authentication == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No autenticado");
+        }
 
-    if (authentication == null) {
-        throw new ResponseStatusException(
-                HttpStatus.UNAUTHORIZED,
-                "No autenticado"
-        );
+        String telefono = authentication.getName();
+
+        Pedido pedido = new Pedido();
+        pedido.setCliente(request.getCliente());
+        pedido.setTelefono(telefono);
+        pedido.setDireccion(request.getDireccion());
+        pedido.setCiudad(request.getCiudad());
+        pedido.setDepartamento(request.getDepartamento());
+        pedido.setBarrio(request.getBarrio());
+        pedido.setReferencia(request.getReferencia());
+        pedido.setMetodoPago(request.getMetodoPago());
+        pedido.setTotal(request.getTotal());
+
+        List<DetallePedido> detalles = request.getDetalles().stream().map(d -> {
+            DetallePedido detalle = new DetallePedido();
+            detalle.setProducto(d.getProducto());
+            detalle.setCantidad(d.getCantidad());
+            detalle.setPrecioUnitario(d.getPrecioUnitario());
+            detalle.setPedido(pedido);
+            return detalle;
+        }).toList();
+
+        pedido.setDetalles(detalles);
+
+        Pedido guardado = pedidoService.guardarPedido(pedido);
+        return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
     }
 
-    String telefono = authentication.getName();
-
-    Pedido pedido = new Pedido();
-    pedido.setCliente(request.getCliente());
-    pedido.setTelefono(telefono);
-    pedido.setDireccion(request.getDireccion());
-    pedido.setCiudad(request.getCiudad());
-    pedido.setDepartamento(request.getDepartamento());
-    pedido.setBarrio(request.getBarrio());
-    pedido.setReferencia(request.getReferencia());
-    pedido.setMetodoPago(request.getMetodoPago());
-    pedido.setTotal(request.getTotal());
-
-    List<DetallePedido> detalles = request.getDetalles().stream().map(d -> {
-        DetallePedido detalle = new DetallePedido();
-        detalle.setProducto(d.getProducto());
-        detalle.setCantidad(d.getCantidad());
-        detalle.setPrecioUnitario(d.getPrecioUnitario());
-        detalle.setPedido(pedido); // MUY IMPORTANTE
-        return detalle;
-    }).toList();
-
-    pedido.setDetalles(detalles);
-
-    Pedido guardado = pedidoService.guardarPedido(pedido);
-
-    return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
-}
     @GetMapping("/mis-pedidos")
-    public ResponseEntity<List<Pedido>> obtenerMisPedidos(
-        org.springframework.security.core.Authentication authentication) {
+    public ResponseEntity<List<Pedido>> obtenerMisPedidos(Authentication authentication) {
+        if (authentication == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No autenticado");
+        }
 
-    if (authentication == null) {
-        throw new ResponseStatusException(
-                HttpStatus.UNAUTHORIZED,
-                "No autenticado"
-        );
+        String telefono = authentication.getName();
+        List<Pedido> pedidos = pedidoService.listarPorTelefono(telefono);
+        return ResponseEntity.ok(pedidos);
     }
-
-    String telefono = authentication.getName();
-
-    List<Pedido> pedidos = pedidoService.listarPorTelefono(telefono);
-
-    return ResponseEntity.ok(pedidos);
-}
 
     /**
-     * 🔐 Cambiar estado (ADMIN)
+     * Cambiar estado (ADMIN)
      */
     @PutMapping("/{id}/estado")
-    public ResponseEntity<Pedido> cambiarEstado(
-            @PathVariable Long id,
-            @RequestParam String estado) {
-
+    public ResponseEntity<Pedido> cambiarEstado(@PathVariable Long id, @RequestParam String estado) {
         String estadoNormalizado = estado.toUpperCase();
         validarEstado(estadoNormalizado);
 
-        Pedido pedidoActualizado =
-                pedidoService.cambiarEstado(id, estadoNormalizado);
-
+        Pedido pedidoActualizado = pedidoService.cambiarEstado(id, estadoNormalizado);
         return ResponseEntity.ok(pedidoActualizado);
     }
 
     /**
-     * 🔐 Marcar como PAGADO (ADMIN)
+     * Marcar como PAGADO (ADMIN)
      */
     @PutMapping("/{id}/pago")
-    public ResponseEntity<Pedido> marcarPago(
-            @PathVariable Long id) {
-
+    public ResponseEntity<Pedido> marcarPago(@PathVariable Long id) {
         Pedido pedido = pedidoService.obtenerPorId(id)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Pedido no encontrado"
-                ));
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
 
         pedido.setEstadoPago("PAGADO");
-
-        Pedido pedidoActualizado =
-                pedidoService.guardarPedido(pedido);
-
+        Pedido pedidoActualizado = pedidoService.guardarPedido(pedido);
         return ResponseEntity.ok(pedidoActualizado);
     }
 
     /**
-     * 🔐 Eliminar pedido (ADMIN)
+     * Eliminar pedido (ADMIN)
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminarPedido(
-            @PathVariable Long id) {
-
+    public ResponseEntity<Void> eliminarPedido(@PathVariable Long id) {
         pedidoService.eliminarPedido(id);
         return ResponseEntity.noContent().build();
     }
 
-    // 🔹 VER COTIZACIONES (ADMIN)
+    /**
+     * Ver cotizaciones (ADMIN)
+     */
     @GetMapping("/cotizaciones")
-        public ResponseEntity<List<Cotizacion>> verCotizaciones() {
+    public ResponseEntity<List<Cotizacion>> verCotizaciones() {
         return ResponseEntity.ok(cotizacionRepository.findAll());
-            }
+    }
 
     @GetMapping("/stats")
-public ResponseEntity<?> obtenerEstadisticas() {
+    public ResponseEntity<Map<String, Object>> obtenerEstadisticas() {
+        List<Pedido> pedidos = pedidoService.listarPedidos();
 
-    List<Pedido> pedidos = pedidoService.listarPedidos();
+        int total = pedidos.size();
 
-    int total = pedidos.size();
-
-    long pendientes = pedidos.stream()
+        long pendientes = pedidos.stream()
             .filter(p -> "PENDIENTE".equals(p.getEstado()))
             .count();
 
-    long enviados = pedidos.stream()
+        long enviados = pedidos.stream()
             .filter(p -> "ENVIADO".equals(p.getEstado()))
             .count();
 
-    long entregados = pedidos.stream()
+        long entregados = pedidos.stream()
             .filter(p -> "ENTREGADO".equals(p.getEstado()))
             .count();
 
-    double totalVentas = pedidos.stream()
+        double totalVentas = pedidos.stream()
             .filter(p -> "ENTREGADO".equals(p.getEstado()))
             .mapToDouble(Pedido::getTotal)
             .sum();
 
-    double totalPagado = pedidos.stream()
+        double totalPagado = pedidos.stream()
             .filter(p -> "PAGADO".equals(p.getEstadoPago()))
             .mapToDouble(Pedido::getTotal)
             .sum();
 
-    double promedio = entregados > 0 ? totalVentas / entregados : 0;
+        double promedio = entregados > 0 ? totalVentas / entregados : 0;
 
-    // 👑 Cliente TOP
-    Map<String, Double> clientes = new HashMap<>();
-
-    pedidos.stream()
+        Map<String, Double> clientes = new HashMap<>();
+        pedidos.stream()
             .filter(p -> "ENTREGADO".equals(p.getEstado()))
-            .forEach(p -> {
-                clientes.put(
-                        p.getCliente(),
-                        clientes.getOrDefault(p.getCliente(), 0.0) + p.getTotal()
-                );
-            });
+            .forEach(p -> clientes.put(
+                p.getCliente(),
+                clientes.getOrDefault(p.getCliente(), 0.0) + p.getTotal()
+            ));
 
-    String clienteTop = "—";
-    double max = 0;
+        String clienteTop = "—";
+        double max = 0;
 
-    for (Map.Entry<String, Double> entry : clientes.entrySet()) {
-        if (entry.getValue() > max) {
-            max = entry.getValue();
-            clienteTop = entry.getKey();
+        for (Map.Entry<String, Double> entry : clientes.entrySet()) {
+            if (entry.getValue() > max) {
+                max = entry.getValue();
+                clienteTop = entry.getKey();
+            }
         }
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("total", total);
+        stats.put("pendientes", pendientes);
+        stats.put("enviados", enviados);
+        stats.put("entregados", entregados);
+        stats.put("totalVentas", totalVentas);
+        stats.put("totalPagado", totalPagado);
+        stats.put("promedio", promedio);
+        stats.put("clienteTop", clienteTop);
+
+        return ResponseEntity.ok(stats);
     }
-
-    Map<String, Object> stats = new HashMap<>();
-    stats.put("total", total);
-    stats.put("pendientes", pendientes);
-    stats.put("enviados", enviados);
-    stats.put("entregados", entregados);
-    stats.put("totalVentas", totalVentas);
-    stats.put("totalPagado", totalPagado);
-    stats.put("promedio", promedio);
-    stats.put("clienteTop", clienteTop);
-
-    return ResponseEntity.ok(stats);
-}
-    /* ===============================
-       MÉTODOS PRIVADOS
-    ================================ */
 
     private void validarEstado(String estado) {
         if (!ESTADOS_VALIDOS.contains(estado)) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Estado inválido: " + estado
-            );
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado inválido: " + estado);
         }
+    }
+
+    private boolean esAdmin(Authentication authentication) {
+        return authentication.getAuthorities().stream()
+            .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    }
+
+    private boolean esPropietario(Authentication authentication, Pedido pedido) {
+        String telefonoAuth = normalizarTelefono(authentication.getName());
+        String telefonoPedido = normalizarTelefono(pedido.getTelefono());
+        return !telefonoAuth.isBlank() && telefonoAuth.equals(telefonoPedido);
+    }
+
+    private String normalizarTelefono(String telefono) {
+        return telefono == null ? "" : telefono.replaceAll("\\D", "");
     }
 }

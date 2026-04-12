@@ -3,12 +3,11 @@ package com.estampaider.controller;
 import com.estampaider.model.ChatMensaje;
 import com.estampaider.model.EstadoMensaje;
 import com.estampaider.repository.ChatMensajeRepository;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.util.List;
@@ -82,6 +81,24 @@ public class ChatController {
     public List<ChatMensaje> obtenerChat(@PathVariable String telefono) {
         return repo.findByTelefonoOrderByFechaAsc(normalizarTelefono(telefono));
     }
+
+    @DeleteMapping("/api/chat/{telefono}")
+    public ResponseEntity<Void> eliminarChatPorTelefono(@PathVariable String telefono) {
+        String telefonoNormalizado = normalizarTelefono(telefono);
+        List<ChatMensaje> mensajes = repo.findByTelefonoOrderByFechaAsc(telefonoNormalizado);
+
+        if (!mensajes.isEmpty()) {
+            repo.deleteAll(mensajes);
+        }
+
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/api/chat/mensaje/{id}")
+    public ResponseEntity<Void> eliminarMensajePorId(@PathVariable String id) {
+    repo.findById(id).ifPresent(repo::delete);
+    return ResponseEntity.noContent().build();
+}
 
     private String normalizarTelefono(String telefono) {
         if (telefono == null) {

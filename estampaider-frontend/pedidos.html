@@ -7,6 +7,401 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="styles.css">
 
+    <style>
+/* ===============================
+   TOPBAR ADMIN
+================================= */
+.admin-topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:18px;
+  flex-wrap:wrap;
+  margin:24px auto 20px;
+  padding:22px 24px;
+  max-width:1200px;
+  background:linear-gradient(135deg,#ffffff 0%,#f8fbff 100%);
+  border:1px solid #e2e8f0;
+  border-radius:22px;
+  box-shadow:0 14px 35px rgba(15, 23, 42, 0.08);
+}
+
+.admin-topbar-left h1{
+  margin:0;
+  font-size:clamp(24px, 3vw, 34px);
+  color:#0f172a;
+}
+
+.admin-topbar-left p{
+  margin:6px 0 0;
+  color:#64748b;
+  font-size:15px;
+}
+
+.admin-topbar-actions{
+  display:flex;
+  gap:12px;
+  flex-wrap:wrap;
+}
+
+.btn-admin-top{
+  border:none;
+  border-radius:16px;
+  padding:14px 18px;
+  font-size:15px;
+  font-weight:700;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease, background .18s ease;
+}
+
+.btn-admin-top:hover{
+  transform:translateY(-2px);
+  box-shadow:0 12px 24px rgba(0,0,0,.12);
+}
+
+.btn-admin-top:active{
+  transform:translateY(0);
+}
+
+.btn-productos{
+  background:linear-gradient(135deg,#14a6d6 0%, #0ea5e9 100%);
+  color:#fff;
+  box-shadow:0 10px 22px rgba(20,166,214,.28);
+}
+
+.btn-secundario-top{
+  background:#eef6fb;
+  color:#0f172a;
+  border:1px solid #d8e7f0;
+}
+
+.btn-productos span:first-child,
+.btn-secundario-top span:first-child{
+  font-size:18px;
+}
+
+/* ===============================
+   BUSCADOR
+================================= */
+.buscador{
+  max-width:1200px;
+  margin:0 auto 18px;
+}
+
+.buscador input{
+  width:100%;
+  box-sizing:border-box;
+  border:none;
+  border-radius:18px;
+  padding:16px 18px;
+  font-size:16px;
+  background:#ffffff;
+  box-shadow:0 10px 24px rgba(15,23,42,.06);
+  border:1px solid #e2e8f0;
+}
+
+/* ===============================
+   GRUPOS DE FILTROS
+================================= */
+.grupo-filtros{
+  max-width:1200px;
+  margin:0 auto 14px;
+  padding:14px 16px;
+  background:rgba(255,255,255,0.72);
+  border:1px solid #e2e8f0;
+  border-radius:18px;
+  box-shadow:0 8px 20px rgba(15,23,42,.04);
+  backdrop-filter:blur(6px);
+}
+
+.grupo-filtros h4{
+  margin:0 0 10px;
+  font-size:13px;
+  letter-spacing:.4px;
+  text-transform:uppercase;
+  color:#64748b;
+  font-weight:800;
+}
+
+.filtros,
+.filtros-pago,
+.filtros-metodo,
+.filtros-extra{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+/* ===============================
+   BOTONES FILTRO
+================================= */
+.filtros button,
+.filtros-pago button,
+.filtros-metodo button,
+.filtros-extra button,
+#resetFiltros,
+#ordenFecha{
+  border:none;
+  border-radius:999px;
+  padding:11px 18px;
+  font-size:14px;
+  font-weight:700;
+  cursor:pointer;
+  background:#f8fafc;
+  color:#334155;
+  border:1px solid #dbe7f0;
+  transition:
+    transform .18s ease,
+    box-shadow .18s ease,
+    background .18s ease,
+    color .18s ease,
+    border-color .18s ease;
+  box-shadow:0 3px 10px rgba(15,23,42,.04);
+}
+
+.filtros button:hover,
+.filtros-pago button:hover,
+.filtros-metodo button:hover,
+.filtros-extra button:hover,
+#resetFiltros:hover,
+#ordenFecha:hover{
+  background:#eff6ff;
+  color:#1d4ed8;
+  border-color:#bfdbfe;
+  transform:translateY(-1px);
+  box-shadow:0 8px 18px rgba(29,78,216,.10);
+}
+
+.filtros button:active,
+.filtros-pago button:active,
+.filtros-metodo button:active,
+.filtros-extra button:active{
+  transform:scale(0.97);
+}
+
+/* ACTIVO */
+.filtros button.activo,
+.filtros-pago button.activo,
+.filtros-metodo button.activo{
+  background:linear-gradient(135deg,#14a6d6,#0ea5e9);
+  color:#fff;
+  border-color:transparent;
+  box-shadow:0 10px 20px rgba(20,166,214,.25);
+}
+
+/* Botones de opciones */
+#resetFiltros{
+  background:#fff7ed;
+  color:#9a3412;
+  border-color:#fed7aa;
+}
+
+#resetFiltros:hover{
+  background:#ffedd5;
+  color:#9a3412;
+  border-color:#fdba74;
+}
+
+#ordenFecha{
+  background:#f0fdf4;
+  color:#166534;
+  border-color:#bbf7d0;
+}
+
+#ordenFecha:hover{
+  background:#dcfce7;
+  color:#166534;
+  border-color:#86efac;
+}
+
+/* ===============================
+   RESPONSIVE
+================================= */
+@media (max-width: 768px){
+  .admin-topbar{
+    padding:18px;
+  }
+
+  .admin-topbar-actions{
+    width:100%;
+  }
+
+  .btn-admin-top{
+    width:100%;
+    justify-content:center;
+  }
+
+  .grupo-filtros{
+    padding:12px 14px;
+  }
+
+  .filtros button,
+  .filtros-pago button,
+  .filtros-metodo button,
+  .filtros-extra button,
+  #resetFiltros,
+  #ordenFecha{
+    width:100%;
+    justify-content:center;
+  }
+}
+#modalPassword input {
+  width:100%;
+  margin-bottom:10px;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #e2e8f0;
+}
+
+#btnCambiarPassword{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(135deg,#14a6d6,#0ea5e9);
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+}
+.modal-password{
+  position:fixed;
+  inset:0;
+  background:rgba(15,23,42,.45);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  z-index:9999;
+}
+
+.modal-password.hidden{
+  display:none;
+}
+
+.modal-password-card{
+  width:100%;
+  max-width:460px;
+  background:#fff;
+  border-radius:22px;
+  padding:24px;
+  box-shadow:0 24px 60px rgba(15,23,42,.22);
+  position:relative;
+}
+
+.modal-password-card h2{
+  margin:0 0 8px;
+  color:#0f172a;
+}
+
+.password-help{
+  margin:0 0 18px;
+  color:#64748b;
+  font-size:14px;
+}
+
+.campo-password{
+  margin-bottom:14px;
+}
+
+.campo-password label{
+  display:block;
+  margin-bottom:6px;
+  font-weight:700;
+  color:#334155;
+}
+
+.input-password-wrap{
+  position:relative;
+}
+
+.input-password-wrap input{
+  width:100%;
+  box-sizing:border-box;
+  padding:13px 48px 13px 14px;
+  border:1px solid #dbe2ea;
+  border-radius:12px;
+  font-size:15px;
+}
+
+.toggle-password{
+  position:absolute;
+  top:50%;
+  right:10px;
+  transform:translateY(-50%);
+  border:none;
+  background:transparent;
+  cursor:pointer;
+  font-size:18px;
+}
+
+.btn-guardar-password{
+  width:100%;
+  border:none;
+  border-radius:14px;
+  padding:13px 16px;
+  background:linear-gradient(135deg,#14a6d6,#0ea5e9);
+  color:#fff;
+  font-weight:700;
+  cursor:pointer;
+  margin-top:8px;
+}
+
+.btn-guardar-password:disabled{
+  opacity:.7;
+  cursor:not-allowed;
+}
+
+.cerrar-password{
+  position:absolute;
+  top:12px;
+  right:14px;
+  border:none;
+  background:transparent;
+  cursor:pointer;
+  font-size:20px;
+  color:#64748b;
+}
+
+.password-checklist{
+  margin-top:10px;
+  display:grid;
+  gap:6px;
+}
+
+.check-item{
+  font-size:13px;
+  color:#64748b;
+}
+
+.check-item.ok{
+  color:#15803d;
+  font-weight:700;
+}
+
+.check-item.error{
+  color:#b91c1c;
+  font-weight:700;
+}
+
+.password-match-message{
+  margin-top:8px;
+  font-size:13px;
+  min-height:18px;
+}
+
+.password-match-message.ok{
+  color:#15803d;
+  font-weight:700;
+}
+
+.password-match-message.error{
+  color:#b91c1c;
+  font-weight:700;
+}
+</style>
 </head>
 <body class="admin-pedidos-page">
     <script>
@@ -15,9 +410,36 @@
             window.location.href = "admin/login.html";
         }
     </script>
-    
-<h1>📦 Pedidos Estampaider</h1>
-
+<div class="admin-topbar">
+    <div class="admin-topbar-left">
+      <h1>📦 Pedidos Estampaider</h1>
+      <p>Gestiona pedidos, clientes y productos desde un solo lugar.</p>
+    </div>
+  
+    <div class="admin-topbar-actions">
+      <button class="btn-admin-top btn-productos" onclick="window.location.href='productos-admin.html'">
+        <span>🛍️</span>
+        <span>Administrar productos</span>
+      </button>
+  
+      <button class="btn-admin-top btn-secundario-top" onclick="window.location.href='mensajes.html'">
+        <span>💬</span>
+        <span>Mensajes</span>
+      </button>
+      <button class="btn-admin-top btn-secundario-top" onclick="abrirModalPassword()">
+        <span>🔐</span>
+        <span>Cambiar contraseña</span>
+      </button>
+      <button class="btn-admin-top btn-secundario-top" type="button" onclick="abrirModalLogo()">
+        <span>🖼️</span>
+        <span>Cambiar logo</span>
+      </button>
+      <button class="btn-admin-top btn-secundario-top" type="button" onclick="abrirModalFavicon()">
+        <span>⭐</span>
+        <span>Cambiar favicon</span>
+      </button>
+    </div>
+  </div>
 <div class="buscador">
     <input 
         type="text" 
@@ -25,32 +447,46 @@
         placeholder="🔍 Buscar por pedido, cliente o teléfono..."
     >
 </div>
+<div class="grupo-filtros">
+    <h4>Estado</h4>
+    <div class="filtros">
+      <!-- botones -->
+        <button data-estado="TODOS" class="activo">Todos</button>
+        <button data-estado="PENDIENTE">Pendientes</button>
+        <button data-estado="ENVIADO">Enviados</button>
+        <button data-estado="ENTREGADO">Entregados</button>
+    </div>
+  </div>
+  
+  <div class="grupo-filtros">
+    <h4>Pago</h4>
+    <div class="filtros-pago">
+      <!-- botones -->
+      <button data-pago="TODOS" class="activo">💳 Todos</button>
+      <button data-pago="PAGADO">✅ Pagados</button>
+      <button data-pago="NO_PAGADO">⏳ No pagados</button>
+    </div>
+  </div>
+  
+  <div class="grupo-filtros">
+    <h4>Método</h4>
+    <div class="filtros-metodo">
+      <!-- botones -->
+      <button data-metodo="TODOS" class="activo">Todos</button>
+      <button data-metodo="Nequi">Nequi</button>
+      <button data-metodo="Código QR">Código QR</button>
+      <button data-metodo="Pago presencial">Pago presencial</button>
+    </div>
+  </div>
+  
+  <div class="grupo-filtros">
+    <h4>Opciones</h4>
+    <div class="filtros-extra">
+      <button id="resetFiltros">🔄 Reset</button>
+      <button id="ordenFecha">📅 Más recientes</button>
+    </div>
+  </div>
 
-<div class="filtros">
-    <button data-estado="TODOS" class="activo">Todos</button>
-    <button data-estado="PENDIENTE">Pendientes</button>
-    <button data-estado="ENVIADO">Enviados</button>
-    <button data-estado="ENTREGADO">Entregados</button>
-</div>
-<div class="filtros-pago">
-    <button data-pago="TODOS" class="activo">💳 Todos</button>
-    <button data-pago="PAGADO">✅ Pagados</button>
-    <button data-pago="NO_PAGADO">⏳ No pagados</button>
-</div>
-<div class="filtros-metodo">
-    <button data-metodo="TODOS" class="activo">Todos</button>
-    <button data-metodo="Nequi">Nequi</button>
-    <button data-metodo="Código QR">Código QR</button>
-    <button data-metodo="Pago presencial">Pago presencial</button>
-</div>
-
-
-<button id="resetFiltros" class="reset">🔄 Reset</button>
-
-<button id="ordenFecha" class="orden">📅 Más recientes</button>
-<a href="mensajes.html" id="linkMensajes">
-    📩 Mensajes <span id="badgeMensajes"></span>
-</a>
 <!-- DASHBOARD -->
 <div class="dashboard">
     <div class="card">
@@ -142,14 +578,462 @@
 <button id="logout" class="logout">🚪 Cerrar sesión</button>
 
 <div id="toast"></div>
+<div id="modalPassword" class="modal-password hidden">
+  <div class="modal-password-card">
+    <button type="button" class="cerrar-password" onclick="cerrarModalPassword()" aria-label="Cerrar">✕</button>
+    <h2>🔐 Cambiar contraseña</h2>
+    <p class="password-help">
+      Usa mínimo 8 caracteres, una mayúscula, un número y un carácter especial.
+    </p>
+
+    <div class="campo-password">
+      <label for="passwordActual">Contraseña actual</label>
+      <div class="input-password-wrap">
+        <input type="password" id="passwordActual" placeholder="Ingresa tu contraseña actual">
+        <button type="button" class="toggle-password" data-target="passwordActual">👁️</button>
+      </div>
+    </div>
+
+    <div class="campo-password">
+      <label for="passwordNueva">Nueva contraseña</label>
+      <div class="input-password-wrap">
+        <input type="password" id="passwordNueva" placeholder="Ingresa la nueva contraseña">
+        <button type="button" class="toggle-password" data-target="passwordNueva">👁️</button>
+      </div>
+
+      <div id="passwordChecklist" class="password-checklist">
+        <div id="checkLength" class="check-item">• Mínimo 8 caracteres</div>
+        <div id="checkUpper" class="check-item">• Al menos una mayúscula</div>
+        <div id="checkNumber" class="check-item">• Al menos un número</div>
+        <div id="checkSpecial" class="check-item">• Al menos un carácter especial</div>
+      </div>
+    </div>
+
+    <div class="campo-password">
+      <label for="confirmarPassword">Confirmar nueva contraseña</label>
+      <div class="input-password-wrap">
+        <input type="password" id="confirmarPassword" placeholder="Confirma la nueva contraseña">
+        <button type="button" class="toggle-password" data-target="confirmarPassword">👁️</button>
+      </div>
+      <div id="confirmacionPassword" class="password-match-message"></div>
+    </div>
+
+    <button type="button" id="btnCambiarPassword" class="btn-guardar-password">
+      Guardar cambios
+    </button>
+  </div>
+</div>
 
 <!-- LIBRERÍAS -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.29/dist/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
+<script src="config.js"></script>
+<script src="carrito-global.js"></script>
 <script src="pedidos.js"></script>
 
+<script>
+  function resolverApiBasePassword() {
+    if (window.ESTAMPAIDER_CONFIG?.API_BASE) {
+      return window.ESTAMPAIDER_CONFIG.API_BASE;
+    }
+
+    const { protocol, hostname, port, host } = window.location;
+
+    if (protocol === "file:") return "http://localhost:8080";
+
+    const esLocal = hostname === "localhost" || hostname === "127.0.0.1";
+    if (esLocal && port && port !== "8080") {
+      return `${protocol}//${hostname}:8080`;
+    }
+
+    return `${protocol}//${host}`;
+  }
+
+  function mostrarToastPassword(mensaje, tipo = "info") {
+    const toast = document.getElementById("toast");
+    if (!toast) {
+      alert(mensaje);
+      return;
+    }
+    toast.textContent = mensaje;
+    toast.className = "";
+    toast.classList.add("show", `toast-${tipo}`);
+    setTimeout(() => toast.classList.remove("show"), 3000);
+  }
+
+  function actualizarChecklistPassword(valor) {
+    const checks = {
+      checkLength: valor.length >= 8,
+      checkUpper: /[A-Z]/.test(valor),
+      checkNumber: /\d/.test(valor),
+      checkSpecial: /[@$!%*?&]/.test(valor)
+    };
+
+    Object.entries(checks).forEach(([id, ok]) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.remove("ok", "error");
+      el.classList.add(ok ? "ok" : "error");
+    });
+
+    return Object.values(checks).every(Boolean);
+  }
+
+  function actualizarConfirmacionPassword() {
+    const nueva = document.getElementById("passwordNueva")?.value || "";
+    const confirmar = document.getElementById("confirmarPassword")?.value || "";
+    const mensaje = document.getElementById("confirmacionPassword");
+
+    if (!mensaje) return false;
+
+    if (!confirmar) {
+      mensaje.textContent = "";
+      mensaje.className = "password-match-message";
+      return false;
+    }
+
+    if (nueva === confirmar) {
+      mensaje.textContent = "✔ Las contraseñas coinciden";
+      mensaje.className = "password-match-message ok";
+      return true;
+    }
+
+    mensaje.textContent = "✘ Las contraseñas no coinciden";
+    mensaje.className = "password-match-message error";
+    return false;
+  }
+
+  function abrirModalPassword() {
+    document.getElementById("modalPassword")?.classList.remove("hidden");
+  }
+
+  function cerrarModalPassword() {
+    document.getElementById("modalPassword")?.classList.add("hidden");
+
+    ["passwordActual", "passwordNueva", "confirmarPassword"].forEach((id) => {
+      const input = document.getElementById(id);
+      if (input) input.value = "";
+    });
+
+    const confirmMsg = document.getElementById("confirmacionPassword");
+    if (confirmMsg) {
+      confirmMsg.textContent = "";
+      confirmMsg.className = "password-match-message";
+    }
+
+    actualizarChecklistPassword("");
+  }
+
+  function inicializarCambioPassword() {
+    const nueva = document.getElementById("passwordNueva");
+    const confirmar = document.getElementById("confirmarPassword");
+    const btnCambiar = document.getElementById("btnCambiarPassword");
+    const modal = document.getElementById("modalPassword");
+
+    document.querySelectorAll(".toggle-password").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const input = document.getElementById(btn.dataset.target);
+        if (!input) return;
+        input.type = input.type === "password" ? "text" : "password";
+        btn.textContent = input.type === "password" ? "👁️" : "🙈";
+      });
+    });
+
+    nueva?.addEventListener("input", () => {
+      actualizarChecklistPassword(nueva.value);
+      actualizarConfirmacionPassword();
+    });
+
+    confirmar?.addEventListener("input", actualizarConfirmacionPassword);
+
+    btnCambiar?.addEventListener("click", async () => {
+      const API_BASE = resolverApiBasePassword();
+      const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
+
+      const passwordActual = document.getElementById("passwordActual")?.value || "";
+      const passwordNueva = document.getElementById("passwordNueva")?.value || "";
+      const confirmarPassword = document.getElementById("confirmarPassword")?.value || "";
+
+      if (!passwordActual || !passwordNueva || !confirmarPassword) {
+        mostrarToastPassword("Completa todos los campos", "error");
+        return;
+      }
+
+      const passwordValida = actualizarChecklistPassword(passwordNueva);
+      const coincide = actualizarConfirmacionPassword();
+
+      if (!passwordValida) {
+        mostrarToastPassword("La nueva contraseña no cumple los requisitos", "error");
+        return;
+      }
+
+      if (!coincide) {
+        mostrarToastPassword("La confirmación no coincide", "error");
+        return;
+      }
+
+      if (!auth?.token) {
+        mostrarToastPassword("Sesión no válida. Inicia sesión de nuevo.", "error");
+        return;
+      }
+
+      btnCambiar.disabled = true;
+      btnCambiar.textContent = "Guardando...";
+
+      try {
+        const res = await fetch(`${API_BASE}/api/usuarios/cambiar-password`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${auth.token}`
+          },
+          body: JSON.stringify({
+            passwordActual,
+            passwordNueva,
+            confirmarPassword
+          })
+        });
+
+        const contentType = res.headers.get("content-type") || "";
+        const data = contentType.includes("application/json")
+          ? await res.json()
+          : await res.text();
+
+        if (!res.ok) {
+          const mensaje = typeof data === "string"
+            ? data
+            : (data?.mensaje || "No se pudo cambiar la contraseña");
+          throw new Error(mensaje);
+        }
+
+        mostrarToastPassword("Contraseña actualizada correctamente 🔐", "success");
+        cerrarModalPassword();
+      } catch (error) {
+        console.error("Error al cambiar contraseña:", error);
+        mostrarToastPassword(error.message || "Error al cambiar contraseña", "error");
+      } finally {
+        btnCambiar.disabled = false;
+        btnCambiar.textContent = "Guardar cambios";
+      }
+    });
+
+    modal?.addEventListener("click", (e) => {
+      if (e.target === modal) cerrarModalPassword();
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", inicializarCambioPassword);
+  } else {
+    inicializarCambioPassword();
+  }
+</script>
+<script>
+  function abrirModalLogo() {
+    document.getElementById("modalLogo")?.classList.remove("hidden");
+  }
+
+  function cerrarModalLogo() {
+    document.getElementById("modalLogo")?.classList.add("hidden");
+    const input = document.getElementById("logoArchivo");
+    if (input) input.value = "";
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const logoArchivo = document.getElementById("logoArchivo");
+    const previewLogoNuevo = document.getElementById("previewLogoNuevo");
+    const btnCambiarLogo = document.getElementById("btnCambiarLogo");
+
+    logoArchivo?.addEventListener("change", () => {
+      const file = logoArchivo.files?.[0];
+      if (!file || !previewLogoNuevo) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewLogoNuevo.src = e.target?.result || "";
+      };
+      reader.readAsDataURL(file);
+    });
+
+    btnCambiarLogo?.addEventListener("click", async () => {
+      const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
+      const API_BASE = resolverApiBasePassword();
+      const file = logoArchivo?.files?.[0];
+
+      if (!file) {
+        mostrarToastPassword("Selecciona un logo", "error");
+        return;
+      }
+
+      if (!auth?.token) {
+        mostrarToastPassword("Sesión no válida. Inicia sesión de nuevo.", "error");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      btnCambiarLogo.disabled = true;
+      btnCambiarLogo.textContent = "Subiendo...";
+
+      try {
+        const res = await fetch(`${API_BASE}/api/branding/logo`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${auth.token}`
+          },
+          body: formData
+        });
+
+        const contentType = res.headers.get("content-type") || "";
+        const data = contentType.includes("application/json")
+          ? await res.json()
+          : await res.text();
+
+        if (!res.ok) {
+          const mensaje = typeof data === "string" ? data : (data?.mensaje || "No se pudo actualizar el logo");
+          throw new Error(mensaje);
+        }
+
+        localStorage.setItem("estampaider_branding_refresh", Date.now().toString());
+        mostrarToastPassword("Logo actualizado correctamente 🖼️", "success");
+        cerrarModalLogo();
+      } catch (error) {
+        console.error("Error subiendo logo:", error);
+        mostrarToastPassword(error.message || "No se pudo actualizar el logo", "error");
+      } finally {
+        btnCambiarLogo.disabled = false;
+        btnCambiarLogo.textContent = "Guardar logo";
+      }
+    });
+  });
+</script>
+<script>
+  function abrirModalFavicon() {
+    document.getElementById("modalFavicon")?.classList.remove("hidden");
+  }
+
+  function cerrarModalFavicon() {
+    document.getElementById("modalFavicon")?.classList.add("hidden");
+    const input = document.getElementById("faviconArchivo");
+    if (input) input.value = "";
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const faviconArchivo = document.getElementById("faviconArchivo");
+    const previewFaviconNuevo = document.getElementById("previewFaviconNuevo");
+    const btnCambiarFavicon = document.getElementById("btnCambiarFavicon");
+
+    faviconArchivo?.addEventListener("change", () => {
+      const file = faviconArchivo.files?.[0];
+      if (!file || !previewFaviconNuevo) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        previewFaviconNuevo.src = e.target?.result || "";
+      };
+      reader.readAsDataURL(file);
+    });
+
+    btnCambiarFavicon?.addEventListener("click", async () => {
+      const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
+      const API_BASE = resolverApiBasePassword();
+      const file = faviconArchivo?.files?.[0];
+
+      if (!file) {
+        mostrarToastPassword("Selecciona un favicon", "error");
+        return;
+      }
+
+      if (!auth?.token) {
+        mostrarToastPassword("Sesión no válida. Inicia sesión de nuevo.", "error");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      btnCambiarFavicon.disabled = true;
+      btnCambiarFavicon.textContent = "Subiendo...";
+
+      try {
+        const res = await fetch(`${API_BASE}/api/branding/favicon`, {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${auth.token}`
+          },
+          body: formData
+        });
+
+        const contentType = res.headers.get("content-type") || "";
+        const data = contentType.includes("application/json")
+          ? await res.json()
+          : await res.text();
+
+        if (!res.ok) {
+          const mensaje = typeof data === "string" ? data : (data?.mensaje || "No se pudo actualizar el favicon");
+          throw new Error(mensaje);
+        }
+
+        localStorage.setItem("estampaider_favicon_refresh", Date.now().toString());
+        mostrarToastPassword("Favicon actualizado correctamente ⭐", "success");
+        cerrarModalFavicon();
+      } catch (error) {
+        console.error("Error subiendo favicon:", error);
+        mostrarToastPassword(error.message || "No se pudo actualizar el favicon", "error");
+      } finally {
+        btnCambiarFavicon.disabled = false;
+        btnCambiarFavicon.textContent = "Guardar favicon";
+      }
+    });
+  });
+</script>
+<div id="modalLogo" class="modal-password hidden">
+  <div class="modal-password-card">
+    <button type="button" class="cerrar-password" onclick="cerrarModalLogo()" aria-label="Cerrar">✕</button>
+    <h2>🖼️ Cambiar logo</h2>
+    <p class="password-help">
+      Sube un logo nuevo en JPG, PNG o WEBP. Se reflejará en todo el sitio.
+    </p>
+
+    <div class="campo-password">
+      <label for="logoArchivo">Selecciona el archivo</label>
+      <input type="file" id="logoArchivo" accept="image/*">
+    </div>
+
+    <div class="campo-password">
+      <img id="previewLogoNuevo" src="images/logo-estampaider.png" alt="Vista previa del logo" style="max-height:90px; object-fit:contain;">
+    </div>
+
+    <button type="button" id="btnCambiarLogo" class="btn-guardar-password">
+      Guardar logo
+    </button>
+  </div>
+</div>
+<div id="modalFavicon" class="modal-password hidden">
+  <div class="modal-password-card">
+    <button type="button" class="cerrar-password" onclick="cerrarModalFavicon()" aria-label="Cerrar">✕</button>
+    <h2>⭐ Cambiar favicon</h2>
+    <p class="password-help">
+      Sube un favicon en ICO, PNG o SVG. Se reflejará en la pestaña del navegador.
+    </p>
+
+    <div class="campo-password">
+      <label for="faviconArchivo">Selecciona el archivo</label>
+      <input type="file" id="faviconArchivo" accept=".ico,image/png,image/svg+xml">
+    </div>
+
+    <div class="campo-password">
+      <img id="previewFaviconNuevo" src="favicon.ico" alt="Vista previa del favicon" style="max-height:48px; max-width:48px; object-fit:contain;">
+    </div>
+
+    <button type="button" id="btnCambiarFavicon" class="btn-guardar-password">
+      Guardar favicon
+    </button>
+  </div>
+</div>
+<script src="branding.js"></script>
 </body>
 </html>

@@ -1,52 +1,85 @@
 const form = document.getElementById("loginForm");
 const errorMsg = document.getElementById("error");
 
-form.addEventListener("submit", async (e) => {
+function resolverApiBase() {
+  const configurada = window.API_BASE_URL || window.__API_BASE__;
+  if (configurada) {
+    return String(configurada).replace(/\/$/, "");
+  }
+
+  const { protocol, hostname, port, host } = window.location;
+
+  if (protocol === "file:") {
+    return "http://localhost:8080";
+  }
+
+  const esLocal = hostname === "localhost" || hostname === "127.0.0.1";
+  if (esLocal && port && port !== "8080") {
+    return `${protocol}//${hostname}:8080`;
+  }
+
+  return `${protocol}//${host}`;
+}
+
+const API_BASE = resolverApiBase();
+
+if (form) {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    const usuario = document.getElementById("usuario").value.trim();
-    const password = document.getElementById("password").value.trim();
+    const usuario = document.getElementById("usuario")?.value.trim() || "";
+    const password = document.getElementById("password")?.value.trim() || "";
 
     errorMsg.textContent = "";
 
-    try {
-        const response = await fetch("http://localhost:8080/api/auth/login", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ usuario, password })
-        });
-
-        if (!response.ok) {
-            errorMsg.textContent = "❌ Credenciales incorrectas";
-            return;
-        }
-
-        const data = await response.json();
-
-        sessionStorage.setItem("auth", JSON.stringify({
-            ok: data.ok,
-            rol: data.rol,
-            nombre: data.nombre,
-            telefono: data.telefono,
-            token: data.token
-        }));
-
-        const redirect = sessionStorage.getItem("redirectAfterLogin");
-
-        if (redirect) {
-            sessionStorage.removeItem("redirectAfterLogin");
-            window.location.href = redirect;
-            return;
-        }
-
-        if (data.rol === "ADMIN") {
-            window.location.href = "../pedidos.html";
-        } else {
-            window.location.href = "../mi-pedido.html";
-        }
-
-    } catch (err) {
-        console.error(err);
-        errorMsg.textContent = "⚠️ Error de conexión con el servidor";
+    if (!usuario || !password) {
+      errorMsg.textContent = "⚠️ Ingresa usuario y contraseña";
+      return;
     }
-});
+
+    try {
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        body: JSON.stringify({ usuario, password })
+      });
+
+      if (!response.ok) {
+        errorMsg.textContent = "❌ Credenciales incorrectas";
+        return;
+      }
+
+      const data = await response.json();
+
+      sessionStorage.setItem(
+        "auth",
+        JSON.stringify({
+          ok: data.ok,
+          rol: data.rol,
+          nombre: data.nombre,
+          telefono: data.telefono,
+          token: data.token
+        })
+      );
+
+      const redirect = sessionStorage.getItem("redirectAfterLogin");
+      if (redirect) {
+        sessionStorage.removeItem("redirectAfterLogin");
+        window.location.href = redirect;
+        return;
+      }
+
+      if (data.rol === "ADMIN") {
+        window.location.href = "../pedidos.html";
+      } else {
+        window.location.href = "../mi-pedido.html";
+      }
+    } catch (err) {
+      console.error("Error login:", err);
+      errorMsg.textContent = "⚠️ Error de conexión con el servidor";
+    }
+  });
+}
