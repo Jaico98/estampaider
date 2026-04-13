@@ -88,8 +88,13 @@ function formatearHora(fechaIso) {
 }
 
 function estadoChat(texto) {
-  const badge = document.querySelector(".chat-badge");
-  if (badge) badge.textContent = texto;
+  const badge =
+    document.querySelector(".mis-pedidos-chat-badge") ||
+    document.querySelector(".chat-badge");
+
+  if (badge) {
+    badge.textContent = texto;
+  }
 }
 
 function crearBurbujaMensaje(texto, tipo, fecha, id) {

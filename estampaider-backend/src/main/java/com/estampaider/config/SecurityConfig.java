@@ -4,10 +4,10 @@ import com.estampaider.security.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 
 import java.util.List;
 
@@ -46,13 +46,12 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // WebSocket / mensajería pública existente
+                // WebSocket público para el flujo actual
                 .requestMatchers("/ws/**").permitAll()
                 .requestMatchers("/topic/**").permitAll()
                 .requestMatchers("/app/**").permitAll()
-                .requestMatchers("/api/chat/**").permitAll()
 
-                // Públicos
+                // Auth / públicos
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/metodos-pago/**").permitAll()
                 .requestMatchers("/images/**").permitAll()
@@ -64,12 +63,9 @@ public class SecurityConfig {
                 // Pedidos
                 .requestMatchers(HttpMethod.POST, "/api/pedidos/**").hasAnyRole("CLIENTE", "ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/pedidos/mis-pedidos").hasAnyRole("CLIENTE", "ADMIN")
-
-                // Endpoint legado bloqueado por el controller, pero solo accesible a usuarios autenticados
                 .requestMatchers(HttpMethod.GET, "/api/pedidos/cliente/**").hasAnyRole("CLIENTE", "ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/productos/admin/**").hasRole("ADMIN")
 
-                // Endpoints sensibles de pedidos: solo ADMIN
                 .requestMatchers(HttpMethod.GET, "/api/pedidos").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/pedidos/stats").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/pedidos/cotizaciones").hasRole("ADMIN")
@@ -77,16 +73,21 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/pedidos/*").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/pedidos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/pedidos/**").hasRole("ADMIN")
+
                 .requestMatchers(HttpMethod.PUT, "/api/usuarios/cambiar-password").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/branding/**").hasRole("ADMIN")
 
-                // Mensajes
+                // Mensajes del panel admin
                 .requestMatchers(HttpMethod.POST, "/api/mensajes").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/mensajes").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/mensajes/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/mensajes/**").hasRole("ADMIN")
 
-                //Productos
+                // Chat REST
+                .requestMatchers(HttpMethod.GET, "/api/chat/**").permitAll()
+                .requestMatchers(HttpMethod.DELETE, "/api/chat/**").hasRole("ADMIN")
+
+                // Productos
                 .requestMatchers(HttpMethod.POST, "/api/uploads/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/productos/admin/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
@@ -94,7 +95,6 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/api/productos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PATCH, "/api/productos/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("ADMIN")
-                
 
                 .anyRequest().authenticated()
             )

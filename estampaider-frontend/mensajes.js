@@ -8,13 +8,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const API_BASE =
     window.ESTAMPAIDER_CONFIG?.API_BASE ||
-    (typeof resolverApiBase === "function" ? resolverApiBase() : "http://localhost:8080");
+    (typeof resolverApiBase === "function"
+      ? resolverApiBase()
+      : "http://127.0.0.1:8080");
 
   const WS_BASE = `${API_BASE}/ws`;
 
   const contenedor = document.getElementById("mensajes");
   const badge = document.getElementById("badgeMensajes");
-  const buscador = document.getElementById("buscadorMensajes");
+  const buscador =
+    document.getElementById("buscarMensaje") ||
+    document.getElementById("buscadorMensajes") ||
+    document.querySelector('input[type="text"]');
+
   const paginacion = document.getElementById("paginacion");
   const chatContainer = document.getElementById("chat-container");
   const chatNombre = document.getElementById("chat-nombre");
@@ -27,18 +33,31 @@ document.addEventListener("DOMContentLoaded", () => {
   const stats = document.getElementById("statsMensajes");
   const btnExcel = document.getElementById("excel");
   const btnPDF = document.getElementById("pdf");
-  const sonido = new Audio("notification.mp3");
+
+  const tabs = Array.from(document.querySelectorAll("[data-filtro]"));
+  const botonesTexto = Array.from(document.querySelectorAll("button")).filter((btn) => {
+    const txt = (btn.textContent || "").trim().toLowerCase();
+    return txt === "todos" || txt === "no leídos" || txt === "leídos" || txt === "no leidos";
+  });
+
+  const sonido = (() => {
+    try {
+      return new Audio("notification.mp3");
+    } catch {
+      return null;
+    }
+  })();
 
   let mensajes = [];
   let filtroActual = "TODOS";
   let textoBusqueda = "";
-  let telefonoActivo = null;
-  let nombreActivo = "Cliente";
   let paginaActual = 1;
+  let telefonoActivo = "";
+  let nombreActivo = "Cliente";
   let stompClient = null;
   let chatSubscription = null;
-  let onlineSubscription = null;
   let typingSubscription = null;
+  let onlineSubscription = null;
   const porPagina = 5;
 
   function getHeaders() {
@@ -60,7 +79,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function formatearFecha(fecha) {
     if (!fecha) return "Sin fecha";
-    return new Date(fecha).toLocaleString("es-CO");
+    const d = new Date(fecha);
+    if (Number.isNaN(d.getTime())) return "Sin fecha";
+    return d.toLocaleString("es-CO");
   }
 
   function mostrarToast(mensaje) {
@@ -71,31 +92,140 @@ document.addEventListener("DOMContentLoaded", () => {
     alert(mensaje);
   }
 
+  function normalizarMensajeListado(item) {
+    return {
+      id: item?.id ?? null,
+      nombre: textoSeguro(item?.nombre || "Cliente"),
+      correo: textoSeguro(item?.correo || ""),
+      whatsapp: textoSeguro(item?.whatsapp || ""),
+      telefono: normalizarTelefono(item?.telefono || item?.whatsapp || ""),
+      mensaje: textoSeguro(item?.mensaje || ""),
+      fecha: item?.fecha || null,
+      leido: Boolean(item?.leido),
+    };
+  }
+
   function actualizarBadge() {
     const total = mensajes.filter((m) => !m.leido).length;
-    if (badge) badge.textContent = total > 0 ? `(${total})` : "";
+    if (badge) {
+      badge.textContent = total > 0 ? `(${total})` : "";
+    }
   }
 
   function renderizarEstadisticas() {
     if (!stats) return;
+
     const total = mensajes.length;
     const noLeidos = mensajes.filter((m) => !m.leido).length;
     const leidos = total - noLeidos;
 
     stats.innerHTML = `
-      <article class="stat-card">
-        <span class="stat-label">Total conversaciones</span>
-        <strong>${total}</strong>
-      </article>
-      <article class="stat-card">
-        <span class="stat-label">No leídos</span>
-        <strong>${noLeidos}</strong>
-      </article>
-      <article class="stat-card">
-        <span class="stat-label">Leídos</span>
-        <strong>${leidos}</strong>
-      </article>
+      <div class="stat-item"><strong>${total}</strong> Total conversaciones</div>
+      <div class="stat-item"><strong>${noLeidos}</strong> No leídos</div>
+      <div class="stat-item"><strong>${leidos}</strong> Leídos</div>
     `;
+  }
+
+  function mensajesFiltrados() {
+    let lista = [...mensajes];
+
+    if (filtroActual === "NO_LEIDOS") {
+      lista = lista.filter((m) => !m.leido);
+    } else if (filtroActual === "LEIDOS") {
+      lista = lista.filter((m) => m.leido);
+    }
+
+    if (textoBusqueda.trim()) {
+      const t = textoBusqueda.trim().toLowerCase();
+      lista = lista.filter((m) => {
+        return (
+          textoSeguro(m.nombre).toLowerCase().includes(t) ||
+          textoSeguro(m.mensaje).toLowerCase().includes(t) ||
+          textoSeguro(m.telefono).toLowerCase().includes(t) ||
+          textoSeguro(m.whatsapp).toLowerCase().includes(t) ||
+          textoSeguro(m.correo).toLowerCase().includes(t)
+        );
+      });
+    }
+
+    lista.sort((a, b) => new Date(b.fecha || 0) - new Date(a.fecha || 0));
+    return lista;
+  }
+
+  function setEstadoChat(texto, online = false) {
+    if (!chatEstado) return;
+    chatEstado.textContent = texto;
+    chatEstado.classList.toggle("online", Boolean(online));
+  }
+
+  function crearBurbuja(msg) {
+    const row = document.createElement("div");
+    row.className = `chat-row ${msg.tipo === "ADMIN" ? "row-admin" : "row-cliente"}`;
+
+    const div = document.createElement("div");
+    div.className = msg.tipo === "ADMIN" ? "msg-admin" : "msg-cliente";
+
+    if (msg.id) {
+      div.dataset.id = msg.id;
+    }
+
+    const texto = document.createElement("div");
+    texto.textContent = textoSeguro(msg.mensaje);
+
+    const meta = document.createElement("span");
+    meta.className = "msg-meta";
+    meta.textContent = formatearFecha(msg.fecha);
+
+    div.append(texto, meta);
+    row.appendChild(div);
+
+    return row;
+  }
+
+  function agregarMensajeChat(msg) {
+    if (!chatMensajes || !msg) return;
+
+    if (msg.id && chatMensajes.querySelector(`[data-id="${msg.id}"]`)) {
+      return;
+    }
+
+    const burbuja = crearBurbuja(msg);
+    chatMensajes.appendChild(burbuja);
+    chatMensajes.scrollTop = chatMensajes.scrollHeight;
+  }
+
+  function renderizarPaginacion(totalPaginas) {
+    if (!paginacion) return;
+    paginacion.innerHTML = "";
+
+    if (totalPaginas <= 1) return;
+
+    const prev = document.createElement("button");
+    prev.type = "button";
+    prev.textContent = "⬅ Anterior";
+    prev.disabled = paginaActual === 1;
+    prev.onclick = () => {
+      if (paginaActual > 1) {
+        paginaActual--;
+        renderizarLista();
+      }
+    };
+
+    const info = document.createElement("span");
+    info.textContent = `Página ${paginaActual} de ${totalPaginas}`;
+
+    const next = document.createElement("button");
+    next.type = "button";
+    next.textContent = "Siguiente ➡";
+    next.disabled = paginaActual === totalPaginas;
+    next.onclick = () => {
+      if (paginaActual < totalPaginas) {
+        paginaActual++;
+        renderizarLista();
+      }
+    };
+
+    paginacion.append(prev, info, next);
   }
 
   function construirTarjetaMensaje(m) {
@@ -106,11 +236,12 @@ document.addEventListener("DOMContentLoaded", () => {
     top.className = "mensaje-top";
 
     const info = document.createElement("div");
+
     const titulo = document.createElement("h3");
     titulo.textContent = m.nombre || "Cliente";
 
     const meta = document.createElement("p");
-    meta.textContent = `${textoSeguro(m.telefono)} • ${formatearFecha(m.fecha)}`;
+    meta.textContent = `${textoSeguro(m.telefono || m.whatsapp)} • ${formatearFecha(m.fecha)}`;
 
     info.append(titulo, meta);
 
@@ -129,11 +260,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const abrir = document.createElement("button");
     abrir.type = "button";
     abrir.textContent = "Abrir chat";
-    abrir.onclick = () => abrirChat(m);
+    abrir.onclick = (e) => {
+      e.stopPropagation();
+      abrirChat(m);
+    };
 
     const eliminar = document.createElement("button");
     eliminar.type = "button";
-    eliminar.className = "btn-peligro";
     eliminar.textContent = "Eliminar";
     eliminar.onclick = async (e) => {
       e.stopPropagation();
@@ -143,154 +276,83 @@ document.addEventListener("DOMContentLoaded", () => {
     acciones.append(abrir, eliminar);
     item.append(top, preview, acciones);
     item.addEventListener("click", () => abrirChat(m));
+
     return item;
-  }
-
-  function mensajesFiltrados() {
-    let lista = [...mensajes];
-
-    if (filtroActual === "NO_LEIDOS") {
-      lista = lista.filter((m) => !m.leido);
-    } else if (filtroActual === "LEIDOS") {
-      lista = lista.filter((m) => m.leido);
-    }
-
-    if (textoBusqueda.trim()) {
-      const t = textoBusqueda.toLowerCase();
-      lista = lista.filter(
-        (m) =>
-          textoSeguro(m.nombre).toLowerCase().includes(t) ||
-          textoSeguro(m.mensaje).toLowerCase().includes(t) ||
-          textoSeguro(m.telefono).toLowerCase().includes(t)
-      );
-    }
-
-    lista.sort((a, b) => new Date(b.fecha || 0) - new Date(a.fecha || 0));
-    return lista;
-  }
-
-  function renderizarPaginacion(totalPaginas) {
-    if (!paginacion) return;
-    paginacion.innerHTML = "";
-
-    if (totalPaginas <= 1) return;
-
-    const prev = document.createElement("button");
-    prev.type = "button";
-    prev.className = "btn-secundario";
-    prev.textContent = "⬅ Anterior";
-    prev.disabled = paginaActual === 1;
-    prev.onclick = () => {
-      if (paginaActual > 1) {
-        paginaActual--;
-        renderizarLista();
-      }
-    };
-
-    const info = document.createElement("span");
-    info.textContent = `Página ${paginaActual} de ${totalPaginas}`;
-
-    const next = document.createElement("button");
-    next.type = "button";
-    next.className = "btn-secundario";
-    next.textContent = "Siguiente ➡";
-    next.disabled = paginaActual === totalPaginas;
-    next.onclick = () => {
-      if (paginaActual < totalPaginas) {
-        paginaActual++;
-        renderizarLista();
-      }
-    };
-
-    paginacion.append(prev, info, next);
   }
 
   function renderizarLista() {
     if (!contenedor) return;
-
     contenedor.innerHTML = "";
+
     const lista = mensajesFiltrados();
 
     if (!lista.length) {
       contenedor.innerHTML = `<div class="vacio">No hay mensajes.</div>`;
-      paginacion.innerHTML = "";
+      if (paginacion) paginacion.innerHTML = "";
       actualizarBadge();
       renderizarEstadisticas();
       return;
     }
 
     const totalPaginas = Math.ceil(lista.length / porPagina);
-    if (paginaActual > totalPaginas) paginaActual = totalPaginas;
+    if (paginaActual > totalPaginas) {
+      paginaActual = totalPaginas;
+    }
 
     const inicio = (paginaActual - 1) * porPagina;
     const pagina = lista.slice(inicio, inicio + porPagina);
 
     const fragment = document.createDocumentFragment();
     pagina.forEach((m) => fragment.appendChild(construirTarjetaMensaje(m)));
-    contenedor.appendChild(fragment);
 
+    contenedor.appendChild(fragment);
     renderizarPaginacion(totalPaginas);
     actualizarBadge();
     renderizarEstadisticas();
   }
 
-  function crearBurbuja(msg) {
-    const row = document.createElement("div");
-    row.className = `chat-row ${msg.tipo === "ADMIN" ? "row-admin" : "row-cliente"}`;
-
-    const div = document.createElement("div");
-    div.className = msg.tipo === "ADMIN" ? "msg-admin" : "msg-cliente";
-    if (msg.id) div.dataset.id = msg.id;
-
-    const texto = document.createElement("div");
-    texto.textContent = textoSeguro(msg.mensaje);
-
-    const meta = document.createElement("span");
-    meta.className = "msg-meta";
-    meta.textContent = formatearFecha(msg.fecha);
-
-    div.append(texto, meta);
-    row.appendChild(div);
-    return row;
-  }
-
-  function agregarMensajeChat(msg) {
-    if (!chatMensajes || !msg) return;
-    if (msg.id && chatMensajes.querySelector(`[data-id="${msg.id}"]`)) return;
-
-    const burbuja = crearBurbuja(msg);
-    chatMensajes.appendChild(burbuja);
-    chatMensajes.scrollTop = chatMensajes.scrollHeight;
-  }
-
-  function setEstadoChat(texto, online = false) {
-    if (!chatEstado) return;
-    chatEstado.textContent = texto;
-    chatEstado.classList.toggle("online", online);
-  }
-
   async function cargarMensajes() {
     try {
-      const res = await fetch(`${API_BASE}/api/mensajes`, { headers: getHeaders() });
-      if (!res.ok) throw new Error("No se pudieron cargar mensajes");
+      const res = await fetch(`${API_BASE}/api/mensajes`, {
+        headers: getHeaders(),
+      });
 
-      const data = await res.json();
-      const anterioresNoLeidos = mensajes.filter((m) => !m.leido).length;
-      const nuevosNoLeidos = data.filter((m) => !m.leido).length;
-
-      if (nuevosNoLeidos > anterioresNoLeidos && mensajes.length) {
-        sonido.play().catch(() => {});
+      if (!res.ok) {
+        throw new Error("No se pudieron cargar mensajes");
       }
 
-      mensajes = Array.isArray(data) ? data : [];
+      const data = await res.json();
+      mensajes = Array.isArray(data) ? data.map(normalizarMensajeListado) : [];
       renderizarLista();
     } catch (error) {
       console.error("Error mensajes:", error);
-      contenedor.innerHTML = `<div class="vacio">Error al cargar mensajes.</div>`;
+      if (contenedor) {
+        contenedor.innerHTML = `<div class="vacio">Error al cargar mensajes.</div>`;
+      }
+    }
+  }
+
+  async function marcarLeido(id) {
+    if (!id) return;
+
+    try {
+      await fetch(`${API_BASE}/api/mensajes/${id}/leido`, {
+        method: "PUT",
+        headers: getHeaders(),
+      });
+
+      mensajes = mensajes.map((m) =>
+        m.id === id ? { ...m, leido: true } : m
+      );
+      renderizarLista();
+    } catch (error) {
+      console.error("Error marcando leído:", error);
     }
   }
 
   async function cargarHistorialTelefono(telefono) {
+    if (!chatMensajes) return;
+
     chatMensajes.innerHTML = `<div class="vacio">Cargando mensajes...</div>`;
 
     try {
@@ -299,7 +361,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       if (!res.ok) {
-        throw new Error("No se pudo cargar el historial");
+        throw new Error(`No se pudo cargar el historial (${res.status})`);
       }
 
       const historial = await res.json();
@@ -311,156 +373,197 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       historial.forEach(agregarMensajeChat);
+      chatMensajes.scrollTop = chatMensajes.scrollHeight;
     } catch (error) {
       console.error("Error historial chat:", error);
       chatMensajes.innerHTML = `<div class="vacio">No se pudo cargar el historial del chat.</div>`;
     }
   }
 
-  async function marcarLeido(id) {
-    if (!id) return;
-    try {
-      await fetch(`${API_BASE}/api/mensajes/${id}/leido`, {
-        method: "PUT",
-        headers: getHeaders(),
-      });
-    } catch (error) {
-      console.warn("No se pudo marcar leído:", error);
-    }
-  }
-
-  async function abrirChat(mensaje) {
-    telefonoActivo = normalizarTelefono(mensaje.telefono);
-    nombreActivo = mensaje.nombre || telefonoActivo || "Cliente";
-
-    chatContainer?.classList.remove("hidden");
-    if (chatNombre) chatNombre.textContent = nombreActivo;
-    setEstadoChat("Cargando...", false);
-
-    await cargarHistorialTelefono(telefonoActivo);
-
-    if (!mensaje.leido && mensaje.id) {
-      await marcarLeido(mensaje.id);
-      const encontrado = mensajes.find((m) => m.id === mensaje.id);
-      if (encontrado) encontrado.leido = true;
-      renderizarLista();
-    }
-
-    conectarSocket();
-  }
-
-  function desconectarSocket() {
-    try { chatSubscription?.unsubscribe(); } catch {}
-    try { onlineSubscription?.unsubscribe(); } catch {}
-    try { typingSubscription?.unsubscribe(); } catch {}
-    try { stompClient?.disconnect(() => {}); } catch {}
-    stompClient = null;
+  function limpiarSuscripcionesChat() {
+    chatSubscription?.unsubscribe?.();
+    typingSubscription?.unsubscribe?.();
+    onlineSubscription?.unsubscribe?.();
+    chatSubscription = null;
+    typingSubscription = null;
+    onlineSubscription = null;
   }
 
   function conectarSocket() {
-    if (!telefonoActivo) return;
-
-    desconectarSocket();
+    if (stompClient?.connected) return;
 
     const socket = new SockJS(WS_BASE);
     stompClient = Stomp.over(socket);
     stompClient.debug = () => {};
 
     stompClient.connect({}, () => {
-      setEstadoChat("En línea", true);
-
-      chatSubscription = stompClient.subscribe(`/topic/chat/${telefonoActivo}`, (frame) => {
-        const data = JSON.parse(frame.body);
-        if (data.tipo === "LEIDO" || data.tipo === "RECIBIDO") return;
-        agregarMensajeChat(data);
-        cargarMensajes();
-      });
-
-      onlineSubscription = stompClient.subscribe(`/topic/online/${telefonoActivo}`, () => {
-        setEstadoChat("En línea", true);
-      });
-
-      typingSubscription = stompClient.subscribe(`/topic/chat/${telefonoActivo}/typing`, (frame) => {
-        let data;
+      stompClient.subscribe("/topic/mensajes", (frame) => {
         try {
-          data = JSON.parse(frame.body);
-        } catch {
-          data = { tipo: frame.body };
-        }
+          const data = normalizarMensajeListado(JSON.parse(frame.body));
+          const idx = mensajes.findIndex((m) => m.id === data.id);
 
-        if (data.tipo === "CLIENTE") {
-          setEstadoChat("Escribiendo...", false);
-          setTimeout(() => setEstadoChat("En línea", true), 1200);
+          if (idx >= 0) {
+            mensajes[idx] = data;
+          } else {
+            mensajes.unshift(data);
+            sonido?.play?.().catch(() => {});
+          }
+
+          renderizarLista();
+        } catch (error) {
+          console.error("Error inbox WS:", error);
+        }
+      });
+
+      stompClient.subscribe("/topic/chat/global", (frame) => {
+        try {
+          const data = JSON.parse(frame.body);
+          const telefono = normalizarTelefono(data?.telefono);
+
+          if (!telefono) return;
+
+          if (telefonoActivo && telefono === telefonoActivo) {
+            agregarMensajeChat(data);
+          }
+
+          const idx = mensajes.findIndex((m) => m.telefono === telefono);
+          if (idx >= 0) {
+            mensajes[idx] = {
+              ...mensajes[idx],
+              mensaje: data?.mensaje || mensajes[idx].mensaje,
+              fecha: data?.fecha || mensajes[idx].fecha,
+            };
+          }
+
+          renderizarLista();
+        } catch (error) {
+          console.error("Error chat global WS:", error);
         }
       });
     });
   }
 
-  function generarIdTemporal() {
-    if (window.crypto?.randomUUID) return crypto.randomUUID();
-    return `msg-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  function suscribirChatActivo(telefono) {
+    if (!stompClient?.connected || !telefono) return;
+
+    limpiarSuscripcionesChat();
+
+    chatSubscription = stompClient.subscribe(`/topic/chat/${telefono}`, (frame) => {
+      try {
+        const data = JSON.parse(frame.body);
+        if (data?.tipo === "LEIDO" || data?.tipo === "RECIBIDO") return;
+        agregarMensajeChat(data);
+      } catch (error) {
+        console.error("Error suscripción chat:", error);
+      }
+    });
+
+    typingSubscription = stompClient.subscribe(`/topic/chat/${telefono}/typing`, (frame) => {
+      try {
+        const data = JSON.parse(frame.body);
+        if (data.tipo === "CLIENTE") {
+          setEstadoChat("Cliente escribiendo...", true);
+          clearTimeout(window.__typingAdminTimer);
+          window.__typingAdminTimer = setTimeout(() => {
+            setEstadoChat("Chat activo", true);
+          }, 1600);
+        }
+      } catch (error) {
+        console.error("Error typing:", error);
+      }
+    });
+
+    onlineSubscription = stompClient.subscribe(`/topic/online/${telefono}`, () => {
+      setEstadoChat("Cliente en línea", true);
+      clearTimeout(window.__onlineAdminTimer);
+      window.__onlineAdminTimer = setTimeout(() => {
+        setEstadoChat("Chat activo", true);
+      }, 3000);
+    });
+  }
+
+  async function abrirChat(mensaje) {
+    const telefono = normalizarTelefono(mensaje?.telefono || mensaje?.whatsapp);
+
+    if (!telefono) {
+      mostrarToast("Este mensaje no tiene un teléfono válido.");
+      return;
+    }
+
+    telefonoActivo = telefono;
+    nombreActivo = textoSeguro(mensaje?.nombre || "Cliente");
+
+    if (chatContainer) chatContainer.style.display = "";
+    if (chatNombre) chatNombre.textContent = nombreActivo;
+    if (chatInput) chatInput.value = "";
+    if (chatMensajes) chatMensajes.innerHTML = "";
+
+    setEstadoChat("Cargando historial...", false);
+    await cargarHistorialTelefono(telefono);
+
+    if (!mensaje.leido && mensaje.id) {
+      await marcarLeido(mensaje.id);
+    }
+
+    setEstadoChat("Chat activo", true);
+    suscribirChatActivo(telefono);
+  }
+
+  function cerrarChat() {
+    telefonoActivo = "";
+    nombreActivo = "Cliente";
+    limpiarSuscripcionesChat();
+
+    if (chatNombre) chatNombre.textContent = "Cliente";
+    if (chatMensajes) {
+      chatMensajes.innerHTML = `<div class="vacio">Selecciona una conversación.</div>`;
+    }
+    if (chatInput) chatInput.value = "";
+    setEstadoChat("Selecciona una conversación", false);
   }
 
   async function enviarMensajeAdmin() {
-    if (!telefonoActivo || !chatInput) return;
-    const texto = chatInput.value.trim();
+    if (!telefonoActivo) {
+      mostrarToast("Primero abre un chat.");
+      return;
+    }
+
+    if (!stompClient?.connected) {
+      mostrarToast("El chat aún se está conectando.");
+      return;
+    }
+
+    const texto = textoSeguro(chatInput?.value).trim();
     if (!texto) return;
 
-    const payload = {
-      id: generarIdTemporal(),
-      nombre: auth.nombre || "Admin",
-      telefono: telefonoActivo,
+    const mensaje = {
+      id:
+        window.crypto?.randomUUID?.() ||
+        `msg-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      nombre: "Admin Estampaider",
       mensaje: texto,
+      telefono: telefonoActivo,
       tipo: "ADMIN",
       fecha: new Date().toISOString(),
     };
 
-    agregarMensajeChat(payload);
+    agregarMensajeChat(mensaje);
+    stompClient.send("/app/chat", {}, JSON.stringify(mensaje));
 
-    try {
-      if (stompClient?.connected) {
-        stompClient.send("/app/chat", {}, JSON.stringify(payload));
-      } else {
-        throw new Error("Socket no conectado");
-      }
-
+    if (chatInput) {
       chatInput.value = "";
-      setEstadoChat("En línea", true);
-      cargarMensajes();
-    } catch (error) {
-      console.error("Error enviando chat:", error);
-      mostrarToast("No se pudo enviar el mensaje");
-    }
-  }
-
-  async function eliminarMensajeIndividual(id) {
-    if (!id) return;
-    if (!confirm("¿Eliminar este mensaje?")) return;
-
-    try {
-      const res = await fetch(`${API_BASE}/api/chat/mensaje/${id}`, {
-        method: "DELETE",
-        headers: getHeaders(),
-      });
-
-      if (!res.ok) throw new Error("No se pudo eliminar el mensaje");
-
-      mensajes = mensajes.filter((m) => m.id !== id);
-      renderizarLista();
-
-      const nodo = chatMensajes.querySelector(`[data-id="${id}"]`);
-      nodo?.closest(".chat-row")?.remove();
-
-      mostrarToast("Mensaje eliminado");
-    } catch (error) {
-      console.error("Error eliminando mensaje:", error);
-      mostrarToast("No se pudo eliminar el mensaje");
+      chatInput.focus();
     }
   }
 
   async function eliminarChatActivo() {
-    if (!telefonoActivo) return;
-    if (!confirm(`¿Eliminar todo el chat de ${nombreActivo}?`)) return;
+    if (!telefonoActivo) {
+      mostrarToast("No hay un chat abierto.");
+      return;
+    }
+
+    const ok = confirm(`¿Seguro que deseas eliminar el chat de ${nombreActivo}?`);
+    if (!ok) return;
 
     try {
       const res = await fetch(`${API_BASE}/api/chat/${encodeURIComponent(telefonoActivo)}`, {
@@ -468,29 +571,43 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: getHeaders(),
       });
 
-      if (!res.ok) throw new Error("No se pudo eliminar el chat");
+      if (!res.ok) {
+        throw new Error("No se pudo eliminar el chat");
+      }
 
-      mensajes = mensajes.filter((m) => normalizarTelefono(m.telefono) !== telefonoActivo);
+      mensajes = mensajes.filter((m) => m.telefono !== telefonoActivo);
       cerrarChat();
       renderizarLista();
-      mostrarToast("Chat eliminado correctamente");
+      mostrarToast("Chat eliminado correctamente.");
     } catch (error) {
       console.error("Error eliminando chat:", error);
-      mostrarToast("No se pudo eliminar el chat");
+      mostrarToast("No se pudo eliminar el chat.");
     }
   }
 
-  function cerrarChat() {
-    telefonoActivo = null;
-    nombreActivo = "Cliente";
-    desconectarSocket();
-    chatContainer?.classList.add("hidden");
-    if (chatMensajes) {
-      chatMensajes.innerHTML = `<div class="vacio">Abre una conversación para ver los mensajes.</div>`;
+  async function eliminarMensajeIndividual(id) {
+    if (!id) return;
+
+    const ok = confirm("¿Seguro que deseas eliminar este mensaje?");
+    if (!ok) return;
+
+    try {
+      const res = await fetch(`${API_BASE}/api/mensajes/${id}`, {
+        method: "DELETE",
+        headers: getHeaders(),
+      });
+
+      if (!res.ok) {
+        throw new Error("No se pudo eliminar el mensaje");
+      }
+
+      mensajes = mensajes.filter((m) => m.id !== id);
+      renderizarLista();
+      mostrarToast("Mensaje eliminado.");
+    } catch (error) {
+      console.error("Error eliminando mensaje:", error);
+      mostrarToast("No se pudo eliminar el mensaje.");
     }
-    if (chatNombre) chatNombre.textContent = "Cliente";
-    setEstadoChat("Selecciona una conversación", false);
-    if (chatInput) chatInput.value = "";
   }
 
   function exportarExcel() {
@@ -500,19 +617,25 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    if (!window.XLSX) {
+      mostrarToast("La librería XLSX no está disponible.");
+      return;
+    }
+
     const datos = lista.map((m) => ({
       ID: m.id || "",
       Nombre: m.nombre || "",
       Telefono: m.telefono || "",
+      Correo: m.correo || "",
       Mensaje: m.mensaje || "",
       Fecha: formatearFecha(m.fecha),
-      Leido: m.leido ? "Sí" : "No"
+      Leido: m.leido ? "Sí" : "No",
     }));
 
-    const hoja = XLSX.utils.json_to_sheet(datos);
-    const libro = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(libro, hoja, "Mensajes");
-    XLSX.writeFile(libro, "mensajes_estampaider.xlsx");
+    const ws = XLSX.utils.json_to_sheet(datos);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Mensajes");
+    XLSX.writeFile(wb, "mensajes_estampaider.xlsx");
   }
 
   function exportarPDF() {
@@ -522,8 +645,14 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
+    const jsPDFLib = window.jspdf?.jsPDF || window.jsPDF;
+    if (!jsPDFLib) {
+      mostrarToast("La librería PDF no está disponible.");
+      return;
+    }
+
+    const doc = new jsPDFLib();
+    doc.setFontSize(14);
     doc.text("Mensajes Estampaider", 14, 15);
 
     const filas = lista.map((m) => [
@@ -532,18 +661,65 @@ document.addEventListener("DOMContentLoaded", () => {
       m.telefono || "",
       (m.mensaje || "").slice(0, 60),
       formatearFecha(m.fecha),
-      m.leido ? "Sí" : "No"
+      m.leido ? "Sí" : "No",
     ]);
 
-    doc.autoTable({
-      head: [["ID", "Nombre", "Teléfono", "Mensaje", "Fecha", "Leído"]],
-      body: filas,
-      startY: 22,
-      styles: { fontSize: 8 }
-    });
+    if (typeof doc.autoTable === "function") {
+      doc.autoTable({
+        head: [["ID", "Nombre", "Teléfono", "Mensaje", "Fecha", "Leído"]],
+        body: filas,
+        startY: 22,
+        styles: { fontSize: 8 },
+      });
+    }
 
     doc.save("mensajes_estampaider.pdf");
   }
+
+  function activarFiltro(filtro) {
+    filtroActual = filtro;
+    paginaActual = 1;
+    renderizarLista();
+
+    tabs.forEach((t) => t.classList.remove("activo"));
+    botonesTexto.forEach((b) => b.classList.remove("activo"));
+
+    const tabData = tabs.find((t) => t.dataset.filtro === filtro);
+    if (tabData) tabData.classList.add("activo");
+
+    botonesTexto.forEach((btn) => {
+      const txt = (btn.textContent || "").trim().toLowerCase();
+      if (
+        (filtro === "TODOS" && txt === "todos") ||
+        (filtro === "NO_LEIDOS" && (txt === "no leídos" || txt === "no leidos")) ||
+        (filtro === "LEIDOS" && txt === "leídos")
+      ) {
+        btn.classList.add("activo");
+      }
+    });
+  }
+
+  buscador?.addEventListener("input", (e) => {
+    textoBusqueda = e.target.value || "";
+    paginaActual = 1;
+    renderizarLista();
+  });
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      activarFiltro(tab.dataset.filtro || "TODOS");
+    });
+  });
+
+  botonesTexto.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const txt = (btn.textContent || "").trim().toLowerCase();
+
+      if (txt === "todos") activarFiltro("TODOS");
+      if (txt === "no leídos" || txt === "no leidos") activarFiltro("NO_LEIDOS");
+      if (txt === "leídos") activarFiltro("LEIDOS");
+    });
+  });
 
   btnEnviarChat?.addEventListener("click", enviarMensajeAdmin);
   btnCerrarChat?.addEventListener("click", cerrarChat);
@@ -551,45 +727,24 @@ document.addEventListener("DOMContentLoaded", () => {
   btnExcel?.addEventListener("click", exportarExcel);
   btnPDF?.addEventListener("click", exportarPDF);
 
-  if (chatInput) {
-    chatInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        enviarMensajeAdmin();
-      }
-    });
+  chatInput?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      enviarMensajeAdmin();
+      return;
+    }
 
-    chatInput.addEventListener("input", () => {
-      if (stompClient?.connected && telefonoActivo) {
-        stompClient.send(
-          "/app/chat/typing",
-          {},
-          JSON.stringify({ telefono: telefonoActivo, tipo: "ADMIN" })
-        );
-      }
-    });
-  }
-
-  const filtros = document.querySelectorAll("[data-filtro-mensaje]");
-  filtros.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      filtros.forEach((b) => b.classList.remove("activo"));
-      btn.classList.add("activo");
-      filtroActual = btn.dataset.filtroMensaje;
-      paginaActual = 1;
-      renderizarLista();
-    });
+    if (stompClient?.connected && telefonoActivo) {
+      stompClient.send(
+        "/app/chat/typing",
+        {},
+        JSON.stringify({ telefono: telefonoActivo, tipo: "ADMIN" })
+      );
+    }
   });
 
-  buscador?.addEventListener("input", () => {
-    textoBusqueda = buscador.value;
-    paginaActual = 1;
-    renderizarLista();
-  });
-
+  conectarSocket();
   cargarMensajes();
+  activarFiltro("TODOS");
   setInterval(cargarMensajes, 15000);
-
-  window.cerrarChat = cerrarChat;
-  window.enviarMensajeChat = enviarMensajeAdmin;
 });
