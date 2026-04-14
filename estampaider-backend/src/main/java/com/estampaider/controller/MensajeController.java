@@ -38,7 +38,10 @@ public class MensajeController {
     public List<AdminMensajeResponse> listarMensajes() {
         return mensajeRepository.findAll()
                 .stream()
-                .sorted(Comparator.comparing(Mensaje::getFecha, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
+                .sorted(Comparator.comparing(
+                        Mensaje::getFecha,
+                        Comparator.nullsLast(Comparator.naturalOrder())
+                ).reversed())
                 .map(AdminMensajeResponse::new)
                 .toList();
     }
@@ -63,14 +66,14 @@ public class MensajeController {
     }
 
     public static class AdminMensajeResponse {
-        private Long id;
-        private String nombre;
-        private String correo;
-        private String whatsapp;
-        private String telefono;
-        private String mensaje;
-        private LocalDateTime fecha;
-        private boolean leido;
+        private final Long id;
+        private final String nombre;
+        private final String correo;
+        private final String whatsapp;
+        private final String telefono;
+        private final String mensaje;
+        private final LocalDateTime fecha;
+        private final boolean leido;
 
         public AdminMensajeResponse(Mensaje mensaje) {
             this.id = mensaje.getId();
@@ -88,7 +91,8 @@ public class MensajeController {
                 return "";
             }
 
-            String limpio = valor.replace("\"", "")
+            String limpio = valor
+                    .replace("\"", "")
                     .replace("+", "")
                     .replaceAll("\\D", "")
                     .trim();

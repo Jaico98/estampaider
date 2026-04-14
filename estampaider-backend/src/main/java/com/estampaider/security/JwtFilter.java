@@ -5,6 +5,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,18 +24,25 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
+        String method = request.getMethod();
 
-        return path == null
-                || path.startsWith("/ws")
+        if (path == null) {
+            return true;
+        }
+
+        return path.startsWith("/ws")
+                || path.contains("/ws")
                 || path.startsWith("/topic")
                 || path.startsWith("/app")
-                || path.startsWith("/api/chat")
                 || path.startsWith("/api/auth")
                 || path.startsWith("/api/metodos-pago")
                 || path.startsWith("/images")
                 || path.startsWith("/uploads")
                 || path.equals("/webhook")
-                || path.equals("/notificar");
+                || path.equals("/notificar")
+                || (path.startsWith("/api/chat") && HttpMethod.GET.matches(method))
+                || (path.equals("/api/resenas") && HttpMethod.GET.matches(method))
+                || (path.equals("/api/resenas") && HttpMethod.POST.matches(method));
     }
 
     @Override
@@ -51,7 +59,7 @@ public class JwtFilter extends OncePerRequestFilter {
             return;
         }
 
-        String token = authHeader.substring(7);
+        final String token = authHeader.substring(7);
 
         try {
             if (jwtService.isTokenValid(token)) {

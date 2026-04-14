@@ -90,43 +90,51 @@ public class AuthController {
     }
 
     @PostMapping("/send-code")
-public ResponseEntity<?> sendCode(@RequestBody Map<String, String> request) {
-    String telefono = request.get("telefono");
+    public ResponseEntity<?> sendCode(@RequestBody Map<String, String> request) {
+        String telefono = request.get("telefono");
 
-    if (telefono == null || telefono.isBlank()) {
-        return ResponseEntity.badRequest().body("Teléfono requerido");
+        if (telefono == null || telefono.isBlank()) {
+            return ResponseEntity.badRequest().body("Teléfono requerido");
+        }
+
+        Optional<Usuario> optionalUsuario = usuarioRepository.findByTelefono(telefono);
+
+        if (optionalUsuario.isEmpty()) {
+            return ResponseEntity.ok("Si el número existe, se enviará un código.");
+        }
+
+        try {
+            Usuario usuario = optionalUsuario.get();
+
+            String codigo = String.valueOf((int) (Math.random() * 900000) + 100000);
+
+            usuario.setRecoveryCode(codigo);
+            usuario.setRecoveryCodeExpiration(LocalDateTime.now().plusMinutes(5));
+            usuarioRepository.save(usuario);
+
+            System.out.println("=== RECOVERY DEBUG ===");
+            System.out.println("Usuario encontrado: " + usuario.getNombre());
+            System.out.println("Telefono BD: " + usuario.getTelefono());
+            System.out.println("Telefono request: " + telefono);
+            System.out.println("Codigo generado: " + codigo);
+
+            whatsAppService.enviarCodigoRecuperacion(usuario.getTelefono(), codigo);
+
+            return ResponseEntity.ok("Código enviado por WhatsApp");
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body("La integración de WhatsApp no está configurada correctamente.");
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body("WhatsApp rechazó el envío del código. Verifica token y phone number id.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error interno enviando el código.");
+        }
     }
-
-    Optional<Usuario> optionalUsuario = usuarioRepository.findByTelefono(telefono);
-
-    if (optionalUsuario.isEmpty()) {
-        return ResponseEntity.ok("Si el número existe, se enviará un código.");
-    }
-
-    try {
-        Usuario usuario = optionalUsuario.get();
-
-        String codigo = String.valueOf((int) (Math.random() * 900000) + 100000);
-
-        usuario.setRecoveryCode(codigo);
-        usuario.setRecoveryCodeExpiration(LocalDateTime.now().plusMinutes(5));
-        usuarioRepository.save(usuario);
-
-        System.out.println("=== RECOVERY DEBUG ===");
-        System.out.println("Usuario encontrado: " + usuario.getNombre());
-        System.out.println("Telefono BD: " + usuario.getTelefono());
-        System.out.println("Telefono request: " + telefono);
-        System.out.println("Codigo generado: " + codigo);
-
-        whatsAppService.enviarCodigoRecuperacion(usuario.getTelefono(), codigo);
-
-        return ResponseEntity.ok("Código enviado por WhatsApp");
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error enviando el código por WhatsApp");
-    }
-}
 
     @PostMapping("/verify-code")
     public ResponseEntity<?> verifyCode(@RequestBody Map<String, String> request) {

@@ -1253,7 +1253,7 @@ main h2 {
 
 .toast-success { background: #2e7d32; }
 .toast-error   { background: #c62828; }
-.toast-info    { background: #1976d2; }
+.toast-info    { background: #74a7db; }
 
 /* ===============================
  🧾 MODAL HISTORIAL
@@ -1945,8 +1945,8 @@ main {
 /* BOTONES CTA CORREGIDOS */
 .cta-final .btn-secundario {
   background: rgba(255,255,255,0.14);
-  border: 1px solid rgba(255,255,255,0.3);
-  color: #fff;
+  border: 1px solid rgba(3, 3, 3, 0.3);
+  color: #4ca4d6;
   box-shadow: none;
 }
 

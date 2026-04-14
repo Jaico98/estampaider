@@ -10,6 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
@@ -39,15 +40,19 @@ public class WhatsAppService {
 
     private void enviarTexto(String numero, String mensaje) {
         if (numero == null || numero.isBlank()) {
-            throw new IllegalArgumentException("El numero de WhatsApp es obligatorio");
+            throw new IllegalArgumentException("El número de WhatsApp es obligatorio");
         }
 
         if (mensaje == null || mensaje.isBlank()) {
-            throw new IllegalArgumentException("El mensaje no puede estar vacio");
+            throw new IllegalArgumentException("El mensaje no puede estar vacío");
         }
 
-        if (accessToken == null || accessToken.isBlank() || phoneNumberId == null || phoneNumberId.isBlank()) {
-            throw new IllegalStateException("Faltan las propiedades whatsapp.access.token o whatsapp.phone.number.id");
+        if (accessToken == null || accessToken.isBlank()) {
+            throw new IllegalStateException("Falta configurar whatsapp.access.token");
+        }
+
+        if (phoneNumberId == null || phoneNumberId.isBlank() || "CHANGE_ME_DEV".equalsIgnoreCase(phoneNumberId)) {
+            throw new IllegalStateException("Falta configurar un whatsapp.phone.number.id real");
         }
 
         String numeroNormalizado = normalizarNumero(numero);
@@ -74,13 +79,32 @@ public class WhatsAppService {
         System.out.println("Numero normalizado: " + numeroNormalizado);
         System.out.println("Mensaje: " + mensaje);
 
-        ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
+        try {
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    request,
+                    String.class
+            );
 
-        System.out.println("WhatsApp status: " + response.getStatusCode());
-        System.out.println("WhatsApp body: " + response.getBody());
+            System.out.println("WhatsApp status: " + response.getStatusCode());
+            System.out.println("WhatsApp body: " + response.getBody());
 
-        if (!response.getStatusCode().is2xxSuccessful()) {
-            throw new RuntimeException("Error enviando mensaje por WhatsApp: " + response.getBody());
+            if (!response.getStatusCode().is2xxSuccessful()) {
+                throw new RuntimeException("Error enviando mensaje por WhatsApp: " + response.getBody());
+            }
+        } catch (HttpStatusCodeException e) {
+            String detalle = e.getResponseBodyAsString();
+
+            System.err.println("WhatsApp error status: " + e.getStatusCode());
+            System.err.println("WhatsApp error body: " + detalle);
+
+            throw new RuntimeException(
+                    "WhatsApp API rechazó la solicitud: " + e.getStatusCode() +
+                    (detalle != null && !detalle.isBlank() ? " - " + detalle : "")
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("No se pudo conectar con WhatsApp API: " + e.getMessage(), e);
         }
     }
 

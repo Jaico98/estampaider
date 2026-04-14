@@ -2,11 +2,8 @@ const authData = sessionStorage.getItem("auth")
   ? JSON.parse(sessionStorage.getItem("auth"))
   : null;
 
-if (!authData || !authData.token) {
-  window.location.href = "admin/login.html";
-}
-
 const API_BASE = resolverApiBase();
+
 let stompClient = null;
 let telefonoCliente = null;
 let reconnectTimer = null;
@@ -68,12 +65,12 @@ function checklistEstado(estado) {
   const actual = estados.findIndex((e) => e.key === estado);
 
   return `
-    <div class="estado-checklist">
+    <div class="pedido-checklist">
       ${estados
-        .map(
-          (e, index) =>
-            `<span class="${index <= actual ? "activo" : ""}">${e.label}</span>`
-        )
+        .map((e, index) => {
+          const clase = index <= actual ? "activo" : "";
+          return `<span class="check-item ${clase}">${e.label}</span>`;
+        })
         .join("")}
     </div>
   `;
@@ -99,7 +96,6 @@ function estadoChat(texto) {
 
 function crearBurbujaMensaje(texto, tipo, fecha, id) {
   const div = document.createElement("div");
-
   if (id) div.dataset.id = id;
   div.className = tipo === "CLIENTE" ? "msg-cliente" : "msg-admin";
 
@@ -160,13 +156,16 @@ async function cargarHistorial() {
 
   try {
     const res = await fetch(`${API_BASE}/api/chat/${telefonoCliente}`);
-    if (!res.ok) return;
+
+    if (!res.ok) {
+      throw new Error(`No se pudo cargar el historial (${res.status})`);
+    }
 
     const historial = await res.json();
 
     if (!historial.length) {
       agregarMensajeSistema(
-        "Hola, soy el soporte de Estampaider 👋 Cuéntanos en qué podemos ayudarte con tu pedido.",
+        "Hola, soy el soporte de Estampaider. Cuéntanos en qué podemos ayudarte con tu pedido.",
         "Ahora"
       );
       return;
@@ -182,17 +181,32 @@ async function cargarHistorial() {
   }
 }
 
+function renderizarLoginRequerido() {
+  const contenedor = document.getElementById("pedidos");
+  const chatSection = document.getElementById("chat-section");
+
+  if (contenedor) {
+    contenedor.innerHTML = `
+      <div class="empty-state">
+        <p>Tu sesión no está activa.</p>
+        <button class="btn-principal" onclick="irLogin()">Iniciar sesión</button>
+      </div>
+    `;
+  }
+
+  if (chatSection) {
+    chatSection.innerHTML = `
+      <div class="empty-state">
+        <p>Para usar el chat debes iniciar sesión nuevamente.</p>
+        <button class="btn-principal" onclick="irLogin()">Iniciar sesión</button>
+      </div>
+    `;
+  }
+}
+
 function conectarChat() {
   if (!authData?.telefono) {
-    const chatSection = document.getElementById("chat-section");
-    if (chatSection) {
-      chatSection.innerHTML = `
-        <div style="padding:24px">
-          <p>Para usar el chat debes iniciar sesión nuevamente.</p>
-          <button class="btn btn-primario" onclick="irLogin()">Iniciar sesión</button>
-        </div>
-      `;
-    }
+    renderizarLoginRequerido();
     return;
   }
 
@@ -252,7 +266,6 @@ function generarIdTemporal() {
   if (window.crypto?.randomUUID) {
     return crypto.randomUUID();
   }
-
   return `msg-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
@@ -270,7 +283,7 @@ function enviarMensaje() {
 
   const mensaje = {
     id: generarIdTemporal(),
-    nombre: authData.nombre,
+    nombre: authData?.nombre || "Cliente",
     mensaje: texto,
     telefono: telefonoCliente,
     tipo: "CLIENTE",
@@ -311,28 +324,28 @@ function renderizarPedidos(contenedor, pedidos) {
         ? new Date(pedido.fecha).toLocaleString("es-CO")
         : "—";
 
-      const detallesHTML =
-        pedido.detalles?.length
-          ? pedido.detalles
-              .map((d) => {
-                const producto = escapeHtml(d.producto);
-                const cantidad = Number(d.cantidad || 0);
-                const subtotal = Number(d.precioUnitario || 0) * cantidad;
-                const nota = d.notaPersonalizacion
-                  ? `<br><small>Personalización: ${escapeHtml(
-                      d.notaPersonalizacion
-                    )}</small>`
-                  : "";
+      const detallesHTML = pedido.detalles?.length
+        ? pedido.detalles
+            .map((d) => {
+              const producto = escapeHtml(d.producto);
+              const cantidad = Number(d.cantidad || 0);
+              const subtotal = Number(d.precioUnitario || 0) * cantidad;
 
-                return `
-                  <li>
-                    <strong>${producto}</strong> x ${cantidad} — $${subtotal.toLocaleString("es-CO")}
-                    ${nota}
-                  </li>
-                `;
-              })
-              .join("")
-          : "<li>Sin productos</li>";
+              const nota = d.notaPersonalizacion
+                ? `<div class="pedido-nota">Personalización: ${escapeHtml(
+                    d.notaPersonalizacion
+                  )}</div>`
+                : "";
+
+              return `
+                <li>
+                  <strong>${producto}</strong> x ${cantidad} — $${subtotal.toLocaleString("es-CO")}
+                  ${nota}
+                </li>
+              `;
+            })
+            .join("")
+        : "<li>Sin productos</li>";
 
       return `
         <article class="pedido-card">
@@ -354,27 +367,29 @@ function renderizarPedidos(contenedor, pedidos) {
 
 document.addEventListener("DOMContentLoaded", async () => {
   const contenedor = document.getElementById("pedidos");
-  const token = authData.token;
+  const token = authData?.token;
   const nombre = authData?.nombre || "";
-
   const nombreUsuario = document.getElementById("nombreUsuario");
+
   if (nombreUsuario) {
     nombreUsuario.textContent = nombre ? `, ${nombre}` : "";
   }
 
+  if (!authData || !token) {
+    renderizarLoginRequerido();
+    return;
+  }
+
   try {
     const res = await fetch(`${API_BASE}/api/pedidos/mis-pedidos`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
 
     if (res.status === 401) {
       sessionStorage.removeItem("auth");
-      contenedor.innerHTML = `
-        <div class="empty">
-          <p>Tu sesión ha expirado.</p>
-          <button class="btn btn-primario" onclick="irLogin()">Iniciar sesión nuevamente</button>
-        </div>
-      `;
+      renderizarLoginRequerido();
       return;
     }
 
@@ -386,9 +401,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (!pedidos.length) {
       contenedor.innerHTML = `
-        <div class="empty">
+        <div class="empty-state">
           <p>Aún no tienes pedidos. ¡Explora nuestros productos y crea el primero!</p>
-          <button class="btn" onclick="volver()">Ir a la tienda</button>
+          <button class="btn-principal" onclick="volver()">Ir a la tienda</button>
         </div>
       `;
     } else {
@@ -396,7 +411,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   } catch (error) {
     console.error(error);
-    contenedor.innerHTML = '<div class="empty">⚠️ Error al cargar tus pedidos.</div>';
+    contenedor.innerHTML = `
+      <div class="empty-state">
+        <p>⚠️ Error al cargar tus pedidos.</p>
+      </div>
+    `;
   }
 
   conectarChat();
@@ -410,7 +429,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       stompClient.send(
         "/app/chat/typing",
         {},
-        JSON.stringify({ telefono: telefonoCliente, tipo: "CLIENTE" })
+        JSON.stringify({
+          telefono: telefonoCliente,
+          tipo: "CLIENTE",
+        })
       );
     }
   });
@@ -421,12 +443,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       enviarMensaje();
     }
   });
+
+  document.getElementById("btn-enviar")?.addEventListener("click", enviarMensaje);
 });
 
 document.addEventListener("input", (e) => {
   if (e.target.id !== "buscarPedido") return;
 
   const texto = e.target.value.toLowerCase();
+
   document.querySelectorAll(".pedido-card").forEach((card) => {
     const titulo = card.querySelector("h3")?.textContent.toLowerCase() || "";
     card.style.display = titulo.includes(texto) ? "block" : "none";

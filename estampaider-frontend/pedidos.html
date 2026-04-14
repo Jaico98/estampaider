@@ -1,1039 +1,1602 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pedidos Admin | Estampaider</title>
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pedidos Admin | Estampaider</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
+  <link rel="stylesheet" href="styles.css" />
 
-    <style>
-/* ===============================
-   TOPBAR ADMIN
-================================= */
-.admin-topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:18px;
-  flex-wrap:wrap;
-  margin:24px auto 20px;
-  padding:22px 24px;
-  max-width:1200px;
-  background:linear-gradient(135deg,#ffffff 0%,#f8fbff 100%);
-  border:1px solid #e2e8f0;
-  border-radius:22px;
-  box-shadow:0 14px 35px rgba(15, 23, 42, 0.08);
+  <style>
+    :root{
+      --bg:#f4f8fc;
+      --card:#ffffff;
+      --line:#dbe7f0;
+      --ink:#0f172a;
+      --muted:#64748b;
+      --brand:#14a6d6;
+      --brand-2:#0ea5e9;
+      --ok:#16a34a;
+      --warn:#f59e0b;
+      --danger:#dc2626;
+      --shadow:0 18px 45px rgba(15,23,42,.08);
+      --shadow-soft:0 10px 24px rgba(15,23,42,.05);
+      --radius-xl:26px;
+      --radius-lg:20px;
+      --radius-md:16px;
+      --radius-sm:12px;
+    }
+
+    *{
+      box-sizing:border-box;
+    }
+
+    body.admin-pedidos-page{
+      margin:0;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(20,166,214,.12), transparent 28%),
+        radial-gradient(circle at top right, rgba(14,165,233,.12), transparent 24%),
+        linear-gradient(180deg,#f7fbff 0%, #eff5fb 100%);
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+
+    .admin-shell{
+      max-width:1280px;
+      margin:0 auto;
+      padding:24px 18px 42px;
+    }
+
+    .admin-topbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:18px;
+      flex-wrap:wrap;
+      margin:0 auto 20px;
+      padding:26px 28px;
+      background:linear-gradient(135deg,#ffffff 0%,#f8fbff 100%);
+      border:1px solid #e2e8f0;
+      border-radius:var(--radius-xl);
+      box-shadow:var(--shadow);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .admin-topbar::after{
+      content:"";
+      position:absolute;
+      inset:auto -50px -50px auto;
+      width:180px;
+      height:180px;
+      background:radial-gradient(circle, rgba(20,166,214,.18), transparent 65%);
+      pointer-events:none;
+    }
+
+    .admin-topbar-left h1{
+      margin:0;
+      font-size:clamp(28px, 3vw, 38px);
+      color:var(--ink);
+      letter-spacing:.2px;
+    }
+
+    .admin-topbar-left p{
+      margin:8px 0 0;
+      color:var(--muted);
+      font-size:15px;
+      max-width:680px;
+      line-height:1.5;
+    }
+
+    .admin-topbar-actions{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .btn-admin-top{
+      border:none;
+      border-radius:18px;
+      padding:14px 18px;
+      font-size:15px;
+      font-weight:800;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease, background .18s ease;
+      box-shadow:0 8px 20px rgba(15,23,42,.08);
+    }
+
+    .btn-admin-top:hover{
+      transform:translateY(-2px);
+      box-shadow:0 14px 28px rgba(0,0,0,.12);
+    }
+
+    .btn-admin-top:active{
+      transform:translateY(0);
+    }
+
+    .btn-productos{
+      background:linear-gradient(135deg,var(--brand) 0%, var(--brand-2) 100%);
+      color:#fff;
+    }
+
+    .btn-secundario-top{
+      background:#eef6fb;
+      color:var(--ink);
+      border:1px solid #d8e7f0;
+    }
+
+    .btn-productos span:first-child,
+    .btn-secundario-top span:first-child{
+      font-size:18px;
+    }
+
+    .admin-grid{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:16px;
+    }
+
+    .panel{
+      background:rgba(255,255,255,.82);
+      border:1px solid #e2e8f0;
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow-soft);
+      backdrop-filter:blur(6px);
+    }
+
+    .panel-padding{
+      padding:16px;
+    }
+
+    .buscador{
+      margin:0;
+    }
+
+    .buscador input{
+      width:100%;
+      border:none;
+      border-radius:18px;
+      padding:17px 18px;
+      font-size:16px;
+      background:#ffffff;
+      box-shadow:0 10px 24px rgba(15,23,42,.04);
+      border:1px solid #e2e8f0;
+      outline:none;
+      transition:border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .buscador input:focus{
+      border-color:#93c5fd;
+      box-shadow:0 0 0 4px rgba(59,130,246,.10);
+    }
+
+    .filtros-grid{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0, 1fr));
+      gap:14px;
+    }
+
+    .grupo-filtros{
+      padding:14px 16px;
+      background:rgba(255,255,255,0.72);
+      border:1px solid #e2e8f0;
+      border-radius:18px;
+      box-shadow:0 8px 20px rgba(15,23,42,.04);
+      backdrop-filter:blur(6px);
+      min-width:0;
+    }
+
+    .grupo-filtros h4{
+      margin:0 0 10px;
+      font-size:13px;
+      letter-spacing:.4px;
+      text-transform:uppercase;
+      color:var(--muted);
+      font-weight:900;
+    }
+
+    .filtros,
+    .filtros-pago,
+    .filtros-metodo,
+    .filtros-extra{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+    }
+
+    .filtros button,
+    .filtros-pago button,
+    .filtros-metodo button,
+    .filtros-extra button,
+    #resetFiltros,
+    #ordenFecha,
+    .exportar button,
+    .paginacion button{
+      border:none;
+      border-radius:999px;
+      padding:11px 18px;
+      font-size:14px;
+      font-weight:800;
+      cursor:pointer;
+      background:#f8fafc;
+      color:#334155;
+      border:1px solid #dbe7f0;
+      transition:transform .18s ease, box-shadow .18s ease, background .18s ease, color .18s ease, border-color .18s ease;
+      box-shadow:0 3px 10px rgba(15,23,42,.04);
+    }
+
+    .filtros button:hover,
+    .filtros-pago button:hover,
+    .filtros-metodo button:hover,
+    .filtros-extra button:hover,
+    #resetFiltros:hover,
+    #ordenFecha:hover,
+    .exportar button:hover,
+    .paginacion button:hover{
+      background:#eff6ff;
+      color:#4b5777;
+      border-color:#bfdbfe;
+      transform:translateY(-1px);
+      box-shadow:0 8px 18px rgba(29,78,216,.10);
+    }
+
+    .filtros button.activo,
+    .filtros-pago button.activo,
+    .filtros-metodo button.activo{
+      background:linear-gradient(135deg,var(--brand),var(--brand-2));
+      color:#fff;
+      border-color:transparent;
+      box-shadow:0 10px 20px rgba(20,166,214,.25);
+    }
+
+    #resetFiltros{
+      background:#fff7ed;
+      color:#9a3412;
+      border-color:#fed7aa;
+    }
+
+    #resetFiltros:hover{
+      background:#ffedd5;
+      color:#9a3412;
+      border-color:#fdba74;
+    }
+
+    #ordenFecha{
+      background:#f0fdf4;
+      color:#166534;
+      border-color:#bbf7d0;
+    }
+
+    #ordenFecha:hover{
+      background:#dcfce7;
+      color:#166534;
+      border-color:#86efac;
+    }
+
+    .dashboard{
+      display:grid;
+      grid-template-columns:repeat(7, minmax(0, 1fr));
+      gap:14px;
+      margin-top:4px;
+    }
+
+    .card{
+      background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
+      border:1px solid #e2e8f0;
+      border-radius:20px;
+      padding:18px 16px;
+      box-shadow:var(--shadow-soft);
+      min-height:112px;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      position:relative;
+      overflow:hidden;
+      cursor:pointer;
+      transition:transform .18s ease, box-shadow .18s ease;
+    }
+
+    .card:hover{
+      transform:translateY(-3px);
+      box-shadow:0 18px 36px rgba(15,23,42,.10);
+    }
+
+    .card::before{
+      content:"";
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      height:5px;
+      background:#dbe7f0;
+    }
+
+    .card.pendiente::before{ background:linear-gradient(90deg,#f59e0b,#facc15); }
+    .card.enviado::before{ background:linear-gradient(90deg,#2563eb,#38bdf8); }
+    .card.entregado::before{ background:linear-gradient(90deg,#16a34a,#4ade80); }
+    .card.dinero::before{ background:linear-gradient(90deg,#0f766e,#2dd4bf); }
+    .card.promedio::before{ background:linear-gradient(90deg,#7c3aed,#a78bfa); }
+    .card.cliente-top::before{ background:linear-gradient(90deg,#ea580c,#fb923c); }
+
+    .card h4{
+      margin:0;
+      color:#475569;
+      font-size:14px;
+      font-weight:800;
+    }
+
+    .card span{
+      display:block;
+      margin-top:10px;
+      font-size:26px;
+      font-weight:900;
+      color:var(--ink);
+      line-height:1.1;
+      word-break:break-word;
+    }
+
+    .resumen-ventas{
+      margin-top:14px;
+      padding:16px 18px;
+      background:linear-gradient(135deg,#ecfdf5 0%, #f0fdf4 100%);
+      border:1px solid #bbf7d0;
+      border-radius:18px;
+      color:#166534;
+      font-weight:800;
+      box-shadow:var(--shadow-soft);
+    }
+
+    .resumen-ventas strong{
+      font-size:22px;
+      margin-left:8px;
+    }
+
+    .graficas{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:16px;
+      margin-top:16px;
+    }
+
+    .grafica-card{
+      background:#fff;
+      border:1px solid #e2e8f0;
+      border-radius:22px;
+      padding:18px;
+      box-shadow:var(--shadow-soft);
+      min-height:360px;
+    }
+
+    .grafica-card h3{
+      margin:0 0 16px;
+      color:var(--ink);
+      font-size:18px;
+    }
+
+    .exportar{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      margin-top:16px;
+    }
+
+    .exportar button{
+      background:#fff;
+      min-width:180px;
+    }
+
+    #pedidos{
+      margin-top:18px;
+      display:grid;
+      gap:16px;
+    }
+
+    .pedido-card{
+      background:linear-gradient(180deg,#ffffff 0%, #fbfdff 100%);
+      border:1px solid #e2e8f0;
+      border-radius:24px;
+      padding:22px 22px 18px;
+      box-shadow:var(--shadow-soft);
+      transition:transform .18s ease, box-shadow .18s ease;
+    }
+
+    .pedido-card:hover{
+      transform:translateY(-2px);
+      box-shadow:0 18px 38px rgba(15,23,42,.08);
+    }
+
+    .pedido-header{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-bottom:12px;
+      align-items:center;
+    }
+
+    .badge-estado,
+    .badge-pago,
+    .badge-cliente{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:7px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.3px;
+    }
+
+    .badge-estado{
+      background:#e0f2fe;
+      color:#075985;
+    }
+
+    .badge-pago{
+      background:#ecfccb;
+      color:#3f6212;
+    }
+
+    .badge-cliente{
+      background:#f5f3ff;
+      color:#5b21b6;
+    }
+
+    .badge-cliente.vip{
+      background:#fff7ed;
+      color:#c2410c;
+    }
+
+    .badge-cliente.recurrente{
+      background:#eff6ff;
+      color:#1d4ed8;
+    }
+
+    .badge-cliente.nuevo{
+      background:#ecfeff;
+      color:#0f766e;
+    }
+
+    .pedido-card h3{
+      margin:0 0 8px;
+      font-size:22px;
+      color:var(--ink);
+    }
+
+    .pedido-card p{
+      margin:6px 0;
+      color:#475569;
+      line-height:1.5;
+    }
+
+    .pedido-detalles{
+      margin:14px 0;
+      padding:14px 16px 14px 32px;
+      border-radius:16px;
+      background:#f8fbff;
+      border:1px solid #e2e8f0;
+      color:#334155;
+    }
+
+    .pedido-detalles li + li{
+      margin-top:8px;
+    }
+
+    .pedido-acciones{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin-top:16px;
+    }
+
+    .pedido-acciones button{
+      border:none;
+      border-radius:14px;
+      padding:11px 16px;
+      font-weight:800;
+      cursor:pointer;
+      transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+      box-shadow:0 8px 18px rgba(15,23,42,.08);
+    }
+
+    .pedido-acciones button:hover{
+      transform:translateY(-1px);
+    }
+
+    .pedido-acciones .whatsapp{
+      background:linear-gradient(135deg,#22c55e,#16a34a);
+      color:#fff;
+    }
+
+    .pedido-acciones .btn-historial{
+      background:#eef2ff;
+      color:#3730a3;
+    }
+
+    .pedido-acciones .estado{
+      background:#e0f2fe;
+      color:#075985;
+    }
+
+    .pedido-acciones .pagar{
+      background:#fef9c3;
+      color:#854d0e;
+    }
+
+    .pedido-acciones .eliminar{
+      background:#fee2e2;
+      color:#b91c1c;
+    }
+
+    .pedido-acciones button:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+      transform:none;
+      box-shadow:none;
+    }
+
+    .paginacion{
+      margin-top:20px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:14px;
+      flex-wrap:wrap;
+      padding-bottom:10px;
+    }
+
+    #infoPagina{
+      font-weight:800;
+      color:#475569;
+      background:#fff;
+      border:1px solid #e2e8f0;
+      border-radius:999px;
+      padding:10px 16px;
+      box-shadow:var(--shadow-soft);
+    }
+
+    .logout{
+      position:fixed;
+      right:20px;
+      bottom:20px;
+      border:none;
+      border-radius:999px;
+      padding:14px 18px;
+      background:linear-gradient(135deg,#0f172a,#334155);
+      color:#fff;
+      font-weight:900;
+      cursor:pointer;
+      box-shadow:0 16px 32px rgba(15,23,42,.24);
+      z-index:100;
+    }
+
+    .logout:hover{
+      transform:translateY(-2px);
+    }
+
+    .modal{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.45);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:9998;
+    }
+
+    .modal-contenido{
+      width:100%;
+      max-width:760px;
+      background:#fff;
+      border-radius:24px;
+      padding:24px;
+      box-shadow:0 24px 60px rgba(15,23,42,.22);
+      position:relative;
+      max-height:85vh;
+      overflow:auto;
+    }
+
+    .modal-contenido h2{
+      margin:0 0 10px;
+      color:var(--ink);
+    }
+
+    .modal-contenido table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:18px;
+      overflow:hidden;
+      border-radius:14px;
+      border:1px solid #e2e8f0;
+    }
+
+    .modal-contenido thead{
+      background:#f8fafc;
+    }
+
+    .modal-contenido th,
+    .modal-contenido td{
+      padding:12px 14px;
+      text-align:left;
+      border-bottom:1px solid #e2e8f0;
+      font-size:14px;
+    }
+
+    .cerrar{
+      position:absolute;
+      top:14px;
+      right:16px;
+      font-size:28px;
+      font-weight:700;
+      color:#64748b;
+      cursor:pointer;
+    }
+
+    #toast{
+  position: fixed !important;
+  top: 18px !important;
+  right: 18px !important;
+  left: auto !important;
+  bottom: auto !important;
+
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 300px !important;
+  max-height: none !important;
+
+  padding: 12px 14px !important;
+  border-radius: 14px !important;
+
+  color: #fff !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+  line-height: 1.35 !important;
+  text-align: left !important;
+
+  box-shadow: 0 14px 28px rgba(15,23,42,.18) !important;
+  transform: translateY(-10px) scale(.98) !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  transition: opacity .2s ease, transform .2s ease !important;
+  z-index: 99999 !important;
+
+  display: inline-block !important;
+  overflow: hidden !important;
+  white-space: normal !important;
+  word-break: break-word !important;
+
+  backdrop-filter: blur(6px) !important;
 }
 
-.admin-topbar-left h1{
-  margin:0;
-  font-size:clamp(24px, 3vw, 34px);
-  color:#0f172a;
+#toast.show{
+  transform: translateY(0) scale(1) !important;
+  opacity: 1 !important;
 }
 
-.admin-topbar-left p{
-  margin:6px 0 0;
-  color:#64748b;
-  font-size:15px;
+.toast-info{
+  background: linear-gradient(135deg,#0ea5e9,#2563eb) !important;
 }
 
-.admin-topbar-actions{
-  display:flex;
-  gap:12px;
-  flex-wrap:wrap;
+.toast-success{
+  background: linear-gradient(135deg,#16a34a,#22c55e) !important;
 }
 
-.btn-admin-top{
-  border:none;
-  border-radius:16px;
-  padding:14px 18px;
-  font-size:15px;
-  font-weight:700;
-  cursor:pointer;
-  display:inline-flex;
-  align-items:center;
-  gap:10px;
-  transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease, background .18s ease;
+.toast-error{
+  background: linear-gradient(135deg,#dc2626,#ef4444) !important;
 }
 
-.btn-admin-top:hover{
-  transform:translateY(-2px);
-  box-shadow:0 12px 24px rgba(0,0,0,.12);
-}
+    #modalPassword input{
+      width:100%;
+      margin-bottom:10px;
+      padding:12px;
+      border-radius:10px;
+      border:1px solid #e2e8f0;
+    }
 
-.btn-admin-top:active{
-  transform:translateY(0);
-}
+    #btnCambiarPassword{
+      width:100%;
+      padding:12px;
+      border:none;
+      border-radius:12px;
+      background:linear-gradient(135deg,#14a6d6,#0ea5e9);
+      color:#fff;
+      font-weight:700;
+      cursor:pointer;
+    }
 
-.btn-productos{
-  background:linear-gradient(135deg,#14a6d6 0%, #0ea5e9 100%);
-  color:#fff;
-  box-shadow:0 10px 22px rgba(20,166,214,.28);
-}
+    .modal-password{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.45);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      z-index:9999;
+    }
 
-.btn-secundario-top{
-  background:#eef6fb;
-  color:#0f172a;
-  border:1px solid #d8e7f0;
-}
+    .modal-password.hidden{
+      display:none;
+    }
 
-.btn-productos span:first-child,
-.btn-secundario-top span:first-child{
-  font-size:18px;
-}
+    .modal-password-card{
+      width:100%;
+      max-width:460px;
+      background:#fff;
+      border-radius:22px;
+      padding:24px;
+      box-shadow:0 24px 60px rgba(15,23,42,.22);
+      position:relative;
+    }
 
-/* ===============================
-   BUSCADOR
-================================= */
-.buscador{
-  max-width:1200px;
-  margin:0 auto 18px;
-}
+    .modal-password-card h2{
+      margin:0 0 8px;
+      color:#0f172a;
+    }
 
-.buscador input{
-  width:100%;
-  box-sizing:border-box;
-  border:none;
-  border-radius:18px;
-  padding:16px 18px;
-  font-size:16px;
-  background:#ffffff;
-  box-shadow:0 10px 24px rgba(15,23,42,.06);
-  border:1px solid #e2e8f0;
-}
+    .password-help{
+      margin:0 0 18px;
+      color:#64748b;
+      font-size:14px;
+      line-height:1.45;
+    }
 
-/* ===============================
-   GRUPOS DE FILTROS
-================================= */
-.grupo-filtros{
-  max-width:1200px;
-  margin:0 auto 14px;
-  padding:14px 16px;
-  background:rgba(255,255,255,0.72);
-  border:1px solid #e2e8f0;
-  border-radius:18px;
-  box-shadow:0 8px 20px rgba(15,23,42,.04);
-  backdrop-filter:blur(6px);
-}
+    .campo-password{
+      margin-bottom:14px;
+    }
 
-.grupo-filtros h4{
-  margin:0 0 10px;
-  font-size:13px;
-  letter-spacing:.4px;
-  text-transform:uppercase;
-  color:#64748b;
-  font-weight:800;
-}
+    .campo-password label{
+      display:block;
+      margin-bottom:6px;
+      font-weight:700;
+      color:#334155;
+    }
 
-.filtros,
-.filtros-pago,
-.filtros-metodo,
-.filtros-extra{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-}
+    .input-password-wrap{
+      position:relative;
+    }
 
-/* ===============================
-   BOTONES FILTRO
-================================= */
-.filtros button,
-.filtros-pago button,
-.filtros-metodo button,
-.filtros-extra button,
-#resetFiltros,
-#ordenFecha{
-  border:none;
-  border-radius:999px;
-  padding:11px 18px;
-  font-size:14px;
-  font-weight:700;
-  cursor:pointer;
-  background:#f8fafc;
-  color:#334155;
-  border:1px solid #dbe7f0;
-  transition:
-    transform .18s ease,
-    box-shadow .18s ease,
-    background .18s ease,
-    color .18s ease,
-    border-color .18s ease;
-  box-shadow:0 3px 10px rgba(15,23,42,.04);
-}
+    .input-password-wrap input{
+      width:100%;
+      box-sizing:border-box;
+      padding:13px 48px 13px 14px;
+      border:1px solid #dbe2ea;
+      border-radius:12px;
+      font-size:15px;
+    }
 
-.filtros button:hover,
-.filtros-pago button:hover,
-.filtros-metodo button:hover,
-.filtros-extra button:hover,
-#resetFiltros:hover,
-#ordenFecha:hover{
-  background:#eff6ff;
-  color:#1d4ed8;
-  border-color:#bfdbfe;
-  transform:translateY(-1px);
-  box-shadow:0 8px 18px rgba(29,78,216,.10);
-}
+    .toggle-password{
+      position:absolute;
+      top:50%;
+      right:10px;
+      transform:translateY(-50%);
+      border:none;
+      background:transparent;
+      cursor:pointer;
+      font-size:18px;
+    }
 
-.filtros button:active,
-.filtros-pago button:active,
-.filtros-metodo button:active,
-.filtros-extra button:active{
-  transform:scale(0.97);
-}
+    .btn-guardar-password{
+      width:100%;
+      border:none;
+      border-radius:14px;
+      padding:13px 16px;
+      background:linear-gradient(135deg,#14a6d6,#0ea5e9);
+      color:#fff;
+      font-weight:700;
+      cursor:pointer;
+      margin-top:8px;
+    }
 
-/* ACTIVO */
-.filtros button.activo,
-.filtros-pago button.activo,
-.filtros-metodo button.activo{
-  background:linear-gradient(135deg,#14a6d6,#0ea5e9);
-  color:#fff;
-  border-color:transparent;
-  box-shadow:0 10px 20px rgba(20,166,214,.25);
-}
+    .btn-guardar-password:disabled{
+      opacity:.7;
+      cursor:not-allowed;
+    }
 
-/* Botones de opciones */
-#resetFiltros{
-  background:#fff7ed;
-  color:#9a3412;
-  border-color:#fed7aa;
-}
+    .cerrar-password{
+      position:absolute;
+      top:12px;
+      right:14px;
+      border:none;
+      background:transparent;
+      cursor:pointer;
+      font-size:20px;
+      color:#64748b;
+    }
 
-#resetFiltros:hover{
-  background:#ffedd5;
-  color:#9a3412;
-  border-color:#fdba74;
-}
+    .password-checklist{
+      margin-top:10px;
+      display:grid;
+      gap:6px;
+    }
 
-#ordenFecha{
-  background:#f0fdf4;
-  color:#166534;
-  border-color:#bbf7d0;
-}
+    .check-item{
+      font-size:13px;
+      color:#64748b;
+    }
 
-#ordenFecha:hover{
-  background:#dcfce7;
-  color:#166534;
-  border-color:#86efac;
-}
+    .check-item.ok{
+      color:#15803d;
+      font-weight:700;
+    }
 
-/* ===============================
-   RESPONSIVE
-================================= */
-@media (max-width: 768px){
-  .admin-topbar{
-    padding:18px;
-  }
+    .check-item.error{
+      color:#b91c1c;
+      font-weight:700;
+    }
 
-  .admin-topbar-actions{
-    width:100%;
-  }
+    .password-match-message{
+      margin-top:8px;
+      font-size:13px;
+      min-height:18px;
+    }
 
-  .btn-admin-top{
-    width:100%;
-    justify-content:center;
-  }
+    .password-match-message.ok{
+      color:#15803d;
+      font-weight:700;
+    }
 
-  .grupo-filtros{
-    padding:12px 14px;
-  }
+    .password-match-message.error{
+      color:#b91c1c;
+      font-weight:700;
+    }
 
-  .filtros button,
-  .filtros-pago button,
-  .filtros-metodo button,
-  .filtros-extra button,
-  #resetFiltros,
-  #ordenFecha{
-    width:100%;
-    justify-content:center;
-  }
-}
-#modalPassword input {
-  width:100%;
-  margin-bottom:10px;
-  padding:12px;
-  border-radius:10px;
-  border:1px solid #e2e8f0;
-}
+    @media (max-width: 1180px){
+      .filtros-grid{
+        grid-template-columns:repeat(2, minmax(0, 1fr));
+      }
 
-#btnCambiarPassword{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:12px;
-  background:linear-gradient(135deg,#14a6d6,#0ea5e9);
-  color:#fff;
-  font-weight:700;
-  cursor:pointer;
-}
-.modal-password{
-  position:fixed;
-  inset:0;
-  background:rgba(15,23,42,.45);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:18px;
-  z-index:9999;
-}
+      .dashboard{
+        grid-template-columns:repeat(3, minmax(0, 1fr));
+      }
+    }
 
-.modal-password.hidden{
-  display:none;
-}
+    @media (max-width: 900px){
+      .graficas{
+        grid-template-columns:1fr;
+      }
+    }
 
-.modal-password-card{
-  width:100%;
-  max-width:460px;
-  background:#fff;
-  border-radius:22px;
-  padding:24px;
-  box-shadow:0 24px 60px rgba(15,23,42,.22);
-  position:relative;
-}
+    @media (max-width: 768px){
+      .admin-shell{
+        padding:18px 14px 100px;
+      }
 
-.modal-password-card h2{
-  margin:0 0 8px;
-  color:#0f172a;
-}
+      .admin-topbar{
+        padding:20px;
+      }
 
-.password-help{
-  margin:0 0 18px;
-  color:#64748b;
-  font-size:14px;
-}
+      .admin-topbar-actions{
+        width:100%;
+      }
 
-.campo-password{
-  margin-bottom:14px;
-}
+      .btn-admin-top{
+        width:100%;
+        justify-content:center;
+      }
 
-.campo-password label{
-  display:block;
-  margin-bottom:6px;
-  font-weight:700;
-  color:#334155;
-}
+      .filtros-grid{
+        grid-template-columns:1fr;
+      }
 
-.input-password-wrap{
-  position:relative;
-}
+      .grupo-filtros{
+        padding:12px 14px;
+      }
 
-.input-password-wrap input{
-  width:100%;
-  box-sizing:border-box;
-  padding:13px 48px 13px 14px;
-  border:1px solid #dbe2ea;
-  border-radius:12px;
-  font-size:15px;
-}
+      .filtros button,
+      .filtros-pago button,
+      .filtros-metodo button,
+      .filtros-extra button,
+      #resetFiltros,
+      #ordenFecha{
+        width:100%;
+        justify-content:center;
+      }
 
-.toggle-password{
-  position:absolute;
-  top:50%;
-  right:10px;
-  transform:translateY(-50%);
-  border:none;
-  background:transparent;
-  cursor:pointer;
-  font-size:18px;
-}
+      .dashboard{
+        grid-template-columns:1fr 1fr;
+      }
 
-.btn-guardar-password{
-  width:100%;
-  border:none;
-  border-radius:14px;
-  padding:13px 16px;
-  background:linear-gradient(135deg,#14a6d6,#0ea5e9);
-  color:#fff;
-  font-weight:700;
-  cursor:pointer;
-  margin-top:8px;
-}
+      .exportar{
+        justify-content:stretch;
+      }
 
-.btn-guardar-password:disabled{
-  opacity:.7;
-  cursor:not-allowed;
-}
+      .exportar button{
+        width:100%;
+      }
 
-.cerrar-password{
-  position:absolute;
-  top:12px;
-  right:14px;
-  border:none;
-  background:transparent;
-  cursor:pointer;
-  font-size:20px;
-  color:#64748b;
-}
+      .pedido-card{
+        padding:18px 16px;
+      }
 
-.password-checklist{
-  margin-top:10px;
-  display:grid;
-  gap:6px;
-}
+      .pedido-card h3{
+        font-size:20px;
+      }
 
-.check-item{
-  font-size:13px;
-  color:#64748b;
-}
+      .pedido-acciones{
+        flex-direction:column;
+      }
 
-.check-item.ok{
-  color:#15803d;
-  font-weight:700;
-}
+      .pedido-acciones button{
+        width:100%;
+      }
 
-.check-item.error{
-  color:#b91c1c;
-  font-weight:700;
-}
+      .logout{
+        right:14px;
+        left:14px;
+        bottom:14px;
+      }
+    }
 
-.password-match-message{
-  margin-top:8px;
-  font-size:13px;
-  min-height:18px;
-}
-
-.password-match-message.ok{
-  color:#15803d;
-  font-weight:700;
-}
-
-.password-match-message.error{
-  color:#b91c1c;
-  font-weight:700;
-}
-</style>
+    @media (max-width: 520px){
+      .dashboard{
+        grid-template-columns:1fr;
+      }
+    }
+  </style>
 </head>
 <body class="admin-pedidos-page">
-    <script>
-        const auth = JSON.parse(sessionStorage.getItem("auth"));
-        if (!auth || auth.rol !== "ADMIN") {
-            window.location.href = "admin/login.html";
-        }
-    </script>
-<div class="admin-topbar">
-    <div class="admin-topbar-left">
-      <h1>📦 Pedidos Estampaider</h1>
-      <p>Gestiona pedidos, clientes y productos desde un solo lugar.</p>
-    </div>
-  
-    <div class="admin-topbar-actions">
-      <button class="btn-admin-top btn-productos" onclick="window.location.href='productos-admin.html'">
-        <span>🛍️</span>
-        <span>Administrar productos</span>
-      </button>
-  
-      <button class="btn-admin-top btn-secundario-top" onclick="window.location.href='mensajes.html'">
-        <span>💬</span>
-        <span>Mensajes</span>
-      </button>
-      <button class="btn-admin-top btn-secundario-top" onclick="abrirModalPassword()">
-        <span>🔐</span>
-        <span>Cambiar contraseña</span>
-      </button>
-      <button class="btn-admin-top btn-secundario-top" type="button" onclick="abrirModalLogo()">
-        <span>🖼️</span>
-        <span>Cambiar logo</span>
-      </button>
-      <button class="btn-admin-top btn-secundario-top" type="button" onclick="abrirModalFavicon()">
-        <span>⭐</span>
-        <span>Cambiar favicon</span>
-      </button>
-    </div>
-  </div>
-<div class="buscador">
-    <input 
-        type="text" 
-        id="buscarPedido" 
-        placeholder="🔍 Buscar por pedido, cliente o teléfono..."
-    >
-</div>
-<div class="grupo-filtros">
-    <h4>Estado</h4>
-    <div class="filtros">
-      <!-- botones -->
-        <button data-estado="TODOS" class="activo">Todos</button>
-        <button data-estado="PENDIENTE">Pendientes</button>
-        <button data-estado="ENVIADO">Enviados</button>
-        <button data-estado="ENTREGADO">Entregados</button>
-    </div>
-  </div>
-  
-  <div class="grupo-filtros">
-    <h4>Pago</h4>
-    <div class="filtros-pago">
-      <!-- botones -->
-      <button data-pago="TODOS" class="activo">💳 Todos</button>
-      <button data-pago="PAGADO">✅ Pagados</button>
-      <button data-pago="NO_PAGADO">⏳ No pagados</button>
-    </div>
-  </div>
-  
-  <div class="grupo-filtros">
-    <h4>Método</h4>
-    <div class="filtros-metodo">
-      <!-- botones -->
-      <button data-metodo="TODOS" class="activo">Todos</button>
-      <button data-metodo="Nequi">Nequi</button>
-      <button data-metodo="Código QR">Código QR</button>
-      <button data-metodo="Pago presencial">Pago presencial</button>
-    </div>
-  </div>
-  
-  <div class="grupo-filtros">
-    <h4>Opciones</h4>
-    <div class="filtros-extra">
-      <button id="resetFiltros">🔄 Reset</button>
-      <button id="ordenFecha">📅 Más recientes</button>
-    </div>
-  </div>
+  <script>
+    const auth = JSON.parse(sessionStorage.getItem("auth"));
+    if (!auth || auth.rol !== "ADMIN") {
+      window.location.href = "admin/login.html";
+    }
+  </script>
 
-<!-- DASHBOARD -->
-<div class="dashboard">
-    <div class="card">
-        <h4>Total pedidos</h4>
-        <span id="statTotal">0</span>
+  <main class="admin-shell">
+    <div class="admin-topbar">
+      <div class="admin-topbar-left">
+        <h1>📦 Pedidos Estampaider</h1>
+        <p>Gestiona pedidos, clientes y productos desde un solo lugar.</p>
+      </div>
+
+      <div class="admin-topbar-actions">
+        <button class="btn-admin-top btn-productos" onclick="window.location.href='productos-admin.html'">
+          <span>🛍️</span>
+          <span>Administrar productos</span>
+        </button>
+
+        <button class="btn-admin-top btn-secundario-top" onclick="window.location.href='mensajes.html'">
+          <span>💬</span>
+          <span>Mensajes</span>
+        </button>
+
+        <button class="btn-admin-top btn-secundario-top" onclick="abrirModalPassword()">
+          <span>🔐</span>
+          <span>Cambiar contraseña</span>
+        </button>
+
+        <button class="btn-admin-top btn-secundario-top" type="button" onclick="abrirModalLogo()">
+          <span>🖼️</span>
+          <span>Cambiar logo</span>
+        </button>
+
+        <button class="btn-admin-top btn-secundario-top" type="button" onclick="abrirModalFavicon()">
+          <span>⭐</span>
+          <span>Cambiar favicon</span>
+        </button>
+
+        <button class="btn-admin-top btn-secundario-top" onclick="window.location.href='resenas-admin.html'">
+          <span>⭐</span>
+          <span>Reseñas</span>
+        </button>
+
+        <button class="btn-admin-top btn-secundario-top" onclick="window.location.href='branding-admin.html'">
+          <span>🎛️</span>
+          <span>Branding sitio</span>
+        </button>
+      </div>
     </div>
 
-    <div class="card pendiente">
-        <h4>Pendientes</h4>
-        <span id="statPendientes">0</span>
-    </div>
+    <section class="admin-grid">
+      <div class="panel panel-padding">
+        <div class="buscador">
+          <input
+            type="text"
+            id="buscarPedido"
+            placeholder="🔍 Buscar por pedido, cliente o teléfono..."
+          />
+        </div>
+      </div>
 
-    <div class="card enviado">
-        <h4>Enviados</h4>
-        <span id="statEnviados">0</span>
-    </div>
+      <div class="filtros-grid">
+        <div class="grupo-filtros">
+          <h4>Estado</h4>
+          <div class="filtros">
+            <button data-estado="TODOS" class="activo">Todos</button>
+            <button data-estado="PENDIENTE">Pendientes</button>
+            <button data-estado="ENVIADO">Enviados</button>
+            <button data-estado="ENTREGADO">Entregados</button>
+          </div>
+        </div>
 
-    <div class="card entregado">
-        <h4>Entregados</h4>
-        <span id="statEntregados">0</span>
-    </div>
+        <div class="grupo-filtros">
+          <h4>Pago</h4>
+          <div class="filtros-pago">
+            <button data-pago="TODOS" class="activo">💳 Todos</button>
+            <button data-pago="PAGADO">✅ Pagados</button>
+            <button data-pago="NO_PAGADO">⏳ No pagados</button>
+          </div>
+        </div>
 
-    <div class="card dinero">
-        <h4>Total ventas</h4>
-        <span id="statVentas">$0</span>
-    </div>
+        <div class="grupo-filtros">
+          <h4>Método</h4>
+          <div class="filtros-metodo">
+            <button data-metodo="TODOS" class="activo">Todos</button>
+            <button data-metodo="Nequi">Nequi</button>
+            <button data-metodo="Código QR">Código QR</button>
+            <button data-metodo="Pago presencial">Pago presencial</button>
+          </div>
+        </div>
 
-    <div class="card promedio">
-        <h4>🎟️ Ticket promedio</h4>
-        <span id="statPromedio">$0</span>
-    </div>
+        <div class="grupo-filtros">
+          <h4>Opciones</h4>
+          <div class="filtros-extra">
+            <button id="resetFiltros">🔄 Reset</button>
+            <button id="ordenFecha">📅 Más recientes</button>
+          </div>
+        </div>
+      </div>
 
-    <div class="card cliente-top">
-        <h4>👑 Cliente top</h4>
-        <span id="statClienteTop">—</span>
-    </div>
-</div>
-<div class="resumen-ventas">
-    💰 Total ventas pagadas:
-    <strong id="totalPagado">$0</strong>
-</div>
-<!-- GRÁFICAS -->
-<div class="graficas">
-    <div class="grafica-card">
-        <h3>📊 Pedidos por estado</h3>
-        <canvas id="graficaEstados"></canvas>
-    </div>
+      <div class="dashboard">
+        <div class="card">
+          <h4>Total pedidos</h4>
+          <span id="statTotal">0</span>
+        </div>
 
-    <div class="grafica-card">
-        <h3>💰 Ventas por fecha</h3>
-        <canvas id="graficaVentas"></canvas>
-    </div>
-</div>
+        <div class="card pendiente">
+          <h4>Pendientes</h4>
+          <span id="statPendientes">0</span>
+        </div>
 
-<div class="exportar">
-    <button id="exportExcel">📊 Exportar Excel</button>
-    <button id="exportPDF">📄 Exportar PDF</button>
-</div>
+        <div class="card enviado">
+          <h4>Enviados</h4>
+          <span id="statEnviados">0</span>
+        </div>
 
-<div id="pedidos"></div>
+        <div class="card entregado">
+          <h4>Entregados</h4>
+          <span id="statEntregados">0</span>
+        </div>
 
-<div class="paginacion">
-    <button id="prevPagina">⬅ Anterior</button>
-    <span id="infoPagina"></span>
-    <button id="nextPagina">Siguiente ➡</button>
-</div>
+        <div class="card dinero">
+          <h4>Total ventas</h4>
+          <span id="statVentas">$0</span>
+        </div>
 
-<!-- MODAL -->
-<div id="modalHistorial" class="modal">
+        <div class="card promedio">
+          <h4>🎟️ Ticket promedio</h4>
+          <span id="statPromedio">$0</span>
+        </div>
+
+        <div class="card cliente-top">
+          <h4>👑 Cliente top</h4>
+          <span id="statClienteTop">—</span>
+        </div>
+      </div>
+
+      <div class="resumen-ventas">
+        💰 Total ventas pagadas:
+        <strong id="totalPagado">$0</strong>
+      </div>
+
+      <div class="graficas">
+        <div class="grafica-card">
+          <h3>📊 Pedidos por estado</h3>
+          <canvas id="graficaEstados"></canvas>
+        </div>
+
+        <div class="grafica-card">
+          <h3>💰 Ventas por fecha</h3>
+          <canvas id="graficaVentas"></canvas>
+        </div>
+      </div>
+
+      <div class="exportar">
+        <button id="exportExcel">📊 Exportar Excel</button>
+        <button id="exportPDF">📄 Exportar PDF</button>
+      </div>
+
+      <div id="pedidos"></div>
+
+      <div class="paginacion">
+        <button id="prevPagina">⬅ Anterior</button>
+        <span id="infoPagina"></span>
+        <button id="nextPagina">Siguiente ➡</button>
+      </div>
+    </section>
+  </main>
+
+  <div id="modalHistorial" class="modal">
     <div class="modal-contenido">
-        <span id="cerrarHistorial" class="cerrar">&times;</span>
-        <h2>🧾 Historial del Cliente</h2>
-        <p id="clienteHistorial"></p>
+      <span id="cerrarHistorial" class="cerrar">&times;</span>
+      <h2>🧾 Historial del Cliente</h2>
+      <p id="clienteHistorial"></p>
 
-        <table>
-            <thead>
-                <tr>
-                    <th>Pedido</th>
-                    <th>Fecha</th>
-                    <th>Estado</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody id="tablaHistorial"></tbody>
-        </table>
+      <table>
+        <thead>
+          <tr>
+            <th>Pedido</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody id="tablaHistorial"></tbody>
+      </table>
     </div>
-</div>
-
-<button id="logout" class="logout">🚪 Cerrar sesión</button>
-
-<div id="toast"></div>
-<div id="modalPassword" class="modal-password hidden">
-  <div class="modal-password-card">
-    <button type="button" class="cerrar-password" onclick="cerrarModalPassword()" aria-label="Cerrar">✕</button>
-    <h2>🔐 Cambiar contraseña</h2>
-    <p class="password-help">
-      Usa mínimo 8 caracteres, una mayúscula, un número y un carácter especial.
-    </p>
-
-    <div class="campo-password">
-      <label for="passwordActual">Contraseña actual</label>
-      <div class="input-password-wrap">
-        <input type="password" id="passwordActual" placeholder="Ingresa tu contraseña actual">
-        <button type="button" class="toggle-password" data-target="passwordActual">👁️</button>
-      </div>
-    </div>
-
-    <div class="campo-password">
-      <label for="passwordNueva">Nueva contraseña</label>
-      <div class="input-password-wrap">
-        <input type="password" id="passwordNueva" placeholder="Ingresa la nueva contraseña">
-        <button type="button" class="toggle-password" data-target="passwordNueva">👁️</button>
-      </div>
-
-      <div id="passwordChecklist" class="password-checklist">
-        <div id="checkLength" class="check-item">• Mínimo 8 caracteres</div>
-        <div id="checkUpper" class="check-item">• Al menos una mayúscula</div>
-        <div id="checkNumber" class="check-item">• Al menos un número</div>
-        <div id="checkSpecial" class="check-item">• Al menos un carácter especial</div>
-      </div>
-    </div>
-
-    <div class="campo-password">
-      <label for="confirmarPassword">Confirmar nueva contraseña</label>
-      <div class="input-password-wrap">
-        <input type="password" id="confirmarPassword" placeholder="Confirma la nueva contraseña">
-        <button type="button" class="toggle-password" data-target="confirmarPassword">👁️</button>
-      </div>
-      <div id="confirmacionPassword" class="password-match-message"></div>
-    </div>
-
-    <button type="button" id="btnCambiarPassword" class="btn-guardar-password">
-      Guardar cambios
-    </button>
   </div>
-</div>
 
-<!-- LIBRERÍAS -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.29/dist/jspdf.plugin.autotable.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="config.js"></script>
-<script src="carrito-global.js"></script>
-<script src="pedidos.js"></script>
+  <button id="logout" class="logout">🚪 Cerrar sesión</button>
 
-<script>
-  function resolverApiBasePassword() {
-    if (window.ESTAMPAIDER_CONFIG?.API_BASE) {
-      return window.ESTAMPAIDER_CONFIG.API_BASE;
+  <div id="toast"></div>
+
+  <div id="modalPassword" class="modal-password hidden">
+    <div class="modal-password-card">
+      <button type="button" class="cerrar-password" onclick="cerrarModalPassword()" aria-label="Cerrar">✕</button>
+      <h2>🔐 Cambiar contraseña</h2>
+      <p class="password-help">
+        Usa mínimo 8 caracteres, una mayúscula, un número y un carácter especial.
+      </p>
+
+      <div class="campo-password">
+        <label for="passwordActual">Contraseña actual</label>
+        <div class="input-password-wrap">
+          <input type="password" id="passwordActual" placeholder="Ingresa tu contraseña actual" />
+          <button type="button" class="toggle-password" data-target="passwordActual">👁️</button>
+        </div>
+      </div>
+
+      <div class="campo-password">
+        <label for="passwordNueva">Nueva contraseña</label>
+        <div class="input-password-wrap">
+          <input type="password" id="passwordNueva" placeholder="Ingresa la nueva contraseña" />
+          <button type="button" class="toggle-password" data-target="passwordNueva">👁️</button>
+        </div>
+
+        <div id="passwordChecklist" class="password-checklist">
+          <div id="checkLength" class="check-item">• Mínimo 8 caracteres</div>
+          <div id="checkUpper" class="check-item">• Al menos una mayúscula</div>
+          <div id="checkNumber" class="check-item">• Al menos un número</div>
+          <div id="checkSpecial" class="check-item">• Al menos un carácter especial</div>
+        </div>
+      </div>
+
+      <div class="campo-password">
+        <label for="confirmarPassword">Confirmar nueva contraseña</label>
+        <div class="input-password-wrap">
+          <input type="password" id="confirmarPassword" placeholder="Confirma la nueva contraseña" />
+          <button type="button" class="toggle-password" data-target="confirmarPassword">👁️</button>
+        </div>
+        <div id="confirmacionPassword" class="password-match-message"></div>
+      </div>
+
+      <button type="button" id="btnCambiarPassword" class="btn-guardar-password">
+        Guardar cambios
+      </button>
+    </div>
+  </div>
+
+  <div id="modalLogo" class="modal-password hidden">
+    <div class="modal-password-card">
+      <button type="button" class="cerrar-password" onclick="cerrarModalLogo()" aria-label="Cerrar">✕</button>
+      <h2>🖼️ Cambiar logo</h2>
+      <p class="password-help">
+        Sube un logo nuevo en JPG, PNG o WEBP. Se reflejará en todo el sitio.
+      </p>
+
+      <div class="campo-password">
+        <label for="logoArchivo">Selecciona el archivo</label>
+        <input type="file" id="logoArchivo" accept="image/*" />
+      </div>
+
+      <div class="campo-password">
+        <img id="previewLogoNuevo" src="images/logo-estampaider.png" alt="Vista previa del logo" style="max-height:90px; object-fit:contain;" />
+      </div>
+
+      <button type="button" id="btnCambiarLogo" class="btn-guardar-password">
+        Guardar logo
+      </button>
+    </div>
+  </div>
+
+  <div id="modalFavicon" class="modal-password hidden">
+    <div class="modal-password-card">
+      <button type="button" class="cerrar-password" onclick="cerrarModalFavicon()" aria-label="Cerrar">✕</button>
+      <h2>⭐ Cambiar favicon</h2>
+      <p class="password-help">
+        Sube un favicon en ICO, PNG o SVG. Se reflejará en la pestaña del navegador.
+      </p>
+
+      <div class="campo-password">
+        <label for="faviconArchivo">Selecciona el archivo</label>
+        <input type="file" id="faviconArchivo" accept=".ico,image/png,image/svg+xml" />
+      </div>
+
+      <div class="campo-password">
+        <img id="previewFaviconNuevo" src="favicon.ico" alt="Vista previa del favicon" style="max-height:48px; max-width:48px; object-fit:contain;" />
+      </div>
+
+      <button type="button" id="btnCambiarFavicon" class="btn-guardar-password">
+        Guardar favicon
+      </button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.5.29/dist/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="config.js"></script>
+  <script src="carrito-global.js"></script>
+  <script src="pedidos.js"></script>
+
+  <script>
+    function resolverApiBasePassword() {
+      if (window.ESTAMPAIDER_CONFIG?.API_BASE) {
+        return window.ESTAMPAIDER_CONFIG.API_BASE;
+      }
+
+      const { protocol, hostname, port, host } = window.location;
+
+      if (protocol === "file:") return "http://localhost:8080";
+
+      const esLocal = hostname === "localhost" || hostname === "127.0.0.1";
+      if (esLocal && port && port !== "8080") {
+        return `${protocol}//${hostname}:8080`;
+      }
+
+      return `${protocol}//${host}`;
     }
 
-    const { protocol, hostname, port, host } = window.location;
-
-    if (protocol === "file:") return "http://localhost:8080";
-
-    const esLocal = hostname === "localhost" || hostname === "127.0.0.1";
-    if (esLocal && port && port !== "8080") {
-      return `${protocol}//${hostname}:8080`;
+    function mostrarToastPassword(mensaje, tipo = "info") {
+      const toast = document.getElementById("toast");
+      if (!toast) {
+        alert(mensaje);
+        return;
+      }
+      toast.textContent = mensaje;
+      toast.className = "";
+      toast.classList.add("show", `toast-${tipo}`);
+      setTimeout(() => toast.classList.remove("show"), 3000);
     }
 
-    return `${protocol}//${host}`;
-  }
+    function actualizarChecklistPassword(valor) {
+      const checks = {
+        checkLength: valor.length >= 8,
+        checkUpper: /[A-Z]/.test(valor),
+        checkNumber: /\d/.test(valor),
+        checkSpecial: /[@$!%*?&]/.test(valor)
+      };
 
-  function mostrarToastPassword(mensaje, tipo = "info") {
-    const toast = document.getElementById("toast");
-    if (!toast) {
-      alert(mensaje);
-      return;
+      Object.entries(checks).forEach(([id, ok]) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.classList.remove("ok", "error");
+        el.classList.add(ok ? "ok" : "error");
+      });
+
+      return Object.values(checks).every(Boolean);
     }
-    toast.textContent = mensaje;
-    toast.className = "";
-    toast.classList.add("show", `toast-${tipo}`);
-    setTimeout(() => toast.classList.remove("show"), 3000);
-  }
 
-  function actualizarChecklistPassword(valor) {
-    const checks = {
-      checkLength: valor.length >= 8,
-      checkUpper: /[A-Z]/.test(valor),
-      checkNumber: /\d/.test(valor),
-      checkSpecial: /[@$!%*?&]/.test(valor)
-    };
+    function actualizarConfirmacionPassword() {
+      const nueva = document.getElementById("passwordNueva")?.value || "";
+      const confirmar = document.getElementById("confirmarPassword")?.value || "";
+      const mensaje = document.getElementById("confirmacionPassword");
 
-    Object.entries(checks).forEach(([id, ok]) => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      el.classList.remove("ok", "error");
-      el.classList.add(ok ? "ok" : "error");
-    });
+      if (!mensaje) return false;
 
-    return Object.values(checks).every(Boolean);
-  }
+      if (!confirmar) {
+        mensaje.textContent = "";
+        mensaje.className = "password-match-message";
+        return false;
+      }
 
-  function actualizarConfirmacionPassword() {
-    const nueva = document.getElementById("passwordNueva")?.value || "";
-    const confirmar = document.getElementById("confirmarPassword")?.value || "";
-    const mensaje = document.getElementById("confirmacionPassword");
+      if (nueva === confirmar) {
+        mensaje.textContent = "✔ Las contraseñas coinciden";
+        mensaje.className = "password-match-message ok";
+        return true;
+      }
 
-    if (!mensaje) return false;
-
-    if (!confirmar) {
-      mensaje.textContent = "";
-      mensaje.className = "password-match-message";
+      mensaje.textContent = "✘ Las contraseñas no coinciden";
+      mensaje.className = "password-match-message error";
       return false;
     }
 
-    if (nueva === confirmar) {
-      mensaje.textContent = "✔ Las contraseñas coinciden";
-      mensaje.className = "password-match-message ok";
-      return true;
+    function abrirModalPassword() {
+      document.getElementById("modalPassword")?.classList.remove("hidden");
     }
 
-    mensaje.textContent = "✘ Las contraseñas no coinciden";
-    mensaje.className = "password-match-message error";
-    return false;
-  }
+    function cerrarModalPassword() {
+      document.getElementById("modalPassword")?.classList.add("hidden");
 
-  function abrirModalPassword() {
-    document.getElementById("modalPassword")?.classList.remove("hidden");
-  }
+      ["passwordActual", "passwordNueva", "confirmarPassword"].forEach((id) => {
+        const input = document.getElementById(id);
+        if (input) input.value = "";
+      });
 
-  function cerrarModalPassword() {
-    document.getElementById("modalPassword")?.classList.add("hidden");
+      const confirmMsg = document.getElementById("confirmacionPassword");
+      if (confirmMsg) {
+        confirmMsg.textContent = "";
+        confirmMsg.className = "password-match-message";
+      }
 
-    ["passwordActual", "passwordNueva", "confirmarPassword"].forEach((id) => {
-      const input = document.getElementById(id);
+      actualizarChecklistPassword("");
+    }
+
+    function inicializarCambioPassword() {
+      const nueva = document.getElementById("passwordNueva");
+      const confirmar = document.getElementById("confirmarPassword");
+      const btnCambiar = document.getElementById("btnCambiarPassword");
+      const modal = document.getElementById("modalPassword");
+
+      document.querySelectorAll(".toggle-password").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const input = document.getElementById(btn.dataset.target);
+          if (!input) return;
+          input.type = input.type === "password" ? "text" : "password";
+          btn.textContent = input.type === "password" ? "👁️" : "🙈";
+        });
+      });
+
+      nueva?.addEventListener("input", () => {
+        actualizarChecklistPassword(nueva.value);
+        actualizarConfirmacionPassword();
+      });
+
+      confirmar?.addEventListener("input", actualizarConfirmacionPassword);
+
+      btnCambiar?.addEventListener("click", async () => {
+        const API_BASE = resolverApiBasePassword();
+        const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
+
+        const passwordActual = document.getElementById("passwordActual")?.value || "";
+        const passwordNueva = document.getElementById("passwordNueva")?.value || "";
+        const confirmarPassword = document.getElementById("confirmarPassword")?.value || "";
+
+        if (!passwordActual || !passwordNueva || !confirmarPassword) {
+          mostrarToastPassword("Completa todos los campos", "error");
+          return;
+        }
+
+        const passwordValida = actualizarChecklistPassword(passwordNueva);
+        const coincide = actualizarConfirmacionPassword();
+
+        if (!passwordValida) {
+          mostrarToastPassword("La nueva contraseña no cumple los requisitos", "error");
+          return;
+        }
+
+        if (!coincide) {
+          mostrarToastPassword("La confirmación no coincide", "error");
+          return;
+        }
+
+        if (!auth?.token) {
+          mostrarToastPassword("Sesión no válida. Inicia sesión de nuevo.", "error");
+          return;
+        }
+
+        btnCambiar.disabled = true;
+        btnCambiar.textContent = "Guardando...";
+
+        try {
+          const res = await fetch(`${API_BASE}/api/usuarios/cambiar-password`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${auth.token}`
+            },
+            body: JSON.stringify({
+              passwordActual,
+              passwordNueva,
+              confirmarPassword
+            })
+          });
+
+          const contentType = res.headers.get("content-type") || "";
+          const data = contentType.includes("application/json")
+            ? await res.json()
+            : await res.text();
+
+          if (!res.ok) {
+            const mensaje = typeof data === "string"
+              ? data
+              : (data?.mensaje || "No se pudo cambiar la contraseña");
+            throw new Error(mensaje);
+          }
+
+          mostrarToastPassword("Contraseña actualizada correctamente 🔐", "success");
+          cerrarModalPassword();
+        } catch (error) {
+          console.error("Error al cambiar contraseña:", error);
+          mostrarToastPassword(error.message || "Error al cambiar contraseña", "error");
+        } finally {
+          btnCambiar.disabled = false;
+          btnCambiar.textContent = "Guardar cambios";
+        }
+      });
+
+      modal?.addEventListener("click", (e) => {
+        if (e.target === modal) cerrarModalPassword();
+      });
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", inicializarCambioPassword);
+    } else {
+      inicializarCambioPassword();
+    }
+  </script>
+
+  <script>
+    function abrirModalLogo() {
+      document.getElementById("modalLogo")?.classList.remove("hidden");
+    }
+
+    function cerrarModalLogo() {
+      document.getElementById("modalLogo")?.classList.add("hidden");
+      const input = document.getElementById("logoArchivo");
       if (input) input.value = "";
-    });
-
-    const confirmMsg = document.getElementById("confirmacionPassword");
-    if (confirmMsg) {
-      confirmMsg.textContent = "";
-      confirmMsg.className = "password-match-message";
     }
 
-    actualizarChecklistPassword("");
-  }
+    document.addEventListener("DOMContentLoaded", () => {
+      const logoArchivo = document.getElementById("logoArchivo");
+      const previewLogoNuevo = document.getElementById("previewLogoNuevo");
+      const btnCambiarLogo = document.getElementById("btnCambiarLogo");
 
-  function inicializarCambioPassword() {
-    const nueva = document.getElementById("passwordNueva");
-    const confirmar = document.getElementById("confirmarPassword");
-    const btnCambiar = document.getElementById("btnCambiarPassword");
-    const modal = document.getElementById("modalPassword");
+      logoArchivo?.addEventListener("change", () => {
+        const file = logoArchivo.files?.[0];
+        if (!file || !previewLogoNuevo) return;
 
-    document.querySelectorAll(".toggle-password").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const input = document.getElementById(btn.dataset.target);
-        if (!input) return;
-        input.type = input.type === "password" ? "text" : "password";
-        btn.textContent = input.type === "password" ? "👁️" : "🙈";
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          previewLogoNuevo.src = e.target?.result || "";
+        };
+        reader.readAsDataURL(file);
+      });
+
+      btnCambiarLogo?.addEventListener("click", async () => {
+        const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
+        const API_BASE = resolverApiBasePassword();
+        const file = logoArchivo?.files?.[0];
+
+        if (!file) {
+          mostrarToastPassword("Selecciona un logo", "error");
+          return;
+        }
+
+        if (!auth?.token) {
+          mostrarToastPassword("Sesión no válida. Inicia sesión de nuevo.", "error");
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        btnCambiarLogo.disabled = true;
+        btnCambiarLogo.textContent = "Subiendo...";
+
+        try {
+          const res = await fetch(`${API_BASE}/api/branding/logo`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${auth.token}`
+            },
+            body: formData
+          });
+
+          const contentType = res.headers.get("content-type") || "";
+          const data = contentType.includes("application/json")
+            ? await res.json()
+            : await res.text();
+
+          if (!res.ok) {
+            const mensaje = typeof data === "string" ? data : (data?.mensaje || "No se pudo actualizar el logo");
+            throw new Error(mensaje);
+          }
+
+          localStorage.setItem("estampaider_branding_refresh", Date.now().toString());
+          mostrarToastPassword("Logo actualizado correctamente 🖼️", "success");
+          cerrarModalLogo();
+        } catch (error) {
+          console.error("Error subiendo logo:", error);
+          mostrarToastPassword(error.message || "No se pudo actualizar el logo", "error");
+        } finally {
+          btnCambiarLogo.disabled = false;
+          btnCambiarLogo.textContent = "Guardar logo";
+        }
       });
     });
+  </script>
 
-    nueva?.addEventListener("input", () => {
-      actualizarChecklistPassword(nueva.value);
-      actualizarConfirmacionPassword();
-    });
+  <script>
+    function abrirModalFavicon() {
+      document.getElementById("modalFavicon")?.classList.remove("hidden");
+    }
 
-    confirmar?.addEventListener("input", actualizarConfirmacionPassword);
+    function cerrarModalFavicon() {
+      document.getElementById("modalFavicon")?.classList.add("hidden");
+      const input = document.getElementById("faviconArchivo");
+      if (input) input.value = "";
+    }
 
-    btnCambiar?.addEventListener("click", async () => {
-      const API_BASE = resolverApiBasePassword();
-      const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
+    document.addEventListener("DOMContentLoaded", () => {
+      const faviconArchivo = document.getElementById("faviconArchivo");
+      const previewFaviconNuevo = document.getElementById("previewFaviconNuevo");
+      const btnCambiarFavicon = document.getElementById("btnCambiarFavicon");
 
-      const passwordActual = document.getElementById("passwordActual")?.value || "";
-      const passwordNueva = document.getElementById("passwordNueva")?.value || "";
-      const confirmarPassword = document.getElementById("confirmarPassword")?.value || "";
+      faviconArchivo?.addEventListener("change", () => {
+        const file = faviconArchivo.files?.[0];
+        if (!file || !previewFaviconNuevo) return;
 
-      if (!passwordActual || !passwordNueva || !confirmarPassword) {
-        mostrarToastPassword("Completa todos los campos", "error");
-        return;
-      }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          previewFaviconNuevo.src = e.target?.result || "";
+        };
+        reader.readAsDataURL(file);
+      });
 
-      const passwordValida = actualizarChecklistPassword(passwordNueva);
-      const coincide = actualizarConfirmacionPassword();
+      btnCambiarFavicon?.addEventListener("click", async () => {
+        const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
+        const API_BASE = resolverApiBasePassword();
+        const file = faviconArchivo?.files?.[0];
 
-      if (!passwordValida) {
-        mostrarToastPassword("La nueva contraseña no cumple los requisitos", "error");
-        return;
-      }
-
-      if (!coincide) {
-        mostrarToastPassword("La confirmación no coincide", "error");
-        return;
-      }
-
-      if (!auth?.token) {
-        mostrarToastPassword("Sesión no válida. Inicia sesión de nuevo.", "error");
-        return;
-      }
-
-      btnCambiar.disabled = true;
-      btnCambiar.textContent = "Guardando...";
-
-      try {
-        const res = await fetch(`${API_BASE}/api/usuarios/cambiar-password`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${auth.token}`
-          },
-          body: JSON.stringify({
-            passwordActual,
-            passwordNueva,
-            confirmarPassword
-          })
-        });
-
-        const contentType = res.headers.get("content-type") || "";
-        const data = contentType.includes("application/json")
-          ? await res.json()
-          : await res.text();
-
-        if (!res.ok) {
-          const mensaje = typeof data === "string"
-            ? data
-            : (data?.mensaje || "No se pudo cambiar la contraseña");
-          throw new Error(mensaje);
+        if (!file) {
+          mostrarToastPassword("Selecciona un favicon", "error");
+          return;
         }
 
-        mostrarToastPassword("Contraseña actualizada correctamente 🔐", "success");
-        cerrarModalPassword();
-      } catch (error) {
-        console.error("Error al cambiar contraseña:", error);
-        mostrarToastPassword(error.message || "Error al cambiar contraseña", "error");
-      } finally {
-        btnCambiar.disabled = false;
-        btnCambiar.textContent = "Guardar cambios";
-      }
-    });
-
-    modal?.addEventListener("click", (e) => {
-      if (e.target === modal) cerrarModalPassword();
-    });
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", inicializarCambioPassword);
-  } else {
-    inicializarCambioPassword();
-  }
-</script>
-<script>
-  function abrirModalLogo() {
-    document.getElementById("modalLogo")?.classList.remove("hidden");
-  }
-
-  function cerrarModalLogo() {
-    document.getElementById("modalLogo")?.classList.add("hidden");
-    const input = document.getElementById("logoArchivo");
-    if (input) input.value = "";
-  }
-
-  document.addEventListener("DOMContentLoaded", () => {
-    const logoArchivo = document.getElementById("logoArchivo");
-    const previewLogoNuevo = document.getElementById("previewLogoNuevo");
-    const btnCambiarLogo = document.getElementById("btnCambiarLogo");
-
-    logoArchivo?.addEventListener("change", () => {
-      const file = logoArchivo.files?.[0];
-      if (!file || !previewLogoNuevo) return;
-
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        previewLogoNuevo.src = e.target?.result || "";
-      };
-      reader.readAsDataURL(file);
-    });
-
-    btnCambiarLogo?.addEventListener("click", async () => {
-      const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
-      const API_BASE = resolverApiBasePassword();
-      const file = logoArchivo?.files?.[0];
-
-      if (!file) {
-        mostrarToastPassword("Selecciona un logo", "error");
-        return;
-      }
-
-      if (!auth?.token) {
-        mostrarToastPassword("Sesión no válida. Inicia sesión de nuevo.", "error");
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("file", file);
-
-      btnCambiarLogo.disabled = true;
-      btnCambiarLogo.textContent = "Subiendo...";
-
-      try {
-        const res = await fetch(`${API_BASE}/api/branding/logo`, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${auth.token}`
-          },
-          body: formData
-        });
-
-        const contentType = res.headers.get("content-type") || "";
-        const data = contentType.includes("application/json")
-          ? await res.json()
-          : await res.text();
-
-        if (!res.ok) {
-          const mensaje = typeof data === "string" ? data : (data?.mensaje || "No se pudo actualizar el logo");
-          throw new Error(mensaje);
+        if (!auth?.token) {
+          mostrarToastPassword("Sesión no válida. Inicia sesión de nuevo.", "error");
+          return;
         }
 
-        localStorage.setItem("estampaider_branding_refresh", Date.now().toString());
-        mostrarToastPassword("Logo actualizado correctamente 🖼️", "success");
-        cerrarModalLogo();
-      } catch (error) {
-        console.error("Error subiendo logo:", error);
-        mostrarToastPassword(error.message || "No se pudo actualizar el logo", "error");
-      } finally {
-        btnCambiarLogo.disabled = false;
-        btnCambiarLogo.textContent = "Guardar logo";
-      }
-    });
-  });
-</script>
-<script>
-  function abrirModalFavicon() {
-    document.getElementById("modalFavicon")?.classList.remove("hidden");
-  }
+        const formData = new FormData();
+        formData.append("file", file);
 
-  function cerrarModalFavicon() {
-    document.getElementById("modalFavicon")?.classList.add("hidden");
-    const input = document.getElementById("faviconArchivo");
-    if (input) input.value = "";
-  }
+        btnCambiarFavicon.disabled = true;
+        btnCambiarFavicon.textContent = "Subiendo...";
 
-  document.addEventListener("DOMContentLoaded", () => {
-    const faviconArchivo = document.getElementById("faviconArchivo");
-    const previewFaviconNuevo = document.getElementById("previewFaviconNuevo");
-    const btnCambiarFavicon = document.getElementById("btnCambiarFavicon");
+        try {
+          const res = await fetch(`${API_BASE}/api/branding/favicon`, {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${auth.token}`
+            },
+            body: formData
+          });
 
-    faviconArchivo?.addEventListener("change", () => {
-      const file = faviconArchivo.files?.[0];
-      if (!file || !previewFaviconNuevo) return;
+          const contentType = res.headers.get("content-type") || "";
+          const data = contentType.includes("application/json")
+            ? await res.json()
+            : await res.text();
 
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        previewFaviconNuevo.src = e.target?.result || "";
-      };
-      reader.readAsDataURL(file);
-    });
+          if (!res.ok) {
+            const mensaje = typeof data === "string" ? data : (data?.mensaje || "No se pudo actualizar el favicon");
+            throw new Error(mensaje);
+          }
 
-    btnCambiarFavicon?.addEventListener("click", async () => {
-      const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
-      const API_BASE = resolverApiBasePassword();
-      const file = faviconArchivo?.files?.[0];
-
-      if (!file) {
-        mostrarToastPassword("Selecciona un favicon", "error");
-        return;
-      }
-
-      if (!auth?.token) {
-        mostrarToastPassword("Sesión no válida. Inicia sesión de nuevo.", "error");
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("file", file);
-
-      btnCambiarFavicon.disabled = true;
-      btnCambiarFavicon.textContent = "Subiendo...";
-
-      try {
-        const res = await fetch(`${API_BASE}/api/branding/favicon`, {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${auth.token}`
-          },
-          body: formData
-        });
-
-        const contentType = res.headers.get("content-type") || "";
-        const data = contentType.includes("application/json")
-          ? await res.json()
-          : await res.text();
-
-        if (!res.ok) {
-          const mensaje = typeof data === "string" ? data : (data?.mensaje || "No se pudo actualizar el favicon");
-          throw new Error(mensaje);
+          localStorage.setItem("estampaider_favicon_refresh", Date.now().toString());
+          mostrarToastPassword("Favicon actualizado correctamente ⭐", "success");
+          cerrarModalFavicon();
+        } catch (error) {
+          console.error("Error subiendo favicon:", error);
+          mostrarToastPassword(error.message || "No se pudo actualizar el favicon", "error");
+        } finally {
+          btnCambiarFavicon.disabled = false;
+          btnCambiarFavicon.textContent = "Guardar favicon";
         }
-
-        localStorage.setItem("estampaider_favicon_refresh", Date.now().toString());
-        mostrarToastPassword("Favicon actualizado correctamente ⭐", "success");
-        cerrarModalFavicon();
-      } catch (error) {
-        console.error("Error subiendo favicon:", error);
-        mostrarToastPassword(error.message || "No se pudo actualizar el favicon", "error");
-      } finally {
-        btnCambiarFavicon.disabled = false;
-        btnCambiarFavicon.textContent = "Guardar favicon";
-      }
+      });
     });
-  });
-</script>
-<div id="modalLogo" class="modal-password hidden">
-  <div class="modal-password-card">
-    <button type="button" class="cerrar-password" onclick="cerrarModalLogo()" aria-label="Cerrar">✕</button>
-    <h2>🖼️ Cambiar logo</h2>
-    <p class="password-help">
-      Sube un logo nuevo en JPG, PNG o WEBP. Se reflejará en todo el sitio.
-    </p>
+  </script>
 
-    <div class="campo-password">
-      <label for="logoArchivo">Selecciona el archivo</label>
-      <input type="file" id="logoArchivo" accept="image/*">
-    </div>
-
-    <div class="campo-password">
-      <img id="previewLogoNuevo" src="images/logo-estampaider.png" alt="Vista previa del logo" style="max-height:90px; object-fit:contain;">
-    </div>
-
-    <button type="button" id="btnCambiarLogo" class="btn-guardar-password">
-      Guardar logo
-    </button>
-  </div>
-</div>
-<div id="modalFavicon" class="modal-password hidden">
-  <div class="modal-password-card">
-    <button type="button" class="cerrar-password" onclick="cerrarModalFavicon()" aria-label="Cerrar">✕</button>
-    <h2>⭐ Cambiar favicon</h2>
-    <p class="password-help">
-      Sube un favicon en ICO, PNG o SVG. Se reflejará en la pestaña del navegador.
-    </p>
-
-    <div class="campo-password">
-      <label for="faviconArchivo">Selecciona el archivo</label>
-      <input type="file" id="faviconArchivo" accept=".ico,image/png,image/svg+xml">
-    </div>
-
-    <div class="campo-password">
-      <img id="previewFaviconNuevo" src="favicon.ico" alt="Vista previa del favicon" style="max-height:48px; max-width:48px; object-fit:contain;">
-    </div>
-
-    <button type="button" id="btnCambiarFavicon" class="btn-guardar-password">
-      Guardar favicon
-    </button>
-  </div>
-</div>
-<script src="branding.js"></script>
+  <script src="branding.js"></script>
 </body>
 </html>
