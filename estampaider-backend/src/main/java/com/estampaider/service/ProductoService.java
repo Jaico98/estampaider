@@ -71,6 +71,8 @@ public class ProductoService {
         existente.setEtiqueta(normalizarEtiqueta(datos.getEtiqueta()));
         existente.setDescripcion(datos.getDescripcion() != null ? datos.getDescripcion().trim() : null);
         existente.setCategoria(datos.getCategoria() != null ? datos.getCategoria().trim() : null);
+        existente.setTallasDisponibles(normalizarOpciones(datos.getTallasDisponibles()));
+        existente.setColoresDisponibles(normalizarOpciones(datos.getColoresDisponibles()));
 
         return productoRepository.save(existente);
     }

@@ -1,5 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
+  function obtenerAuth() {
+    try {
+      return JSON.parse(sessionStorage.getItem("auth"))
+          || JSON.parse(localStorage.getItem("auth"));
+    } catch {
+      return null;
+    }
+  }
+  
+  const auth = obtenerAuth();
 
   if (!auth || auth.rol !== "ADMIN" || !auth.token) {
     sessionStorage.setItem("redirectAfterLogin", "productos-admin.html");
@@ -534,9 +543,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   btnCerrarSesion.addEventListener("click", () => {
-    sessionStorage.removeItem("auth");
-    window.location.href = "admin/login.html";
-  });
+  sessionStorage.removeItem("auth");
+  localStorage.removeItem("auth");
+  window.location.href = "admin/login.html";
+});
 
   limpiarFormulario();
   cargarProductos();

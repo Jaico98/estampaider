@@ -1,6 +1,19 @@
-const authData = sessionStorage.getItem("auth")
-  ? JSON.parse(sessionStorage.getItem("auth"))
-  : null;
+function obtenerAuth() {
+  try {
+    const sessionAuth = sessionStorage.getItem("auth");
+    if (sessionAuth) return JSON.parse(sessionAuth);
+
+    const localAuth = localStorage.getItem("auth");
+    if (localAuth) return JSON.parse(localAuth);
+
+    return null;
+  } catch (e) {
+    console.error("Error leyendo auth:", e);
+    return null;
+  }
+}
+
+const authData = obtenerAuth();
 
 const API_BASE = resolverApiBase();
 
@@ -51,6 +64,7 @@ function irLogin() {
 
 function cerrarSesion() {
   sessionStorage.removeItem("auth");
+  localStorage.removeItem("auth");
   window.location.href = "index.html";
 }
 
@@ -341,24 +355,28 @@ function renderizarPedidos(contenedor, pedidos) {
 
       const detallesHTML = pedido.detalles?.length
         ? pedido.detalles
-            .map((d) => {
-              const producto = escapeHtml(d.producto);
-              const cantidad = Number(d.cantidad || 0);
-              const subtotal = Number(d.precioUnitario || 0) * cantidad;
-
-              const nota = d.notaPersonalizacion
-                ? `<div class="pedido-nota">Personalización: ${escapeHtml(
-                    d.notaPersonalizacion
-                  )}</div>`
-                : "";
-
-              return `
-                <li>
-                  <strong>${producto}</strong> x ${cantidad} — $${subtotal.toLocaleString("es-CO")}
-                  ${nota}
-                </li>
-              `;
-            })
+        .map((d) => {
+          const producto = escapeHtml(d.producto);
+          const cantidad = Number(d.cantidad || 0);
+          const subtotal = Number(d.precioUnitario || 0) * cantidad;
+        
+          const talla = d.talla
+            ? `<div><strong>Talla:</strong> ${escapeHtml(d.talla)}</div>`
+            : "";
+        
+          const color = d.color
+            ? `<div><strong>Color:</strong> ${escapeHtml(d.color)}</div>`
+            : "";
+        
+          return `
+            <li>
+              <strong>${producto}</strong> x ${cantidad}
+              — $${subtotal.toLocaleString("es-CO")}
+              ${talla}
+              ${color}
+            </li>
+          `;
+        })
             .join(" ")
         : "<li>Sin productos</li>";
 
@@ -424,6 +442,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (res.status === 401) {
       sessionStorage.removeItem("auth");
+      localStorage.removeItem("auth");
       renderizarLoginRequerido();
       return;
     }

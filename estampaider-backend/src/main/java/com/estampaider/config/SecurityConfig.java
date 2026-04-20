@@ -14,7 +14,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import jakarta.servlet.http.HttpServletResponse;
 
 @Configuration
 public class SecurityConfig {
@@ -34,12 +33,14 @@ public class SecurityConfig {
                     "http://localhost:5501",
                     "http://127.0.0.1:5501",
                     "http://localhost:*",
-                    "http://127.0.0.1:*"
+                    "http://127.0.0.1:*",
+                    "https://estampaider.com",
+                    "https://www.estampaider.com"
                 ));
                 config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                 config.setAllowedHeaders(List.of("*"));
-                config.setExposedHeaders(List.of("*"));
-                config.setAllowCredentials(true);
+                config.setExposedHeaders(List.of("Authorization"));
+                config.setAllowCredentials(false);
                 return config;
             }))
             .csrf(csrf -> csrf.disable())
@@ -59,7 +60,6 @@ public class SecurityConfig {
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/webhook").permitAll()
                 .requestMatchers("/notificar").permitAll()
-                .requestMatchers("/error").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/branding/current").permitAll()
                 .requestMatchers("/error").permitAll()
 

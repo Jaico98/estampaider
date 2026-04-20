@@ -54,23 +54,26 @@ if (form) {
 
       const data = await response.json();
 
-      sessionStorage.setItem(
-        "auth",
-        JSON.stringify({
-          ok: data.ok,
-          rol: data.rol,
-          nombre: data.nombre,
-          telefono: data.telefono,
-          token: data.token
-        })
-      );
+      const authGuardado = JSON.stringify({
+        ok: data.ok,
+        rol: data.rol,
+        nombre: data.nombre,
+        telefono: data.telefono,
+        token: data.token
+      });
+      
+      sessionStorage.setItem("auth", authGuardado);
+      localStorage.setItem("auth", authGuardado);
 
-      const redirect = sessionStorage.getItem("redirectAfterLogin");
+      const redirect =
+      sessionStorage.getItem("redirectAfterLogin") ||
+      localStorage.getItem("redirectAfterLogin");
       if (redirect) {
         sessionStorage.removeItem("redirectAfterLogin");
+        localStorage.removeItem("redirectAfterLogin");
         window.location.href = redirect;
-        return;
-      }
+  return;
+}
 
       if (data.rol === "ADMIN") {
         window.location.href = "../pedidos.html";

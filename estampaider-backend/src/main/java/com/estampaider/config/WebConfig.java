@@ -27,14 +27,16 @@ public class WebConfig implements WebMvcConfigurer {
     }
 
     @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/uploads/**")
-                .allowedOriginPatterns(
-                        "http://localhost:5501",
-                        "http://127.0.0.1:5501",
-                        "http://localhost:*",
-                        "http://127.0.0.1:*"
-                )
-                .allowedMethods("GET", "HEAD", "OPTIONS");
-    }
+public void addCorsMappings(CorsRegistry registry) {
+    registry.addMapping("/uploads/**")
+            .allowedOriginPatterns(
+                    "http://localhost:5501",
+                    "http://127.0.0.1:5501",
+                    "http://localhost:*",
+                    "http://127.0.0.1:*",
+                    "https://estampaider.com",
+                    "https://www.estampaider.com"
+            )
+            .allowedMethods("GET", "HEAD", "OPTIONS");
+}
 }

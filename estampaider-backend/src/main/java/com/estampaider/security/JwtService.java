@@ -6,14 +6,15 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 
 import org.springframework.stereotype.Service;
-
+import org.springframework.beans.factory.annotation.Value;
 import java.security.Key;
 import java.util.Date;
 
 @Service
 public class JwtService {
 
-    private final String SECRET = "estampaider-super-secret-key-2026-estampaider";
+@Value("${app.jwt.secret}")
+private String SECRET;
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET.getBytes());

@@ -64,7 +64,7 @@ private List<DetallePedido> detalles;
 @PrePersist
 public void prePersist() {
     if (fecha == null) fecha = LocalDateTime.now();
-    if (estado == null) estado = "PENDIENTE";
+    if (estado == null) estado = "RECIBIDO";
     if (estadoPago == null) estadoPago = "PENDIENTE";
 }
     /* ===================== GETTERS Y SETTERS ===================== */

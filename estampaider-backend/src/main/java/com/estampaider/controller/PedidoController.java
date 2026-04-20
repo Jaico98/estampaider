@@ -96,25 +96,21 @@ public class PedidoController {
         pedido.setBarrio(textoSeguro(request.getBarrio()));
         pedido.setReferencia(textoSeguro(request.getReferencia()));
         pedido.setMetodoPago(textoSeguro(request.getMetodoPago()));
-        pedido.setTotal(request.getTotal());
 
         List<DetallePedido> detalles = request.getDetalles().stream().map(d -> {
             if (d == null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hay un detalle de pedido inválido");
             }
-
             if (d.getProducto() == null || d.getProducto().trim().isEmpty()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cada detalle debe tener producto");
             }
-
             if (d.getCantidad() <= 0) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La cantidad debe ser mayor a 0");
             }
-
             if (d.getPrecioUnitario() <= 0) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El precio unitario debe ser mayor a 0");
             }
-
+        
             DetallePedido detalle = new DetallePedido();
             detalle.setProducto(d.getProducto().trim());
             detalle.setCantidad(d.getCantidad());
@@ -124,9 +120,14 @@ public class PedidoController {
             detalle.setPedido(pedido);
             return detalle;
         }).toList();
-
+        
+        double totalCalculado = detalles.stream()
+            .mapToDouble(d -> d.getCantidad() * d.getPrecioUnitario())
+            .sum();
+        
+        pedido.setTotal(totalCalculado);
         pedido.setDetalles(detalles);
-
+        
         Pedido guardado = pedidoService.guardarPedido(pedido);
         return ResponseEntity.status(HttpStatus.CREATED).body(guardado);
     }

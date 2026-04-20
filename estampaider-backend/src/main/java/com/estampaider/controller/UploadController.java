@@ -35,11 +35,24 @@ public class UploadController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Solo se permiten archivos de imagen");
         }
 
-        String nombreOriginal = StringUtils.cleanPath(file.getOriginalFilename() == null ? "imagen" : file.getOriginalFilename());
+        String nombreOriginal = StringUtils.cleanPath(
+            file.getOriginalFilename() == null ? "imagen" : file.getOriginalFilename()
+        );
         String extension = obtenerExtension(nombreOriginal);
 
         if (!esExtensionPermitida(extension)) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Formato no permitido. Usa jpg, jpeg, png o webp");
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Formato no permitido. Usa jpg, jpeg, png o webp"
+            );
+        }
+
+        long maxBytes = 10 * 1024 * 1024; // 10 MB
+        if (file.getSize() > maxBytes) {
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "La imagen supera el tamaño máximo de 10 MB"
+            );
         }
 
         try {
@@ -50,6 +63,10 @@ public class UploadController {
             String nombreArchivo = nombreBase + "-" + UUID.randomUUID().toString().substring(0, 8) + "." + extension;
 
             Path destino = uploadPath.resolve(nombreArchivo).normalize();
+
+            if (!destino.startsWith(uploadPath)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ruta de archivo inválida");
+            }
 
             Files.copy(file.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
 

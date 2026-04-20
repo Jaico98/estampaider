@@ -3,6 +3,21 @@
 // Gestiona el formulario de confirmación de compra
 // ============================================================
 
+function obtenerAuth() {
+  try {
+    const sessionAuth = sessionStorage.getItem("auth");
+    if (sessionAuth) return JSON.parse(sessionAuth);
+
+    const localAuth = localStorage.getItem("auth");
+    if (localAuth) return JSON.parse(localAuth);
+
+    return null;
+  } catch (e) {
+    console.error("Error leyendo auth:", e);
+    return null;
+  }
+}
+
 function resolverApiBase() {
   const configurada = window.API_BASE_URL || window.__API_BASE__;
   if (configurada) {
@@ -215,10 +230,11 @@ function crearMetodoPagoCard(metodo, onSelect) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  const authCheckout = JSON.parse(sessionStorage.getItem("auth") || "null");
+  const authCheckout = obtenerAuth();
 
   if (!authCheckout || !authCheckout.token) {
     sessionStorage.setItem("redirectAfterLogin", "/checkout.html");
+    localStorage.setItem("redirectAfterLogin", "/checkout.html");
     window.location.href = "admin/login.html";
     return;
   }
