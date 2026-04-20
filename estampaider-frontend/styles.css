@@ -995,20 +995,102 @@ main h2 {
 /* ===============================
  🧾 TARJETA PEDIDO
 ================================ */
-.pedido-card {
-  background: #ffffff;
-  border-radius: var(--radio);
-  padding: 18px;
-  margin-bottom: 20px;
-  box-shadow: var(--sombra-suave);
-  border-left: 8px solid #ccc;
-  transition: transform .2s ease, box-shadow .2s ease;
-  animation: fadeInUp 0.4s ease forwards;
+/* CARD */
+.pedido-card{
+  background:#ffffff;
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.08);
+  border:1px solid #e6edf5;
+  transition:transform .2s ease, box-shadow .2s ease;
 }
 
-.pedido-card:hover {
-  box-shadow: var(--sombra-media);
-  transform: translateY(-2px);
+.pedido-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 16px 40px rgba(0,0,0,0.12);
+}
+
+/* HEADER */
+.pedido-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.pedido-header h3{
+  margin:0;
+  font-size:1.2rem;
+}
+
+/* BADGE ESTADO */
+.pedido-estado{
+  padding:6px 12px;
+  border-radius:999px;
+  font-size:.8rem;
+  font-weight:bold;
+  text-transform:uppercase;
+}
+
+/* COLORES POR ESTADO */
+.pedido-estado.RECIBIDO{
+  background:#e0f2fe;
+  color:#0369a1;
+}
+
+.pedido-estado.PENDIENTE{
+  background:#fef3c7;
+  color:#92400e;
+}
+
+.pedido-estado.ENVIADO{
+  background:#dcfce7;
+  color:#166534;
+}
+
+.pedido-estado.ENTREGADO{
+  background:#ede9fe;
+  color:#5b21b6;
+}
+
+/* INFO */
+.pedido-info{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+  font-size:.9rem;
+  color:#475569;
+  margin-bottom:10px;
+}
+
+/* DETALLES */
+.pedido-detalles{
+  margin:10px 0;
+  padding-left:18px;
+}
+
+.pedido-detalles li{
+  margin-bottom:6px;
+}
+
+/* TOTAL */
+.pedido-total{
+  font-weight:bold;
+  font-size:1rem;
+  margin-top:10px;
+  text-align:right;
+  color:#0f172a;
+}
+
+/* BADGES */
+.ok{
+  color:#16a34a;
+  font-weight:bold;
+}
+
+.pendiente{
+  color:#d97706;
+  font-weight:bold;
 }
 
 .pedido-card ul { padding-left: 18px; }
@@ -1581,7 +1663,7 @@ main {
   border-radius: 999px;
   background: rgba(20, 166, 214, 0.1);
   border: 1px solid rgba(20, 166, 214, 0.18);
-  color: #0d8ab5;
+  color: #ffffff;
   font-size: 0.86rem;
   font-weight: 700;
   letter-spacing: 0.3px;
@@ -5360,4 +5442,12 @@ button.eliminar:hover {
     width:100%;
     justify-content:center;
   }
+}
+.branding-bg{
+  background-image:
+    linear-gradient(135deg, rgba(22, 2, 92, 0.42), rgba(15, 23, 42, 0.48)),
+    var(--branding-bg-url);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }

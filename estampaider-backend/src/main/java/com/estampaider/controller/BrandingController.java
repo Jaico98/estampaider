@@ -2,23 +2,43 @@ package com.estampaider.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.io.IOException;
-import java.nio.file.*;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/api/branding")
 public class BrandingController {
+
+    private static final Pattern GALLERY_SLOT_PATTERN = Pattern.compile("^gallery(\\d+)$", Pattern.CASE_INSENSITIVE);
 
     @Value("${app.upload.dir:uploads}")
     private String uploadDir;
@@ -30,48 +50,52 @@ public class BrandingController {
     }
 
     @PostMapping("/logo")
-    public ResponseEntity<Map<String, String>> subirLogo(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Map<String, Object>> subirLogo(@RequestParam("file") MultipartFile file) {
         return ResponseEntity.ok(guardarArchivoBranding(file, "logo-estampaider", TipoArchivo.IMAGEN, true));
     }
 
     @PostMapping("/favicon")
-    public ResponseEntity<Map<String, String>> subirFavicon(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Map<String, Object>> subirFavicon(@RequestParam("file") MultipartFile file) {
         return ResponseEntity.ok(guardarArchivoBranding(file, "favicon-estampaider", TipoArchivo.FAVICON, true));
     }
 
     @PostMapping("/hero-background")
-    public ResponseEntity<Map<String, String>> subirFondoInicio(@RequestParam("file") MultipartFile file) {
+    public ResponseEntity<Map<String, Object>> subirFondoInicio(@RequestParam("file") MultipartFile file) {
         return ResponseEntity.ok(guardarArchivoBranding(file, "hero-background", TipoArchivo.IMAGEN, true));
     }
 
     @PostMapping("/home-video")
-    public ResponseEntity<Map<String, String>> subirVideoHome(
-            @RequestParam("file") MultipartFile file,
-            @RequestParam("slot") String slot) {
-
+    public ResponseEntity<Map<String, Object>> subirVideoHome(
+        @RequestParam("file") MultipartFile file,
+        @RequestParam("slot") String slot
+    ) {
         String nombreBase = resolverSlotVideo(slot);
         return ResponseEntity.ok(guardarArchivoBranding(file, nombreBase, TipoArchivo.VIDEO, true));
     }
 
     @PostMapping("/gallery-video")
-    public ResponseEntity<Map<String, String>> agregarVideoGaleria(@RequestParam("file") MultipartFile file) {
-        try {
-            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-            Files.createDirectories(uploadPath);
+public ResponseEntity<Map<String, Object>> agregarVideoGaleria(@RequestParam("file") MultipartFile file) {
+    try {
+        System.out.println("GALLERY UPLOAD >>> originalName=" + file.getOriginalFilename()
+            + " contentType=" + file.getContentType()
+            + " size=" + file.getSize());
 
-            int siguienteIndice = obtenerSiguienteIndiceGaleria(uploadPath);
-            String nombreBase = "gallery-" + siguienteIndice;
+        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        Files.createDirectories(uploadPath);
 
-            Map<String, String> response = guardarArchivoBranding(file, nombreBase, TipoArchivo.VIDEO, true);
-            response.put("slot", "gallery" + siguienteIndice);
-            return ResponseEntity.ok(response);
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo preparar la galería");
-        }
+        int siguienteIndice = obtenerPrimerIndiceLibreGaleria(uploadPath);
+        String nombreBase = "gallery-" + siguienteIndice;
+
+        Map<String, Object> response = guardarArchivoBranding(file, nombreBase, TipoArchivo.VIDEO, true);
+        response.put("slot", "gallery" + siguienteIndice);
+        return ResponseEntity.ok(response);
+    } catch (IOException e) {
+        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo preparar la galería");
     }
+}
 
     @DeleteMapping("/home-video")
-    public ResponseEntity<Map<String, String>> eliminarVideoHome(@RequestParam("slot") String slot) {
+    public ResponseEntity<Map<String, Object>> eliminarVideoHome(@RequestParam("slot") String slot) {
         String nombreBase = resolverSlotVideo(slot);
 
         try {
@@ -79,7 +103,7 @@ public class BrandingController {
             Files.createDirectories(uploadPath);
             eliminarVersionesPrevias(uploadPath, nombreBase);
 
-            Map<String, String> response = new HashMap<>();
+            Map<String, Object> response = new HashMap<>();
             response.put("message", "Video eliminado correctamente");
             return ResponseEntity.ok(response);
         } catch (IOException e) {
@@ -88,11 +112,13 @@ public class BrandingController {
     }
 
     @DeleteMapping("/gallery-video")
-    public ResponseEntity<Map<String, String>> eliminarVideoGaleria(@RequestParam("slot") String slot) {
+    public ResponseEntity<Map<String, Object>> eliminarVideoGaleria(@RequestParam("slot") String slot) {
         String nombreBase = resolverSlotVideo(slot);
-
         if (!nombreBase.startsWith("gallery-")) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Solo puedes eliminar videos de galería con este endpoint");
+            throw new ResponseStatusException(
+                HttpStatus.BAD_REQUEST,
+                "Solo puedes eliminar videos de galería con este endpoint"
+            );
         }
 
         try {
@@ -100,7 +126,7 @@ public class BrandingController {
             Files.createDirectories(uploadPath);
             eliminarVersionesPrevias(uploadPath, nombreBase);
 
-            Map<String, String> response = new HashMap<>();
+            Map<String, Object> response = new HashMap<>();
             response.put("message", "Video de galería eliminado correctamente");
             return ResponseEntity.ok(response);
         } catch (IOException e) {
@@ -113,11 +139,9 @@ public class BrandingController {
         try {
             Map<String, Object> config = leerConfig();
             Map<String, String> socialLinks = new LinkedHashMap<>();
-
             socialLinks.put("tiktok", limpiarUrl(body.get("tiktok")));
             socialLinks.put("instagram", limpiarUrl(body.get("instagram")));
             socialLinks.put("facebook", limpiarUrl(body.get("facebook")));
-
             config.put("socialLinks", socialLinks);
             guardarConfig(config);
 
@@ -132,7 +156,6 @@ public class BrandingController {
     @GetMapping("/current")
     public ResponseEntity<Map<String, Object>> obtenerBrandingActual() {
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-
         Map<String, Object> response = new LinkedHashMap<>();
         response.put("logoUrl", buscarArchivo(uploadPath, "logo-estampaider", extensionesImagen()));
         response.put("faviconUrl", buscarArchivo(uploadPath, "favicon-estampaider", extensionesFavicon()));
@@ -147,15 +170,9 @@ public class BrandingController {
 
             if (socialLinks instanceof Map<?, ?> map) {
                 Map<String, String> redes = new LinkedHashMap<>();
-
-                Object tiktok = map.get("tiktok");
-                Object instagram = map.get("instagram");
-                Object facebook = map.get("facebook");
-
-                redes.put("tiktok", tiktok != null ? String.valueOf(tiktok) : "");
-                redes.put("instagram", instagram != null ? String.valueOf(instagram) : "");
-                redes.put("facebook", facebook != null ? String.valueOf(facebook) : "");
-
+                redes.put("tiktok", map.get("tiktok") != null ? String.valueOf(map.get("tiktok")) : "");
+                redes.put("instagram", map.get("instagram") != null ? String.valueOf(map.get("instagram")) : "");
+                redes.put("facebook", map.get("facebook") != null ? String.valueOf(map.get("facebook")) : "");
                 response.put("socialLinks", redes);
             } else {
                 response.put("socialLinks", redesVacias());
@@ -167,21 +184,27 @@ public class BrandingController {
         return ResponseEntity.ok(response);
     }
 
-    private Map<String, String> guardarArchivoBranding(
-            MultipartFile file,
-            String nombreBase,
-            TipoArchivo tipoArchivo,
-            boolean reemplazarPrevios
+    private Map<String, Object> guardarArchivoBranding(
+        MultipartFile file,
+        String nombreBase,
+        TipoArchivo tipoArchivo,
+        boolean reemplazarPrevios
     ) {
         if (file == null || file.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Debes seleccionar un archivo");
         }
 
         String contentType = file.getContentType();
-        String original = StringUtils.cleanPath(file.getOriginalFilename() == null ? nombreBase : file.getOriginalFilename());
-        String extension = obtenerExtension(original);
+String original = StringUtils.cleanPath(file.getOriginalFilename() == null ? nombreBase : file.getOriginalFilename());
+String extension = obtenerExtension(original);
 
-        validarArchivo(contentType, extension, tipoArchivo);
+System.out.println("VALIDAR ARCHIVO >>> nombreBase=" + nombreBase
+    + " original=" + original
+    + " extension=" + extension
+    + " contentType=" + contentType
+    + " tipo=" + tipoArchivo);
+
+validarArchivo(contentType, extension, tipoArchivo);
 
         try {
             Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
@@ -193,13 +216,11 @@ public class BrandingController {
 
             String fileName = nombreBase + "." + extension;
             Path destino = uploadPath.resolve(fileName).normalize();
-
             Files.copy(file.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
 
-            Map<String, String> response = new HashMap<>();
+            Map<String, Object> response = new HashMap<>();
             response.put("url", "/uploads/" + fileName);
             return response;
-
         } catch (IOException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo guardar el archivo");
         }
@@ -236,10 +257,12 @@ public class BrandingController {
 
     private String resolverSlotVideo(String slot) {
         String valor = slot == null ? "" : slot.trim().toLowerCase();
+        Matcher matcher = GALLERY_SLOT_PATTERN.matcher(valor);
 
-        if (valor.matches("^gallery\\d+$")) {
-            String numero = valor.replace("gallery", "");
-            return "gallery-" + numero;
+        if (matcher.matches()) {
+            int indice = Integer.parseInt(matcher.group(1));
+            validarIndiceGaleria(indice);
+            return "gallery-" + indice;
         }
 
         return switch (valor) {
@@ -249,24 +272,28 @@ public class BrandingController {
         };
     }
 
-    private int obtenerSiguienteIndiceGaleria(Path uploadPath) throws IOException {
-        List<Map<String, String>> actuales = obtenerVideosGaleria(uploadPath);
-        int max = 0;
+    private int obtenerPrimerIndiceLibreGaleria(Path uploadPath) throws IOException {
+    Set<Integer> indicesOcupados = new HashSet<>();
 
-        for (Map<String, String> item : actuales) {
-            String slot = item.get("slot");
-            if (slot == null) continue;
-            if (!slot.startsWith("gallery")) continue;
-
-            try {
-                int n = Integer.parseInt(slot.replace("gallery", ""));
-                if (n > max) max = n;
-            } catch (NumberFormatException ignored) {
+    if (Files.exists(uploadPath)) {
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(uploadPath, "gallery-*.*")) {
+            for (Path path : stream) {
+                String filename = path.getFileName().toString();
+                Matcher matcher = Pattern.compile("^gallery-(\\d+)\\.[^.]+$").matcher(filename);
+                if (matcher.matches()) {
+                    indicesOcupados.add(Integer.parseInt(matcher.group(1)));
+                }
             }
         }
-
-        return max + 1;
     }
+
+    int i = 1;
+    while (indicesOcupados.contains(i)) {
+        i++;
+    }
+
+    return i;
+}
 
     private List<Map<String, String>> obtenerVideosGaleria(Path uploadPath) {
         List<Map<String, String>> videos = new ArrayList<>();
@@ -285,7 +312,10 @@ public class BrandingController {
                 Matcher matcher = pattern.matcher(fileName);
                 if (!matcher.matches()) continue;
 
-                String indice = matcher.group(1);
+                int indice = Integer.parseInt(matcher.group(1));
+                if (indice < 1) {
+                    continue;
+                }
 
                 Map<String, String> item = new LinkedHashMap<>();
                 item.put("slot", "gallery" + indice);
@@ -312,28 +342,25 @@ public class BrandingController {
     private Map<String, Object> leerConfig() throws IOException {
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
         Files.createDirectories(uploadPath);
-
         Path configPath = uploadPath.resolve("branding-settings.json").normalize();
+
         if (!Files.exists(configPath)) {
             return new LinkedHashMap<>();
         }
 
-        return objectMapper.readValue(
-                Files.readString(configPath),
-                new TypeReference<LinkedHashMap<String, Object>>() {}
-        );
+        return objectMapper.readValue(Files.readString(configPath), new TypeReference<Map<String, Object>>() {});
     }
 
     private void guardarConfig(Map<String, Object> config) throws IOException {
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
         Files.createDirectories(uploadPath);
-
         Path configPath = uploadPath.resolve("branding-settings.json").normalize();
+
         Files.writeString(
-                configPath,
-                objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(config),
-                StandardOpenOption.CREATE,
-                StandardOpenOption.TRUNCATE_EXISTING
+            configPath,
+            objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(config),
+            StandardOpenOption.CREATE,
+            StandardOpenOption.TRUNCATE_EXISTING
         );
     }
 
@@ -349,7 +376,6 @@ public class BrandingController {
 
     private void eliminarVersionesPrevias(Path uploadPath, String nombreBase) throws IOException {
         String[] extensiones = {"png", "jpg", "jpeg", "webp", "ico", "svg", "mp4", "webm", "mov"};
-
         for (String ext : extensiones) {
             Path archivo = uploadPath.resolve(nombreBase + "." + ext).normalize();
             Files.deleteIfExists(archivo);
@@ -390,16 +416,22 @@ public class BrandingController {
         return vacias;
     }
 
+    private void validarIndiceGaleria(int indice) {
+        if (indice < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Slot de galería inválido");
+        }
+    }
+
     private String[] extensionesImagen() {
-        return new String[]{"png", "webp", "jpg", "jpeg"};
+        return new String[] {"png", "webp", "jpg", "jpeg"};
     }
 
     private String[] extensionesFavicon() {
-        return new String[]{"ico", "png", "svg"};
+        return new String[] {"ico", "png", "svg"};
     }
 
     private String[] extensionesVideo() {
-        return new String[]{"mp4", "webm", "mov"};
+        return new String[] {"mp4", "webm", "mov"};
     }
 
     private enum TipoArchivo {

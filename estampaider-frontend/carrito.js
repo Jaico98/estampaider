@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const contenedor = document.getElementById("carrito");
   const totalSpan = document.getElementById("total");
   const btnWhatsapp = document.getElementById("whatsappCarrito");
+  const btnVaciarCarrito = document.getElementById("btnVaciarCarrito");
 
   const WHATSAPP_NUMBER =
     window.ESTAMPAIDER_CONFIG?.WHATSAPP_NUMBER || "573153625992";
@@ -12,16 +13,36 @@ document.addEventListener("DOMContentLoaded", () => {
     return String(valor ?? "");
   }
 
+  function crearLineaDetalle(texto) {
+    const small = document.createElement("div");
+    small.className = "item-detalle";
+    small.textContent = texto;
+    return small;
+  }
+
   function crearItemCarrito(item, index) {
     const precio = Number(item.precio) || 0;
     const cantidad = Number(item.cantidad) || 0;
     const subtotal = precio * cantidad;
+
+    const talla = textoSeguro(item.tallaSeleccionada).trim();
+    const color = textoSeguro(item.colorSeleccionado).trim();
 
     const div = document.createElement("div");
     div.classList.add("item");
 
     const nombre = document.createElement("strong");
     nombre.textContent = textoSeguro(item.nombre);
+
+    div.appendChild(nombre);
+
+    if (talla) {
+      div.appendChild(crearLineaDetalle(`Talla: ${talla}`));
+    }
+
+    if (color) {
+      div.appendChild(crearLineaDetalle(`Color: ${color}`));
+    }
 
     const br1 = document.createElement("br");
 
@@ -50,7 +71,6 @@ document.addEventListener("DOMContentLoaded", () => {
     btnEliminar.textContent = "❌ Eliminar";
 
     div.append(
-      nombre,
       br1,
       labelCantidad,
       br2,
@@ -70,12 +90,27 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    let mensaje = "Hola quiero cotizar estos productos:\n\n";
+    let mensaje = "Hola, quiero cotizar estos productos:\n\n";
 
     carrito.forEach((item) => {
       const precio = Number(item.precio) || 0;
       const cantidad = Number(item.cantidad) || 0;
-      mensaje += `• ${textoSeguro(item.nombre)} x${cantidad} = $${(precio * cantidad).toLocaleString("es-CO")}\n`;
+      const talla = textoSeguro(item.tallaSeleccionada).trim();
+      const color = textoSeguro(item.colorSeleccionado).trim();
+
+      let linea = `• ${textoSeguro(item.nombre)}`;
+
+      if (talla) {
+        linea += ` | Talla: ${talla}`;
+      }
+
+      if (color) {
+        linea += ` | Color: ${color}`;
+      }
+
+      linea += ` | Cantidad: ${cantidad} | Subtotal: $${(precio * cantidad).toLocaleString("es-CO")}`;
+
+      mensaje += `${linea}\n`;
     });
 
     mensaje += `\nTotal: $${total.toLocaleString("es-CO")}`;
@@ -133,6 +168,17 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!Number.isInteger(index) || index < 0 || index >= carrito.length) return;
 
     carrito.splice(index, 1);
+    renderizarCarrito();
+  });
+
+  btnVaciarCarrito?.addEventListener("click", () => {
+    if (!carrito.length) return;
+
+    const confirmado = confirm("¿Seguro que deseas vaciar el carrito?");
+    if (!confirmado) return;
+
+    carrito = [];
+    localStorage.setItem("carrito", JSON.stringify(carrito));
     renderizarCarrito();
   });
 

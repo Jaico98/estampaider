@@ -90,6 +90,13 @@ public class ProductoController {
         if (producto.getPrecio() <= 0) {
             throw new IllegalArgumentException("El precio debe ser mayor a 0");
         }
+
+        if (producto.getTallasDisponibles() != null) {
+            producto.setTallasDisponibles(producto.getTallasDisponibles().trim());
+        }
+
+        if (producto.getColoresDisponibles() != null) {
+            producto.setColoresDisponibles(producto.getColoresDisponibles().trim());
+        }
     }
 }
-

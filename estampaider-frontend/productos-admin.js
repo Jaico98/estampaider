@@ -33,6 +33,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const campoDescripcion = document.getElementById("descripcion");
   const previewImagen = document.getElementById("previewImagen");
   const campoEtiqueta = document.getElementById("etiqueta");
+  const campoTallasDisponibles = document.getElementById("tallasDisponibles");
+  const campoColoresDisponibles = document.getElementById("coloresDisponibles");
 
   function getHeaders() {
     return {
@@ -74,6 +76,8 @@ document.addEventListener("DOMContentLoaded", () => {
     campoImagenUrl.value = "";
     campoDescripcion.value = "";
     campoEtiqueta.value = "";
+    campoTallasDisponibles.value = "";
+    campoColoresDisponibles.value = "";
     if (campoImagenArchivo) campoImagenArchivo.value = "";
     previewImagen.src = "images/placeholder.jpg";
     tituloFormulario.textContent = "Nuevo producto";
@@ -159,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const productos = await res.json();
       productosActuales = Array.isArray(productos) ? [...productos] : [];
-      renderizarProductos(productos);
+      renderizarProductos(productosActuales);
     } catch (error) {
       console.error("Error cargando productos:", error);
       listaProductos.innerHTML = `<div class="empty-admin">Error al cargar productos.</div>`;
@@ -253,6 +257,11 @@ document.addEventListener("DOMContentLoaded", () => {
   
       const descripcion = document.createElement("p");
       descripcion.textContent = textoSeguro(producto.descripcion || "Sin descripción");
+
+      const variantes = document.createElement("p");
+      variantes.textContent =
+      `Tallas: ${textoSeguro(producto.tallasDisponibles || "No definidas")} | ` +
+      `Colores: ${textoSeguro(producto.coloresDisponibles || "No definidos")}`;
   
       let etiquetaVisual = null;
   
@@ -299,9 +308,9 @@ document.addEventListener("DOMContentLoaded", () => {
       acciones.append(btnEditar, btnToggle, btnEliminar);
   
       if (etiquetaVisual) {
-        body.append(badge, etiquetaVisual, orden, nombre, precio, categoria, descripcion, acciones);
+        body.append(badge, etiquetaVisual, orden, nombre, precio, categoria, descripcion, variantes, acciones);
       } else {
-        body.append(badge, orden, nombre, precio, categoria, descripcion, acciones);
+        body.append(badge, orden, nombre, precio, categoria, descripcion, variantes, acciones);
       }
   
       card.append(img, body);
@@ -319,6 +328,8 @@ document.addEventListener("DOMContentLoaded", () => {
     campoImagenUrl.value = textoSeguro(producto.imagenUrl);
     campoDescripcion.value = textoSeguro(producto.descripcion);
     campoEtiqueta.value = textoSeguro(producto.etiqueta);
+    campoTallasDisponibles.value = textoSeguro(producto.tallasDisponibles);
+    campoColoresDisponibles.value = textoSeguro(producto.coloresDisponibles);
     if (campoImagenArchivo) campoImagenArchivo.value = "";
     previewImagen.src = resolverSrcImagen(producto.imagenUrl);
 
@@ -378,7 +389,9 @@ document.addEventListener("DOMContentLoaded", () => {
       categoria: campoCategoria.value.trim(),
       etiqueta: campoEtiqueta.value.trim(),
       imagenUrl: campoImagenUrl.value.trim(),
-      descripcion: campoDescripcion.value.trim()
+      descripcion: campoDescripcion.value.trim(),
+      tallasDisponibles: campoTallasDisponibles.value.trim(),
+      coloresDisponibles: campoColoresDisponibles.value.trim()
     };
   }
 
@@ -406,6 +419,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const id = campoId.value.trim();
     const payload = obtenerPayloadFormulario();
+
+    console.log("Guardando producto ID:", id || "(nuevo)");
+    console.log("Payload enviado:", payload);
 
     if (!validarPayload(payload)) return;
 

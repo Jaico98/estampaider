@@ -37,18 +37,11 @@ public class PedidoController {
         this.cotizacionRepository = cotizacionRepository;
     }
 
-    /**
-     * Listar todos los pedidos
-     * Seguridad principal controlada por SecurityConfig (ADMIN)
-     */
     @GetMapping
     public ResponseEntity<List<Pedido>> listarPedidos() {
         return ResponseEntity.ok(pedidoService.listarPedidos());
     }
 
-    /**
-     * Listar pedidos por estado (ADMIN)
-     */
     @GetMapping("/estado/{estado}")
     public ResponseEntity<List<Pedido>> listarPorEstado(@PathVariable String estado) {
         String estadoNormalizado = estado.toUpperCase();
@@ -56,12 +49,6 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoService.listarPorEstado(estadoNormalizado));
     }
 
-    /**
-     * Obtener pedido por ID
-     * Defensa en profundidad:
-     * - ADMIN puede ver cualquiera
-     * - CLIENTE solo puede ver su propio pedido
-     */
     @GetMapping("/{id}")
     public ResponseEntity<Pedido> obtenerPedidoPorId(@PathVariable Long id, Authentication authentication) {
         if (authentication == null) {
@@ -78,42 +65,62 @@ public class PedidoController {
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes acceso a este pedido");
     }
 
-    /**
-     * Endpoint legado bloqueado
-     */
     @GetMapping("/cliente/{clienteId}")
     @Deprecated
     public ResponseEntity<List<Pedido>> listarPorCliente(@PathVariable String clienteId) {
         throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Endpoint no permitido");
     }
 
-    /**
-     * Crear pedido (CLIENTE / ADMIN)
-     */
     @PostMapping
     public ResponseEntity<Pedido> guardarPedido(@RequestBody CrearPedidoRequest request, Authentication authentication) {
         if (authentication == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No autenticado");
         }
 
-        String telefono = authentication.getName();
+        if (request == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Solicitud inválida");
+        }
+
+        if (request.getDetalles() == null || request.getDetalles().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El pedido debe tener al menos un producto");
+        }
+
+        String telefono = normalizarTelefono(authentication.getName());
 
         Pedido pedido = new Pedido();
-        pedido.setCliente(request.getCliente());
+        pedido.setCliente(textoSeguro(request.getCliente()));
         pedido.setTelefono(telefono);
-        pedido.setDireccion(request.getDireccion());
-        pedido.setCiudad(request.getCiudad());
-        pedido.setDepartamento(request.getDepartamento());
-        pedido.setBarrio(request.getBarrio());
-        pedido.setReferencia(request.getReferencia());
-        pedido.setMetodoPago(request.getMetodoPago());
+        pedido.setDireccion(textoSeguro(request.getDireccion()));
+        pedido.setCiudad(textoSeguro(request.getCiudad()));
+        pedido.setDepartamento(textoSeguro(request.getDepartamento()));
+        pedido.setBarrio(textoSeguro(request.getBarrio()));
+        pedido.setReferencia(textoSeguro(request.getReferencia()));
+        pedido.setMetodoPago(textoSeguro(request.getMetodoPago()));
         pedido.setTotal(request.getTotal());
 
         List<DetallePedido> detalles = request.getDetalles().stream().map(d -> {
+            if (d == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hay un detalle de pedido inválido");
+            }
+
+            if (d.getProducto() == null || d.getProducto().trim().isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cada detalle debe tener producto");
+            }
+
+            if (d.getCantidad() <= 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La cantidad debe ser mayor a 0");
+            }
+
+            if (d.getPrecioUnitario() <= 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El precio unitario debe ser mayor a 0");
+            }
+
             DetallePedido detalle = new DetallePedido();
-            detalle.setProducto(d.getProducto());
+            detalle.setProducto(d.getProducto().trim());
             detalle.setCantidad(d.getCantidad());
             detalle.setPrecioUnitario(d.getPrecioUnitario());
+            detalle.setTalla(textoSeguro(d.getTalla()));
+            detalle.setColor(textoSeguro(d.getColor()));
             detalle.setPedido(pedido);
             return detalle;
         }).toList();
@@ -130,14 +137,11 @@ public class PedidoController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No autenticado");
         }
 
-        String telefono = authentication.getName();
+        String telefono = normalizarTelefono(authentication.getName());
         List<Pedido> pedidos = pedidoService.listarPorTelefono(telefono);
         return ResponseEntity.ok(pedidos);
     }
 
-    /**
-     * Cambiar estado (ADMIN)
-     */
     @PutMapping("/{id}/estado")
     public ResponseEntity<Pedido> cambiarEstado(@PathVariable Long id, @RequestParam String estado) {
         String estadoNormalizado = estado.toUpperCase();
@@ -147,9 +151,6 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoActualizado);
     }
 
-    /**
-     * Marcar como PAGADO (ADMIN)
-     */
     @PutMapping("/{id}/pago")
     public ResponseEntity<Pedido> marcarPago(@PathVariable Long id) {
         Pedido pedido = pedidoService.obtenerPorId(id)
@@ -160,18 +161,12 @@ public class PedidoController {
         return ResponseEntity.ok(pedidoActualizado);
     }
 
-    /**
-     * Eliminar pedido (ADMIN)
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminarPedido(@PathVariable Long id) {
         pedidoService.eliminarPedido(id);
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Ver cotizaciones (ADMIN)
-     */
     @GetMapping("/cotizaciones")
     public ResponseEntity<List<Cotizacion>> verCotizaciones() {
         return ResponseEntity.ok(cotizacionRepository.findAll());
@@ -257,5 +252,9 @@ public class PedidoController {
 
     private String normalizarTelefono(String telefono) {
         return telefono == null ? "" : telefono.replaceAll("\\D", "");
+    }
+
+    private String textoSeguro(String valor) {
+        return valor == null ? "" : valor.trim();
     }
 }

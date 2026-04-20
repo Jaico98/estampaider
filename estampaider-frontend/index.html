@@ -601,14 +601,14 @@
         <a href="productos.html">Productos</a>
         <a href="nosotros.html">Nosotros</a>
         <a href="contacto.html">Contacto</a>
-        <a href="admin/login.html" class="nav-login">👤 Ingresar</a>
+        <a href="#" class="nav-login" id="navLoginLink">👤 Ingresar</a>
         <a href="carrito.html" class="cart-link" aria-label="Ir al carrito">🛒 <span id="contador-carrito">0</span></a>
       </nav>
     </div>
   </header>
 
   <main>
-    <section class="hero fade-up" aria-label="Presentación principal">
+    <section class="hero branding-bg fade-up" aria-label="Presentación principal">
       <div class="hero-copy">
         <span class="eyebrow">✨ Regalos, marcas y eventos con identidad</span>
         <h1>Hazlo único con <span>Estampaider</span></h1>
@@ -642,9 +642,7 @@
       <div class="hero-visual">
         <div class="hero-panel">
           <div class="hero-main-video">
-            <video autoplay muted loop playsinline title="Trabajo destacado Estampaider">
-              <source src="videos/durazno.mp4" type="video/mp4">
-            </video>
+            <video id="heroVideo" autoplay muted loop playsinline title="Trabajo destacado Estampaider"></video>
           </div>
 
           <div class="floating-note note-a">
@@ -729,9 +727,7 @@
 
       <div class="products-strip">
         <div class="products-highlight">
-          <video autoplay muted loop playsinline title="Muestra de productos">
-            <source src="videos/mayor.mp4" type="video/mp4">
-          </video>
+          <video id="highlightVideo" autoplay muted loop playsinline title="Muestra de productos"></video>
           <div class="products-overlay">
             <span class="eyebrow" style="background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.18)">Top visual</span>
             <h3 style="margin:0;font-size:2rem">Mugs, camisetas, carcasas, gorras y más</h3>
@@ -772,16 +768,7 @@
         </div>
       </div>
 
-      <div class="gallery-grid">
-        <div class="video-card"><video autoplay muted loop playsinline title="Camiseta piel durazno"><source src="videos/durazno.mp4" type="video/mp4"></video></div>
-        <div class="video-card"><video autoplay muted loop playsinline title="Camisetas"><source src="videos/cami.mp4" type="video/mp4"></video></div>
-        <div class="video-card"><video autoplay muted loop playsinline title="Otro trabajo"><source src="videos/otra.mp4" type="video/mp4"></video></div>
-        <div class="video-card"><video autoplay muted loop playsinline title="Pedido mayor"><source src="videos/mayor.mp4" type="video/mp4"></video></div>
-        <div class="video-card"><video autoplay muted loop playsinline title="Piscina"><source src="videos/piscina.mp4" type="video/mp4"></video></div>
-        <div class="video-card"><video autoplay muted loop playsinline title="Taza claro"><source src="videos/claro.mp4" type="video/mp4"></video></div>
-        <div class="video-card"><video autoplay muted loop playsinline title="Taza oscuro"><source src="videos/oscuro.mp4" type="video/mp4"></video></div>
-        <div class="video-card"><video autoplay muted loop playsinline title="Caramañola"><source src="videos/cara.mp4" type="video/mp4"></video></div>
-      </div>
+      <div class="gallery-grid"></div>
     </section>
 
     <section class="consultar-pedido fade-up" id="consulta-pedido" aria-label="Consulta tu pedido">
@@ -843,9 +830,9 @@
 
       <div class="footer-col">
         <h4>Redes</h4>
-        <a href="#" class="disabled" aria-disabled="true">TikTok (próximamente)</a>
-        <a href="#" class="disabled" aria-disabled="true">Instagram (próximamente)</a>
-        <a href="#" class="disabled" aria-disabled="true">Facebook (próximamente)</a>
+        <a href="#" class="disabled" aria-disabled="true" data-social="tiktok">TikTok</a>
+        <a href="#" class="disabled" aria-disabled="true" data-social="instagram">Instagram</a>
+        <a href="#" class="disabled" aria-disabled="true" data-social="facebook">Facebook</a>
       </div>
     </div>
 
@@ -887,15 +874,20 @@
       header.addEventListener("mouseleave", () => header.classList.remove("visible"));
     }
 
-    document.querySelectorAll(".video-card video").forEach(video => {
-      video.addEventListener("click", () => {
-        const source = video.querySelector("source");
-        if (!source) return;
-        videoGrande.src = source.src;
-        modal.classList.add("active");
-        videoGrande.play();
-      });
-    });
+    function bindGalleryVideoClicks() {
+  document.querySelectorAll(".video-card video").forEach(video => {
+    video.onclick = () => {
+      const src = video.currentSrc || video.src;
+      if (!src) return;
+      videoGrande.src = src;
+      modal.classList.add("active");
+      videoGrande.play();
+    };
+  });
+}
+
+bindGalleryVideoClicks();
+window.__estampaiderRebindVideoModal = bindGalleryVideoClicks;
 
     cerrar.addEventListener("click", () => {
       videoGrande.pause();
@@ -932,6 +924,26 @@
       localStorage.setItem("telefonoConsulta", telefonoLimpio);
       window.location.href = "mi-pedido.html";
     });
+  </script>
+  <script>
+    (function () {
+      const link = document.getElementById("navLoginLink");
+      if (!link) return;
+  
+      const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
+  
+      if (auth && auth.token) {
+        if (auth.rol === "ADMIN") {
+          link.href = "mensajes.html";
+          link.textContent = "👤 Panel admin";
+        } else {
+          link.href = "mi-pedido.html";
+          link.textContent = "👤 Mi cuenta";
+        }
+      } else {
+        link.href = "admin/login.html";
+      }
+    })();
   </script>
   <script src="branding.js"></script>
 </body>

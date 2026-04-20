@@ -47,8 +47,8 @@ public class WhatsAppService {
             throw new IllegalArgumentException("El mensaje no puede estar vacío");
         }
 
-        if (accessToken == null || accessToken.isBlank()) {
-            throw new IllegalStateException("Falta configurar whatsapp.access.token");
+        if (accessToken == null || accessToken.isBlank() || "CHANGE_ME_DEV".equalsIgnoreCase(accessToken)) {
+            throw new IllegalStateException("Falta configurar un whatsapp.access.token real");
         }
 
         if (phoneNumberId == null || phoneNumberId.isBlank() || "CHANGE_ME_DEV".equalsIgnoreCase(phoneNumberId)) {
@@ -77,7 +77,7 @@ public class WhatsAppService {
         System.out.println("Phone Number ID: " + phoneNumberId);
         System.out.println("Numero original: " + numero);
         System.out.println("Numero normalizado: " + numeroNormalizado);
-        System.out.println("Mensaje: " + mensaje);
+        System.out.println("Tipo envio: recuperacion");
 
         try {
             ResponseEntity<String> response = restTemplate.exchange(

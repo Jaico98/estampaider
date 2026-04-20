@@ -20,6 +20,12 @@ public class DetallePedido {
     @Column(nullable = false)
     private double precioUnitario;
 
+    @Column(length = 50)
+    private String talla;
+
+    @Column(length = 50)
+    private String color;
+
     @ManyToOne
     @JoinColumn(name = "pedido_id")
     @JsonIgnore
@@ -71,6 +77,21 @@ public class DetallePedido {
      */
     public double getSubtotal() {
         return cantidad * precioUnitario;
+    }
+    public String getTalla() {
+        return talla;
+    }
+    
+    public void setTalla(String talla) {
+        this.talla = talla;
+    }
+    
+    public String getColor() {
+        return color;
+    }
+    
+    public void setColor(String color) {
+        this.color = color;
     }
 }
 

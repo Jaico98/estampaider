@@ -32,7 +32,7 @@
             <a href="productos.html">Productos</a>
             <a href="nosotros.html">Nosotros</a>
             <a href="contacto.html">Contacto</a>
-            <a href="admin/login.html" class="nav-login">👤 Ingresar</a>
+            <a href="#" class="nav-login" id="navLoginLink">👤 Ingresar</a>
             <a href="carrito.html" class="carrito-icono active" aria-label="Ver carrito">
                 🛒 <span id="contador-carrito">0</span>
             </a>
@@ -102,10 +102,10 @@
 
         <div class="footer-col">
             <h4>Redes</h4>
-            <a href="#" class="disabled" aria-disabled="true">TikTok (próximamente)</a>
-            <a href="#" class="disabled" aria-disabled="true">Instagram (próximamente)</a>
-            <a href="#" class="disabled" aria-disabled="true">Facebook (próximamente)</a>
-        </div>
+            <a href="#" class="disabled" aria-disabled="true" data-social="tiktok">TikTok</a>
+            <a href="#" class="disabled" aria-disabled="true" data-social="instagram">Instagram</a>
+            <a href="#" class="disabled" aria-disabled="true" data-social="facebook">Facebook</a>
+          </div>
 
     </div>
 
@@ -142,6 +142,26 @@
         header.addEventListener("mouseleave", () => header.classList.remove("visible"));
     }
 </script>
+<script>
+    (function () {
+      const link = document.getElementById("navLoginLink");
+      if (!link) return;
+  
+      const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
+  
+      if (auth && auth.token) {
+        if (auth.rol === "ADMIN") {
+          link.href = "mensajes.html";
+          link.textContent = "👤 Panel admin";
+        } else {
+          link.href = "mi-pedido.html";
+          link.textContent = "👤 Mi cuenta";
+        }
+      } else {
+        link.href = "admin/login.html";
+      }
+    })();
+  </script>
 <script src="branding.js"></script>
 </body>
 </html>

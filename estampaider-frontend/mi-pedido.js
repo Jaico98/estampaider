@@ -56,22 +56,37 @@ function cerrarSesion() {
 
 function checklistEstado(estado) {
   const estados = [
-    { key: "RECIBIDO", label: "Recibido" },
-    { key: "PENDIENTE", label: "En proceso" },
-    { key: "ENVIADO", label: "Enviado" },
-    { key: "ENTREGADO", label: "Entregado" },
+    { key: "RECIBIDO", label: "Recibido", icono: "📥" },
+    { key: "PENDIENTE", label: "En proceso", icono: "🛠️" },
+    { key: "ENVIADO", label: "Enviado", icono: "🚚" },
+    { key: "ENTREGADO", label: "Entregado", icono: "✅" },
   ];
 
   const actual = estados.findIndex((e) => e.key === estado);
+  const progreso =
+    actual < 0 ? 0 : (actual / (estados.length - 1)) * 100;
 
   return `
-    <div class="pedido-checklist">
-      ${estados
-        .map((e, index) => {
-          const clase = index <= actual ? "activo" : "";
-          return `<span class="check-item ${clase}">${e.label}</span>`;
-        })
-        .join("")}
+    <div class="pedido-progreso">
+      <div class="pedido-progreso-barra">
+        <div class="pedido-progreso-fill" style="width:${progreso}%"></div>
+      </div>
+
+      <div class="pedido-checklist">
+        ${estados
+          .map((e, index) => {
+            const activo = index <= actual ? "activo" : "";
+            const actualClase = index === actual ? "actual" : "";
+
+            return `
+              <div class="check-step ${activo} ${actualClase}">
+                <div class="check-dot">${e.icono}</div>
+                <div class="check-label">${e.label}</div>
+              </div>
+            `;
+          })
+          .join("")}
+      </div>
     </div>
   `;
 }
@@ -344,25 +359,45 @@ function renderizarPedidos(contenedor, pedidos) {
                 </li>
               `;
             })
-            .join("")
+            .join(" ")
         : "<li>Sin productos</li>";
 
-      return `
+        return `
         <article class="pedido-card">
-          <h3>Pedido #${Number(pedido.id || 0)}</h3>
+          
+          <div class="pedido-header">
+            <h3>Pedido #${Number(pedido.id || 0)}</h3>
+            <span class="pedido-estado ${pedido.estado}">
+              ${escapeHtml(pedido.estado)}
+            </span>
+          </div>
+      
           ${checklistEstado(textoSeguro(pedido.estado))}
-          <p><strong>Fecha:</strong> ${escapeHtml(fecha)}</p>
-          <p><strong>Estado:</strong> ${escapeHtml(pedido.estado)}</p>
-          <p><strong>Pago:</strong> ${
-            pedido.estadoPago === "PAGADO" ? "✅ Pagado" : "⏳ Pendiente"
-          }</p>
-          <p><strong>Método:</strong> ${escapeHtml(pedido.metodoPago || "No definido")}</p>
-          <ul>${detallesHTML}</ul>
-          <p><strong>Total:</strong> $${Number(pedido.total || 0).toLocaleString("es-CO")}</p>
+      
+          <div class="pedido-info">
+            <div><strong>Fecha:</strong> ${escapeHtml(fecha)}</div>
+            <div><strong>Pago:</strong> ${
+              pedido.estadoPago === "PAGADO"
+                ? '<span class="ok">✅ Pagado</span>'
+                : '<span class="pendiente">⏳ Pendiente</span>'
+            }</div>
+            <div><strong>Método:</strong> ${escapeHtml(
+              pedido.metodoPago || "No definido"
+            )}</div>
+          </div>
+      
+          <ul class="pedido-detalles">
+            ${detallesHTML}
+          </ul>
+      
+          <div class="pedido-total">
+            Total: $${Number(pedido.total || 0).toLocaleString("es-CO")}
+          </div>
+      
         </article>
       `;
     })
-    .join("");
+    .join(" ");
 }
 
 document.addEventListener("DOMContentLoaded", async () => {

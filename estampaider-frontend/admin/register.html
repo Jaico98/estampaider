@@ -6,8 +6,18 @@
     <title>Crear Cuenta | Estampaider</title>
     <link rel="icon" href="../favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="../styles.css">
+    <style>
+        .login-hero-panel.branding-bg{
+  background-image:
+    linear-gradient(135deg, rgba(7, 24, 31, 0.82), rgba(12, 42, 54, 0.72)),
+    var(--branding-bg-url, none);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+    </style>
 </head>
-<body class="login-page">
+<body class="login-hero-panel branding-bg">
 
     <main class="login-shell">
         <section class="login-hero-panel">
@@ -59,6 +69,22 @@
             </div>
         </section>
     </main>
+
+    <script>
+        (function () {
+          const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
+      
+          if (!auth || !auth.token) return;
+      
+          if (auth.rol === "ADMIN") {
+            window.location.href = "../mensajes.html";
+            return;
+          }
+      
+          window.location.href = "../mi-pedido.html";
+        })();
+      </script>
+
     <script src="../branding.js"></script>
     <script src="register.js"></script>
 </body>

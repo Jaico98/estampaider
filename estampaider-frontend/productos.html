@@ -336,6 +336,14 @@
           font-size:22px;
         }
       }
+      .productos-hero.branding-bg{
+  background-image:
+    linear-gradient(135deg, rgba(22, 2, 92, 0.42), rgba(15, 23, 42, 0.55)),
+    var(--branding-bg-url);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
     </style>
 </head>
 <body>
@@ -360,7 +368,7 @@
             <a href="productos.html" class="active">Productos</a>
             <a href="nosotros.html">Nosotros</a>
             <a href="contacto.html">Contacto</a>
-            <a href="admin/login.html" class="nav-login">👤 Ingresar</a>
+            <a href="#" class="nav-login" id="navLoginLink">👤 Ingresar</a>
             <a href="carrito.html" class="carrito-icono" aria-label="Ver carrito">
                 🛒 <span id="contador-carrito">0</span>
             </a>
@@ -369,7 +377,7 @@
     </div>
 </header>
 
-<section class="productos-hero" aria-label="Encabezado de productos">
+<section class="productos-hero branding-bg" aria-label="Encabezado de productos">
   <div class="productos-hero-content">
       <span class="eyebrow">Catálogo Estampaider</span>
       <h1>Nuestros Productos</h1>
@@ -501,30 +509,32 @@
 </main>
 
 <div id="modalpProducto" class="modalp hidden" role="dialog" aria-modal="true" aria-labelledby="modalpNombre">
-    <div class="modalp-content">
+  <div class="modalp-content">
 
-        <button class="cerrar-modalp" aria-label="Cerrar">✖</button>
+      <button class="cerrar-modalp" aria-label="Cerrar">✖</button>
 
-        <img id="modalpImagen" alt="Imagen del producto">
+      <img id="modalpImagen" alt="Imagen del producto">
 
-        <h2 id="modalpNombre"></h2>
-        <p id="modalpPrecio"></p>
-        <p id="modalpDescripcion"></p>
+      <h2 id="modalpNombre"></h2>
+      <p id="modalpPrecio"></p>
+      <p id="modalpDescripcion"></p>
 
-        <div class="modalp-cantidad">
-            <label for="modalpCantidad">Cantidad:</label>
-            <input type="number" id="modalpCantidad" min="1" value="1">
-        </div>
+      <div id="modalpOpciones"></div>
 
-        <button id="modalpCarrito" class="btn-principal">
-            Agregar al carrito 🛒
-        </button>
+      <div class="modalp-cantidad">
+          <label for="modalpCantidad">Cantidad:</label>
+          <input type="number" id="modalpCantidad" min="1" value="1">
+      </div>
 
-        <a id="modalpWhatsapp" class="btn-whatsapp-producto" target="_blank" rel="noopener noreferrer">
-            💬 Cotizar por WhatsApp
-        </a>
+      <button id="modalpCarrito" class="btn-principal">
+          Agregar al carrito 🛒
+      </button>
 
-    </div>
+      <a id="modalpWhatsapp" class="btn-whatsapp-producto" target="_blank" rel="noopener noreferrer">
+          💬 Cotizar por WhatsApp
+      </a>
+
+  </div>
 </div>
 
 <footer class="footer" role="contentinfo">
@@ -551,10 +561,10 @@
         </div>
 
         <div class="footer-col">
-            <h4>Redes</h4>
-            <a href="#" class="disabled" aria-disabled="true">TikTok (próximamente)</a>
-            <a href="#" class="disabled" aria-disabled="true">Instagram (próximamente)</a>
-            <a href="#" class="disabled" aria-disabled="true">Facebook (próximamente)</a>
+          <h4>Redes</h4>
+          <a href="#" class="disabled" aria-disabled="true" data-social="tiktok">TikTok</a>
+          <a href="#" class="disabled" aria-disabled="true" data-social="instagram">Instagram</a>
+          <a href="#" class="disabled" aria-disabled="true" data-social="facebook">Facebook</a>
         </div>
 
     </div>
@@ -569,7 +579,7 @@
 <script src="config.js"></script>
 <script src="branding.js"></script>
 <script src="carrito-global.js"></script>
-<script src="productos.js"></script>
+<script src="productos.js?v=20260420-1"></script>
 <script src="resenas.js"></script>
 
 <script>
@@ -625,6 +635,25 @@
       });
     });
 </script>
+<script>
+  (function () {
+    const link = document.getElementById("navLoginLink");
+    if (!link) return;
 
+    const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
+
+    if (auth && auth.token) {
+      if (auth.rol === "ADMIN") {
+        link.href = "mensajes.html";
+        link.textContent = "👤 Panel admin";
+      } else {
+        link.href = "mi-pedido.html";
+        link.textContent = "👤 Mi cuenta";
+      }
+    } else {
+      link.href = "admin/login.html";
+    }
+  })();
+</script>
 </body>
 </html>

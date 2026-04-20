@@ -34,10 +34,34 @@ function crearLineaResumen(item) {
   const cantidad = Number(item.cantidad) || 0;
   const subtotal = precio * cantidad;
 
+  const talla = textoSeguro(item.tallaSeleccionada).trim();
+  const color = textoSeguro(item.colorSeleccionado).trim();
+
   const div = document.createElement("div");
   div.classList.add("item");
-  div.textContent =
-    `${textoSeguro(item.nombre)} — ${cantidad} x $${precio.toLocaleString("es-CO")} = $${subtotal.toLocaleString("es-CO")}`;
+
+  const nombre = document.createElement("strong");
+  nombre.textContent = textoSeguro(item.nombre);
+
+  div.appendChild(nombre);
+
+  if (talla) {
+    const tallaEl = document.createElement("div");
+    tallaEl.textContent = `Talla: ${talla}`;
+    div.appendChild(tallaEl);
+  }
+
+  if (color) {
+    const colorEl = document.createElement("div");
+    colorEl.textContent = `Color: ${color}`;
+    div.appendChild(colorEl);
+  }
+
+  const detalle = document.createElement("div");
+  detalle.textContent =
+    `Cantidad: ${cantidad} x $${precio.toLocaleString("es-CO")} = $${subtotal.toLocaleString("es-CO")}`;
+
+  div.appendChild(detalle);
 
   return { elemento: div, subtotal };
 }
@@ -321,9 +345,11 @@ document.addEventListener("DOMContentLoaded", () => {
       metodoPago: metodoPagoSeleccionado,
       total,
       detalles: carrito.map((item) => ({
-        producto: item.nombre,
-        cantidad: item.cantidad,
-        precioUnitario: Number(item.precio) || 0
+        producto: textoSeguro(item.nombre).trim(),
+        cantidad: Number(item.cantidad) || 0,
+        precioUnitario: Number(item.precio) || 0,
+        talla: textoSeguro(item.tallaSeleccionada).trim(),
+        color: textoSeguro(item.colorSeleccionado).trim()
       }))
     };
 

@@ -34,6 +34,12 @@ public class Producto {
     @Column(nullable = false)
     private Integer orden = 0;
 
+    @Column(length = 255)
+    private String tallasDisponibles;
+
+    @Column(length = 255)
+    private String coloresDisponibles;
+
     public Producto() {
     }
 
@@ -121,5 +127,21 @@ public class Producto {
 
     public void setOrden(Integer orden) {
         this.orden = orden;
+    }
+
+    public String getTallasDisponibles() {
+        return tallasDisponibles;
+    }
+
+    public void setTallasDisponibles(String tallasDisponibles) {
+        this.tallasDisponibles = tallasDisponibles;
+    }
+
+    public String getColoresDisponibles() {
+        return coloresDisponibles;
+    }
+
+    public void setColoresDisponibles(String coloresDisponibles) {
+        this.coloresDisponibles = coloresDisponibles;
     }
 }

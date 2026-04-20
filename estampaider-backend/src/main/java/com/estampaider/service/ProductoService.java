@@ -42,6 +42,8 @@ public class ProductoService {
         producto.setActivo(true);
         producto.setEtiqueta(normalizarEtiqueta(producto.getEtiqueta()));
         producto.setOrden(productoRepository.findAll().size());
+        producto.setTallasDisponibles(normalizarOpciones(producto.getTallasDisponibles()));
+        producto.setColoresDisponibles(normalizarOpciones(producto.getColoresDisponibles()));
 
         return productoRepository.save(producto);
     }
@@ -67,6 +69,8 @@ public class ProductoService {
         existente.setDescripcion(datos.getDescripcion());
         existente.setCategoria(datos.getCategoria());
         existente.setEtiqueta(normalizarEtiqueta(datos.getEtiqueta()));
+        existente.setDescripcion(datos.getDescripcion() != null ? datos.getDescripcion().trim() : null);
+        existente.setCategoria(datos.getCategoria() != null ? datos.getCategoria().trim() : null);
 
         return productoRepository.save(existente);
     }
@@ -137,6 +141,18 @@ public class ProductoService {
         }
 
         return valor;
+    }
+    private String normalizarOpciones(String valor) {
+        if (valor == null || valor.isBlank()) {
+            return null;
+        }
+    
+        return java.util.Arrays.stream(valor.split(","))
+            .map(String::trim)
+            .filter(v -> !v.isBlank())
+            .distinct()
+            .reduce((a, b) -> a + "," + b)
+            .orElse(null);
     }
 }
 

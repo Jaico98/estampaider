@@ -42,26 +42,19 @@ function resolverSrcImagen(imagenUrl) {
   return `images/${valor}`;
 }
 
-function obtenerProductosCache() {
-  try {
-    const raw = sessionStorage.getItem(PRODUCTOS_CACHE_KEY);
-    if (!raw) return null;
-
-    const data = JSON.parse(raw);
-    if (!Array.isArray(data)) return null;
-
-    return data;
-  } catch {
-    return null;
-  }
-}
-
 function guardarProductosCache(productos) {
   try {
     sessionStorage.setItem(PRODUCTOS_CACHE_KEY, JSON.stringify(productos));
   } catch {
     // ignorar
   }
+}
+
+function parsearOpciones(valor) {
+  return String(valor || "")
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
 }
 
 function renderizarProductos(productos) {
@@ -86,15 +79,15 @@ function renderizarProductos(productos) {
 
     let badge = null;
 
-if (producto.etiqueta === "MAS_VENDIDO") {
-  badge = document.createElement("span");
-  badge.classList.add("badge", "top");
-  badge.textContent = "Más vendido";
-} else if (producto.etiqueta === "NUEVO") {
-  badge = document.createElement("span");
-  badge.classList.add("badge", "nuevo");
-  badge.textContent = "Nuevo";
-}
+    if (producto.etiqueta === "MAS_VENDIDO") {
+      badge = document.createElement("span");
+      badge.classList.add("badge", "top");
+      badge.textContent = "Más vendido";
+    } else if (producto.etiqueta === "NUEVO") {
+      badge = document.createElement("span");
+      badge.classList.add("badge", "nuevo");
+      badge.textContent = "Nuevo";
+    }
 
     const imagen = document.createElement("img");
     imagen.src = resolverSrcImagen(producto.imagenUrl);
@@ -117,10 +110,68 @@ if (producto.etiqueta === "MAS_VENDIDO") {
     cantidad.value = 1;
     cantidad.setAttribute("aria-label", "Cantidad");
 
+    const tallas = parsearOpciones(producto.tallasDisponibles);
+    const colores = parsearOpciones(producto.coloresDisponibles);
+
+    let selectTalla = null;
+    let selectColor = null;
+
+    if (tallas.length) {
+      selectTalla = document.createElement("select");
+      selectTalla.setAttribute("aria-label", "Seleccionar talla");
+
+      const optDefault = document.createElement("option");
+      optDefault.value = "";
+      optDefault.textContent = "Selecciona talla";
+      selectTalla.appendChild(optDefault);
+
+      tallas.forEach((talla) => {
+        const opt = document.createElement("option");
+        opt.value = talla;
+        opt.textContent = talla;
+        selectTalla.appendChild(opt);
+      });
+    }
+
+    if (colores.length) {
+      selectColor = document.createElement("select");
+      selectColor.setAttribute("aria-label", "Seleccionar color");
+
+      const optDefault = document.createElement("option");
+      optDefault.value = "";
+      optDefault.textContent = "Selecciona color";
+      selectColor.appendChild(optDefault);
+
+      colores.forEach((color) => {
+        const opt = document.createElement("option");
+        opt.value = color;
+        opt.textContent = color;
+        selectColor.appendChild(opt);
+      });
+    }
+
     const botonCarrito = document.createElement("button");
     botonCarrito.textContent = "Agregar al carrito 🛒";
     botonCarrito.onclick = () => {
-      agregarAlCarrito(producto, parseInt(cantidad.value, 10) || 1);
+      const tallaSeleccionada = selectTalla ? selectTalla.value : "";
+      const colorSeleccionado = selectColor ? selectColor.value : "";
+
+      if (selectTalla && !tallaSeleccionada) {
+        alert("Selecciona una talla.");
+        return;
+      }
+
+      if (selectColor && !colorSeleccionado) {
+        alert("Selecciona un color.");
+        return;
+      }
+
+      agregarAlCarrito(
+        producto,
+        parseInt(cantidad.value, 10) || 1,
+        tallaSeleccionada,
+        colorSeleccionado
+      );
     };
 
     const botonVer = document.createElement("button");
@@ -137,27 +188,25 @@ if (producto.etiqueta === "MAS_VENDIDO") {
     botonWhatsapp.textContent = "💬 Cotizar por WhatsApp";
 
     if (badge) {
-      card.append(
-        badge,
-        imagen,
-        nombre,
-        precio,
-        cantidad,
-        botonCarrito,
-        botonVer,
-        botonWhatsapp
-      );
-    } else {
-      card.append(
-        imagen,
-        nombre,
-        precio,
-        cantidad,
-        botonCarrito,
-        botonVer,
-        botonWhatsapp
-      );
+      card.appendChild(badge);
     }
+
+card.appendChild(imagen);
+card.appendChild(nombre);
+card.appendChild(precio);
+
+if (selectTalla) {
+  card.appendChild(selectTalla);
+}
+
+if (selectColor) {
+  card.appendChild(selectColor);
+}
+
+card.appendChild(cantidad);
+card.appendChild(botonCarrito);
+card.appendChild(botonVer);
+card.appendChild(botonWhatsapp);
 
     fragment.appendChild(card);
   });
@@ -170,7 +219,6 @@ async function cargarProductos() {
   const contenedor = document.getElementById("productos-container");
   if (!contenedor) return;
 
- // 🔥 FORZAR SIEMPRE DATOS FRESCOS
   sessionStorage.removeItem(PRODUCTOS_CACHE_KEY);
 
   try {
@@ -191,20 +239,6 @@ async function cargarProductos() {
     contenedor.innerHTML = "<p>Error al cargar productos. Intenta más tarde 😢</p>";
   }
 }
-
-document.addEventListener("DOMContentLoaded", () => {
-  cargarProductos();
-
-  document.querySelectorAll(".fade-up").forEach((el) => {
-    el.classList.add("visible");
-  });
-});
-window.addEventListener("storage", (event) => {
-  if (event.key === "estampaider_productos_refresh") {
-    sessionStorage.removeItem(PRODUCTOS_CACHE_KEY);
-    cargarProductos();
-  }
-});
 
 function inicializarFiltros() {
   document.querySelectorAll(".filtrosp button").forEach((btn) => {
@@ -245,19 +279,29 @@ function inicializarFiltros() {
   });
 }
 
-function agregarAlCarrito(producto, cantidad) {
+function agregarAlCarrito(producto, cantidad, tallaSeleccionada = "", colorSeleccionado = "") {
   if (!cantidad || cantidad <= 0) {
     alert("Ingresa una cantidad válida.");
     return;
   }
 
   let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
-  const existente = carrito.find((p) => p.id === producto.id);
+
+  const existente = carrito.find((p) =>
+    p.id === producto.id &&
+    (p.tallaSeleccionada || "") === tallaSeleccionada &&
+    (p.colorSeleccionado || "") === colorSeleccionado
+  );
 
   if (existente) {
     existente.cantidad += cantidad;
   } else {
-    carrito.push({ ...producto, cantidad });
+    carrito.push({
+      ...producto,
+      cantidad,
+      tallaSeleccionada,
+      colorSeleccionado
+    });
   }
 
   localStorage.setItem("carrito", JSON.stringify(carrito));
@@ -267,7 +311,11 @@ function agregarAlCarrito(producto, cantidad) {
   }
 
   if (typeof mostrarToastGlobal === "function") {
-    mostrarToastGlobal(`"${producto.nombre}" agregado al carrito 🛒`);
+    let detalle = "";
+    if (tallaSeleccionada) detalle += ` Talla: ${tallaSeleccionada}.`;
+    if (colorSeleccionado) detalle += ` Color: ${colorSeleccionado}.`;
+
+    mostrarToastGlobal(`"${producto.nombre}" agregado al carrito 🛒${detalle}`);
   }
 
   const sonido = document.getElementById("sonido-carrito");
@@ -291,11 +339,87 @@ function abrirModalp(producto, precioValor) {
   document.getElementById("modalpDescripcion").textContent =
     producto.descripcion || "Producto personalizable a tu gusto.";
 
+  const contenedorOpciones = document.getElementById("modalpOpciones");
+  contenedorOpciones.innerHTML = "";
+
+  const tallas = parsearOpciones(producto.tallasDisponibles);
+  const colores = parsearOpciones(producto.coloresDisponibles);
+
+  let selectTalla = null;
+  let selectColor = null;
+
+  if (tallas.length) {
+    const wrapTalla = document.createElement("div");
+    wrapTalla.className = "modalp-opcion";
+
+    const label = document.createElement("label");
+    label.textContent = "Talla:";
+
+    selectTalla = document.createElement("select");
+    const optDefault = document.createElement("option");
+    optDefault.value = "";
+    optDefault.textContent = "Selecciona talla";
+    selectTalla.appendChild(optDefault);
+
+    tallas.forEach((talla) => {
+      const opt = document.createElement("option");
+      opt.value = talla;
+      opt.textContent = talla;
+      selectTalla.appendChild(opt);
+    });
+
+    wrapTalla.append(label, selectTalla);
+    contenedorOpciones.appendChild(wrapTalla);
+  }
+
+  if (colores.length) {
+    const wrapColor = document.createElement("div");
+    wrapColor.className = "modalp-opcion";
+
+    const label = document.createElement("label");
+    label.textContent = "Color:";
+
+    selectColor = document.createElement("select");
+    const optDefault = document.createElement("option");
+    optDefault.value = "";
+    optDefault.textContent = "Selecciona color";
+    selectColor.appendChild(optDefault);
+
+    colores.forEach((color) => {
+      const opt = document.createElement("option");
+      opt.value = color;
+      opt.textContent = color;
+      selectColor.appendChild(opt);
+    });
+
+    wrapColor.append(label, selectColor);
+    contenedorOpciones.appendChild(wrapColor);
+  }
+
   const inputCantidad = document.getElementById("modalpCantidad");
   inputCantidad.value = 1;
 
   document.getElementById("modalpCarrito").onclick = () => {
-    agregarAlCarrito(producto, parseInt(inputCantidad.value, 10) || 1);
+    const tallaSeleccionada = selectTalla ? selectTalla.value : "";
+    const colorSeleccionado = selectColor ? selectColor.value : "";
+
+    if (selectTalla && !tallaSeleccionada) {
+      alert("Selecciona una talla.");
+      return;
+    }
+
+    if (selectColor && !colorSeleccionado) {
+      alert("Selecciona un color.");
+      return;
+    }
+
+    agregarAlCarrito(
+      producto,
+      parseInt(inputCantidad.value, 10) || 1,
+      tallaSeleccionada,
+      colorSeleccionado
+    );
+
     modalp.classList.add("hidden");
   };
 
@@ -322,10 +446,16 @@ document.addEventListener("keydown", (e) => {
     document.getElementById("modalpProducto")?.classList.add("hidden");
   }
 });
-document.addEventListener("DOMContentLoaded", () => {
-  // 🔥 SIEMPRE BORRAR CACHE AL ENTRAR
-  sessionStorage.removeItem(PRODUCTOS_CACHE_KEY);
 
+window.addEventListener("storage", (event) => {
+  if (event.key === "estampaider_productos_refresh") {
+    sessionStorage.removeItem(PRODUCTOS_CACHE_KEY);
+    cargarProductos();
+  }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  sessionStorage.removeItem(PRODUCTOS_CACHE_KEY);
   cargarProductos();
 
   document.querySelectorAll(".fade-up").forEach((el) => {
