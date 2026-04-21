@@ -1,6 +1,11 @@
 package com.estampaider.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -11,15 +16,24 @@ public class Mensaje {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @NotBlank(message = "El nombre es obligatorio")
+    @Size(max = 120, message = "El nombre no puede superar 120 caracteres")
+    @Column(nullable = false, length = 120)
     private String nombre;
 
-    @Column(nullable = false)
+    @NotBlank(message = "El correo es obligatorio")
+    @Email(message = "El correo no es válido")
+    @Size(max = 160, message = "El correo no puede superar 160 caracteres")
+    @Column(nullable = false, length = 160)
     private String correo;
 
-    @Column(nullable = false)
+    @NotBlank(message = "El whatsapp es obligatorio")
+    @Pattern(regexp = "^[0-9+\\s()-]{7,25}$", message = "El whatsapp no es válido")
+    @Column(nullable = false, length = 25)
     private String whatsapp;
 
+    @NotBlank(message = "El mensaje es obligatorio")
+    @Size(min = 3, max = 3000, message = "El mensaje debe tener entre 3 y 3000 caracteres")
     @Column(nullable = false, columnDefinition = "TEXT")
     private String mensaje;
 
@@ -28,8 +42,6 @@ public class Mensaje {
 
     @Column(nullable = false)
     private boolean leido = false;
-
-    // 🔹 GETTERS Y SETTERS
 
     public Long getId() {
         return id;

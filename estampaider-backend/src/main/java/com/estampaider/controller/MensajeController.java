@@ -2,6 +2,7 @@ package com.estampaider.controller;
 
 import com.estampaider.model.Mensaje;
 import com.estampaider.repository.MensajeRepository;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -23,12 +24,16 @@ public class MensajeController {
     private SimpMessagingTemplate messagingTemplate;
 
     @PostMapping
-    public ResponseEntity<Mensaje> crearMensaje(@RequestBody Mensaje mensaje) {
+    public ResponseEntity<?> crearMensaje(@Valid @RequestBody Mensaje mensaje) {
+        mensaje.setNombre(limpiarTexto(mensaje.getNombre()));
+        mensaje.setCorreo(limpiarTexto(mensaje.getCorreo()).toLowerCase());
+        mensaje.setWhatsapp(limpiarTelefono(mensaje.getWhatsapp()));
+        mensaje.setMensaje(limpiarTextoLargo(mensaje.getMensaje()));
+
         mensaje.setFecha(LocalDateTime.now());
         mensaje.setLeido(false);
 
         Mensaje guardado = mensajeRepository.save(mensaje);
-
         messagingTemplate.convertAndSend("/topic/mensajes", new AdminMensajeResponse(guardado));
 
         return ResponseEntity.ok(guardado);
@@ -38,16 +43,13 @@ public class MensajeController {
     public List<AdminMensajeResponse> listarMensajes() {
         return mensajeRepository.findAll()
                 .stream()
-                .sorted(Comparator.comparing(
-                        Mensaje::getFecha,
-                        Comparator.nullsLast(Comparator.naturalOrder())
-                ).reversed())
+                .sorted(Comparator.comparing(Mensaje::getFecha, Comparator.nullsLast(Comparator.naturalOrder())).reversed())
                 .map(AdminMensajeResponse::new)
                 .toList();
     }
 
     @PutMapping("/{id}/leido")
-    public ResponseEntity<Void> marcarLeido(@PathVariable Long id) {
+    public ResponseEntity<?> marcarLeido(@PathVariable Long id) {
         Mensaje mensaje = mensajeRepository.findById(id).orElseThrow();
         mensaje.setLeido(true);
         mensajeRepository.save(mensaje);
@@ -60,20 +62,38 @@ public class MensajeController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<?> eliminar(@PathVariable Long id) {
         mensajeRepository.deleteById(id);
         return ResponseEntity.ok().build();
     }
 
+    private static String limpiarTexto(String valor) {
+        if (valor == null) return "";
+        return valor.trim().replaceAll("\\s+", " ");
+    }
+
+    private static String limpiarTextoLargo(String valor) {
+        if (valor == null) return "";
+        return valor.trim().replace("\u0000", "");
+    }
+
+    private static String limpiarTelefono(String valor) {
+        if (valor == null) return "";
+        String limpio = valor.replace("\"", "")
+                .replaceAll("[^0-9+]", "")
+                .trim();
+        return limpio;
+    }
+
     public static class AdminMensajeResponse {
-        private final Long id;
-        private final String nombre;
-        private final String correo;
-        private final String whatsapp;
-        private final String telefono;
-        private final String mensaje;
-        private final LocalDateTime fecha;
-        private final boolean leido;
+        private Long id;
+        private String nombre;
+        private String correo;
+        private String whatsapp;
+        private String telefono;
+        private String mensaje;
+        private LocalDateTime fecha;
+        private boolean leido;
 
         public AdminMensajeResponse(Mensaje mensaje) {
             this.id = mensaje.getId();
@@ -90,9 +110,7 @@ public class MensajeController {
             if (valor == null) {
                 return "";
             }
-
-            String limpio = valor
-                    .replace("\"", "")
+            String limpio = valor.replace("\"", "")
                     .replace("+", "")
                     .replaceAll("\\D", "")
                     .trim();
@@ -100,7 +118,6 @@ public class MensajeController {
             if (limpio.isBlank()) {
                 return "";
             }
-
             return limpio.startsWith("57") ? limpio : "57" + limpio;
         }
 

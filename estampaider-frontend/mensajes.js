@@ -343,7 +343,9 @@ document.addEventListener("DOMContentLoaded", () => {
     chatMensajes.innerHTML = `<div class="vacio">Cargando mensajes...</div>`;
 
     try {
-      const res = await fetch(`${API_BASE}/api/chat/${encodeURIComponent(telefono)}`);
+      const res = await fetch(`${API_BASE}/api/chat/${encodeURIComponent(telefono)}`, {
+        headers: getHeaders(),
+      });
 
       if (!res.ok) {
         throw new Error(`No se pudo cargar el historial (${res.status})`);
