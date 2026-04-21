@@ -93,6 +93,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/pedidos/**").hasRole("ADMIN")
 
                 .requestMatchers(HttpMethod.PUT, "/api/usuarios/cambiar-password").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/branding/gallery-video").hasRole("ADMIN")
+                .requestMatchers("/api/branding/**").hasRole("ADMIN")
 
                 // Mensajes del panel admin
                 .requestMatchers(HttpMethod.POST, "/api/mensajes").permitAll()

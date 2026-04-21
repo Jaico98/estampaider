@@ -96,11 +96,25 @@
     return match ? Number(match[1]) : Number.MAX_SAFE_INTEGER;
   }
 
-  function aplicarFondoGlobal(API_BASE, url) {
+  function aplicarFondoGlobal(url) {
     if (!url) return;
   
-    document.querySelectorAll(".branding-bg").forEach((el) => {
-      el.style.setProperty("--branding-bg-url", `url('${API_BASE}${url}?v=${Date.now()}')`);
+    const imagen = /^https?:\/\//i.test(url)
+      ? url
+      : (url.startsWith("/") ? `${API}${url}` : `${API}/${url}`);
+  
+    const elementos = document.querySelectorAll(`
+      .branding-bg,
+      .colibri-bg,
+      [data-branding-bg],
+      [data-colibri-bg]
+    `);
+  
+    elementos.forEach((el) => {
+      el.style.backgroundImage = `url("${imagen}")`;
+      el.style.backgroundSize = "cover";
+      el.style.backgroundPosition = "center";
+      el.style.backgroundRepeat = "no-repeat";
     });
   }
 

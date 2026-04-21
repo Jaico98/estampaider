@@ -106,46 +106,53 @@ async function fetchBrandingCurrent() {
   return res.json();
 }
 
-function actualizarOpcionesGaleria(data) {
-  const selector = document.getElementById("videoSlot");
-  if (!selector) return;
+function actualizarOpcionesGaleria() {
+  const select = document.getElementById("videoSlot");
+  if (!select) return;
 
-  const valorActual = selector.value;
+  const valorActual = select.value;
 
-  Array.from(selector.querySelectorAll('option[data-gallery-dinamica="true"]'))
-    .forEach(opt => opt.remove());
+  select.innerHTML = `
+    <option value="">Selecciona una posición</option>
+    <option value="hero">Hero principal</option>
+    <option value="highlight">Video destacado</option>
+  `;
 
-  const galleryVideos = Array.isArray(data?.galleryVideos) ? data.galleryVideos : [];
+  const galleryVideos = Array.isArray(branding?.galleryVideos)
+    ? [...branding.galleryVideos]
+    : [];
 
-  const indices = galleryVideos
-    .map(item => obtenerIndiceGaleriaDesdeSlot(item?.slot))
-    .filter(n => Number.isInteger(n) && n > 0)
-    .sort((a, b) => a - b);
+  galleryVideos.sort((a, b) => {
+    const na = parseInt(String(a.slot || "").replace("gallery", ""), 10) || 0;
+    const nb = parseInt(String(b.slot || "").replace("gallery", ""), 10) || 0;
+    return na - nb;
+  });
 
-  const maxIndiceExistente = indices.length ? Math.max(...indices) : 0;
-  const siguienteLibre = obtenerIndiceGaleriaDesdeSlot(obtenerPrimerSlotLibre(data)) || 1;
-  const totalMostrar = Math.max(maxIndiceExistente, siguienteLibre, 8);
+  const usados = new Set();
 
-  const opcionNuevo = selector.querySelector('option[value="new"]');
+  galleryVideos.forEach((video) => {
+    if (!video?.slot || !video.slot.startsWith("gallery")) return;
+    usados.add(video.slot);
 
-  for (let i = 1; i <= totalMostrar; i++) {
-    const value = `gallery${i}`;
+    const numero = parseInt(video.slot.replace("gallery", ""), 10);
+    const option = document.createElement("option");
+    option.value = video.slot;
+    option.textContent = `Galería ${Number.isFinite(numero) ? numero : video.slot}`;
+    select.appendChild(option);
+  });
 
-    if (!selector.querySelector(`option[value="${value}"]`)) {
-      const option = document.createElement("option");
-      option.value = value;
-      option.textContent = `Galería ${i}`;
-      option.setAttribute("data-gallery-dinamica", "true");
-
-      if (opcionNuevo) {
-        selector.appendChild(option);
-      } else {
-        selector.appendChild(option);
-      }
-    }
+  let siguiente = 1;
+  while (usados.has(`gallery${siguiente}`)) {
+    siguiente++;
   }
 
-  selector.value = valorActual || "hero";
+  const nueva = document.createElement("option");
+  nueva.value = `gallery${siguiente}`;
+  nueva.textContent = `Galería ${siguiente} (nueva posición)`;
+  select.appendChild(nueva);
+
+  const existeValorActual = [...select.options].some(opt => opt.value === valorActual);
+  select.value = existeValorActual ? valorActual : "";
 }
 
 async function cargarBrandingAdmin() {
@@ -292,70 +299,72 @@ async function subirVideoHome() {
   }
 }
 
-async function agregarVideo() {
-  const file = document.getElementById("videoFile")?.files?.[0];
-  if (!file) {
-    msg("Selecciona un video", false);
+async function agregarVideo(e) {
+  e.preventDefault();
+
+  const input = document.getElementById("nuevoVideo");
+  const slotSelect = document.getElementById("videoSlot");
+  const archivo = input?.files?.[0];
+  const slot = slotSelect?.value;
+
+  if (!archivo) {
+    alert("Selecciona un video.");
     return;
   }
 
+  if (!slot) {
+    alert("Selecciona una posición de video.");
+    return;
+  }
+
+  const token = obtenerToken?.();
+  if (!token) {
+    alert("Tu sesión no es válida. Inicia sesión nuevamente.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", archivo);
+  formData.append("slot", slot);
+
   try {
-    const dataActual = await fetchBrandingCurrent();
-    const slotLibre = obtenerPrimerSlotLibre(dataActual);
-
-    const fd = new FormData();
-    fd.append("file", file);
-
-    const res = await fetch(`${getAPI()}/api/branding/gallery-video`, {
+    const resp = await fetch(`${API}/api/branding/gallery-video`, {
       method: "POST",
-      headers: authHeaders(),
-      body: fd
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      body: formData
     });
 
-    const contentType = res.headers.get("content-type") || "";
-    const responseData = contentType.includes("application/json")
-      ? await res.json()
-      : await res.text();
-
-    if (!res.ok) {
-      let mensaje = "No se pudo agregar el video";
-
-      if (typeof responseData === "string" && responseData.trim()) {
-        mensaje = responseData;
-      } else if (responseData?.message) {
-        mensaje = responseData.message;
-      } else if (responseData?.error) {
-        mensaje = responseData.error;
-      }
-
-      if (res.status === 401) {
-        throw new Error("Tu sesión venció. Inicia sesión nuevamente.");
-      }
-
-      if (res.status === 403) {
-        throw new Error("Tu usuario no tiene permisos ADMIN en esta petición.");
-      }
-
-      throw new Error(mensaje);
+    if (resp.status === 401) {
+      alert("Tu sesión expiró. Vuelve a iniciar sesión.");
+      return;
     }
 
-    const slotAsignado = responseData?.slot || slotLibre;
-
-    localStorage.setItem("estampaider_home_refresh", Date.now().toString());
-    msg(`Video agregado en ${slotAsignado}`);
-    await cargarBrandingAdmin();
-
-    document.getElementById("videoFile").value = "";
-
-    const selector = document.getElementById("videoSlot");
-    if (selector) {
-      selector.value = slotAsignado;
+    if (resp.status === 403) {
+      const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
+      console.error("403 al agregar video", {
+        slot,
+        auth,
+        tokenPreview: token ? token.slice(0, 20) + "..." : null
+      });
+      alert("No tienes permisos para agregar videos. Verifica que el usuario sea ADMIN.");
+      return;
     }
 
+    if (!resp.ok) {
+      const texto = await resp.text();
+      console.error("Error agregando video:", resp.status, texto);
+      throw new Error(`Error ${resp.status}: ${texto}`);
+    }
+
+    input.value = "";
+    await cargarBranding();
     await actualizarPreviewVideo();
+    alert("Video agregado correctamente.");
   } catch (error) {
     console.error("Error agregando video:", error);
-    msg(error.message || "Error agregando video", false);
+    alert("No se pudo agregar el video.");
   }
 }
 
@@ -401,6 +410,89 @@ async function eliminarVideoHome() {
     console.error(error);
     msg(error.message || "Error eliminando video", false);
   }
+}
+
+function resolverUrlVideo(url) {
+  if (!url) return "";
+  if (/^https?:\/\//i.test(url)) return url;
+  if (url.startsWith("/")) return `${API}${url}`;
+  return `${API}/${url}`;
+}
+
+function obtenerVideoPorSlot(slot) {
+  if (!slot || !branding) return null;
+
+  if (slot === "hero") {
+    return branding.heroMainVideoUrl || null;
+  }
+
+  if (slot === "highlight") {
+    return branding.highlightVideoUrl || null;
+  }
+
+  const galeria = Array.isArray(branding.galleryVideos) ? branding.galleryVideos : [];
+  const match = galeria.find(v => v.slot === slot);
+
+  return match?.videoUrl || null;
+}
+
+async function actualizarPreviewVideo() {
+  const select = document.getElementById("videoSlot");
+  const preview = document.getElementById("videoPreview");
+
+  if (!select || !preview) return;
+
+  const slot = select.value;
+  const videoUrl = obtenerVideoPorSlot(slot);
+
+  if (!videoUrl) {
+    preview.pause();
+    preview.removeAttribute("src");
+    preview.load();
+    return;
+  }
+
+  preview.pause();
+  preview.src = resolverUrlVideo(videoUrl);
+  preview.load();
+}
+
+function obtenerVideoPorSlot(slot) {
+  if (!slot || !branding) return null;
+
+  if (slot === "hero") {
+    return branding.heroMainVideoUrl || null;
+  }
+
+  if (slot === "highlight") {
+    return branding.highlightVideoUrl || null;
+  }
+
+  const galeria = Array.isArray(branding.galleryVideos) ? branding.galleryVideos : [];
+  const match = galeria.find(v => v.slot === slot);
+
+  return match?.videoUrl || null;
+}
+
+async function actualizarPreviewVideo() {
+  const select = document.getElementById("videoSlot");
+  const preview = document.getElementById("videoPreview");
+
+  if (!select || !preview) return;
+
+  const slot = select.value;
+  const videoUrl = obtenerVideoPorSlot(slot);
+
+  if (!videoUrl) {
+    preview.pause();
+    preview.removeAttribute("src");
+    preview.load();
+    return;
+  }
+
+  preview.pause();
+  preview.src = resolverUrlVideo(videoUrl);
+  preview.load();
 }
 
 async function guardarRedes() {

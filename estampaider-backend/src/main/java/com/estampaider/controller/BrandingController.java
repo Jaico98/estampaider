@@ -33,6 +33,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.Set;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 @RestController
 @RequestMapping("/api/branding")
@@ -75,6 +77,11 @@ public class BrandingController {
 
     @PostMapping("/gallery-video")
 public ResponseEntity<Map<String, Object>> agregarVideoGaleria(@RequestParam("file") MultipartFile file) {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+      System.out.println("DEBUG /gallery-video -> user=" +
+        (authentication != null ? authentication.getName() : "null") +
+        ", authorities=" +
+        (authentication != null ? authentication.getAuthorities() : "null"));
     try {
         System.out.println("GALLERY UPLOAD >>> originalName=" + file.getOriginalFilename()
             + " contentType=" + file.getContentType()
