@@ -25,18 +25,17 @@ public class JwtFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
 
         return path == null
-            || HttpMethod.OPTIONS.matches(request.getMethod())
-            || path.startsWith("/ws")
-            || path.startsWith("/topic")
-            || path.startsWith("/app")
-            || (HttpMethod.GET.matches(request.getMethod()) && path.startsWith("/api/chat"))
-            || path.startsWith("/api/auth")
-            || path.startsWith("/api/metodos-pago")
-            || path.startsWith("/images")
-            || path.startsWith("/uploads")
-            || path.equals("/webhook")
-            || path.equals("/notificar")
-            || path.equals("/api/branding/current");
+        || HttpMethod.OPTIONS.matches(request.getMethod())
+        || path.startsWith("/ws")
+        || path.startsWith("/topic")
+        || path.startsWith("/app")
+        || path.startsWith("/api/auth")
+        || path.startsWith("/api/metodos-pago")
+        || path.startsWith("/images")
+        || path.startsWith("/uploads")
+        || path.equals("/webhook")
+        || path.equals("/notificar")
+        || path.equals("/api/branding/current");
     }
 
     @Override
