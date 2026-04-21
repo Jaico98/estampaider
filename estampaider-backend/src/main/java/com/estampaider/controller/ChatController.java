@@ -9,9 +9,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -20,6 +19,7 @@ import java.util.List;
 import java.util.UUID;
 
 @RestController
+@RequestMapping("/api/chat")
 public class ChatController {
 
     private final SimpMessagingTemplate messagingTemplate;
@@ -39,7 +39,6 @@ public class ChatController {
     @MessageMapping("/chat")
     public void enviarMensaje(@Payload ChatMensaje mensaje) {
         final String telefono = normalizarTelefono(mensaje.getTelefono());
-
         mensaje.setTelefono(telefono);
 
         if (mensaje.getTipo() == null || mensaje.getTipo().isBlank()) {
@@ -59,8 +58,6 @@ public class ChatController {
         }
 
         repo.save(mensaje);
-
-        // Mantener sincronizada la bandeja del admin
         sincronizarBandejaAdmin(mensaje);
 
         messagingTemplate.convertAndSend("/topic/chat/" + telefono, mensaje);
@@ -118,37 +115,30 @@ public class ChatController {
     }
 
     @GetMapping("/{telefono}")
-public ResponseEntity<?> obtenerChatPorTelefono(
-        @PathVariable String telefono,
-        Authentication authentication
-) {
-    String usuarioActual = authentication.getName();
-    boolean esAdmin = authentication.getAuthorities()
-            .stream()
-            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+    public ResponseEntity<?> obtenerChatPorTelefono(
+            @PathVariable String telefono,
+            Authentication authentication
+    ) {
+        String usuarioActual = authentication.getName();
+        boolean esAdmin = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
-    String telefonoNormalizado = telefono.replaceAll("\\D", "");
-    if (!telefonoNormalizado.startsWith("57")) {
-        telefonoNormalizado = "57" + telefonoNormalizado;
-    }
-
-    String usuarioNormalizado = usuarioActual.replaceAll("\\D", "");
-    if (!usuarioNormalizado.startsWith("57") && !esAdmin) {
-        usuarioNormalizado = "57" + usuarioNormalizado;
-    }
-
-    if (!esAdmin && !telefonoNormalizado.equals(usuarioNormalizado)) {
-        return ResponseEntity.status(403).body("No autorizado para ver este chat");
-    }
-
-    return ResponseEntity.ok(chatMensajeRepository.findByTelefonoOrderByFechaAsc(telefonoNormalizado));
-}
-
-    @DeleteMapping("/api/chat/{telefono}")
-    public ResponseEntity<Void> eliminarChatPorTelefono(@PathVariable String telefono) {
         String telefonoNormalizado = normalizarTelefono(telefono);
+        String usuarioNormalizado = esAdmin ? usuarioActual : normalizarTelefono(usuarioActual);
 
+        if (!esAdmin && !telefonoNormalizado.equals(usuarioNormalizado)) {
+            return ResponseEntity.status(403).body("No autorizado para ver este chat");
+        }
+
+        return ResponseEntity.ok(repo.findByTelefonoOrderByFechaAsc(telefonoNormalizado));
+    }
+
+    @DeleteMapping("/{telefono}")
+    public ResponseEntity<?> eliminarChatPorTelefono(@PathVariable String telefono) {
+        String telefonoNormalizado = normalizarTelefono(telefono);
         List<ChatMensaje> mensajes = repo.findByTelefonoOrderByFechaAsc(telefonoNormalizado);
+
         if (!mensajes.isEmpty()) {
             repo.deleteAll(mensajes);
         }
@@ -156,8 +146,8 @@ public ResponseEntity<?> obtenerChatPorTelefono(
         return ResponseEntity.noContent().build();
     }
 
-    @DeleteMapping("/api/chat/mensaje/{id}")
-    public ResponseEntity<Void> eliminarMensajePorId(@PathVariable String id) {
+    @DeleteMapping("/mensaje/{id}")
+    public ResponseEntity<?> eliminarMensajePorId(@PathVariable String id) {
         repo.findById(id).ifPresent(repo::delete);
         return ResponseEntity.noContent().build();
     }
@@ -197,14 +187,12 @@ public ResponseEntity<?> obtenerChatPorTelefono(
         registro.setMensaje(chatMensaje.getMensaje());
         registro.setFecha(fecha);
 
-        // Si escribe el cliente, debe aparecer como no leído en el panel admin
         if ("CLIENTE".equalsIgnoreCase(chatMensaje.getTipo())) {
             registro.setLeido(false);
         }
 
         mensajeRepository.save(registro);
 
-        // Empujar actualización en tiempo real a la bandeja admin
         messagingTemplate.convertAndSend(
                 "/topic/mensajes",
                 new MensajeController.AdminMensajeResponse(registro)
