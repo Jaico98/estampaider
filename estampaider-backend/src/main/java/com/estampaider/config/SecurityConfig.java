@@ -103,7 +103,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/api/mensajes/**").hasRole("ADMIN")
 
                 // Chat REST
-                .requestMatchers(HttpMethod.GET, "/api/chat/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/chat/**").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/chat/**").hasRole("ADMIN")
 
                 // Productos

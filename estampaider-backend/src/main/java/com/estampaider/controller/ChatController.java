@@ -10,6 +10,8 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -115,10 +117,32 @@ public class ChatController {
         messagingTemplate.convertAndSend("/topic/online/" + telefono, "ONLINE");
     }
 
-    @GetMapping("/api/chat/{telefono}")
-    public List<ChatMensaje> obtenerChat(@PathVariable String telefono) {
-        return repo.findByTelefonoOrderByFechaAsc(normalizarTelefono(telefono));
+    @GetMapping("/{telefono}")
+public ResponseEntity<?> obtenerChatPorTelefono(
+        @PathVariable String telefono,
+        Authentication authentication
+) {
+    String usuarioActual = authentication.getName();
+    boolean esAdmin = authentication.getAuthorities()
+            .stream()
+            .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+    String telefonoNormalizado = telefono.replaceAll("\\D", "");
+    if (!telefonoNormalizado.startsWith("57")) {
+        telefonoNormalizado = "57" + telefonoNormalizado;
     }
+
+    String usuarioNormalizado = usuarioActual.replaceAll("\\D", "");
+    if (!usuarioNormalizado.startsWith("57") && !esAdmin) {
+        usuarioNormalizado = "57" + usuarioNormalizado;
+    }
+
+    if (!esAdmin && !telefonoNormalizado.equals(usuarioNormalizado)) {
+        return ResponseEntity.status(403).body("No autorizado para ver este chat");
+    }
+
+    return ResponseEntity.ok(chatMensajeRepository.findByTelefonoOrderByFechaAsc(telefonoNormalizado));
+}
 
     @DeleteMapping("/api/chat/{telefono}")
     public ResponseEntity<Void> eliminarChatPorTelefono(@PathVariable String telefono) {

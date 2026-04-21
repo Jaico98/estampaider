@@ -110,7 +110,10 @@
       [data-colibri-bg]
     `).forEach((el) => {
       el.style.setProperty("--branding-bg-url", `url('${finalUrl}')`);
-      el.style.backgroundImage = `url('${finalUrl}')`;
+      el.style.backgroundImage = `
+        linear-gradient(rgba(8, 27, 56, 0.45), rgba(8, 27, 56, 0.45)),
+        url('${finalUrl}')
+      `;
       el.style.backgroundSize = "cover";
       el.style.backgroundPosition = "center";
       el.style.backgroundRepeat = "no-repeat";

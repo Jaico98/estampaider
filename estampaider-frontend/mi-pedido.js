@@ -40,6 +40,12 @@ function resolverApiBase() {
 
   return `${protocol}//${host}`;
 }
+function getAuthHeaders() {
+  if (!authData?.token) return {};
+  return {
+    Authorization: `Bearer ${authData.token}`,
+  };
+}
 
 function textoSeguro(valor) {
   return String(valor ?? "");
@@ -184,7 +190,9 @@ async function cargarHistorial() {
   chatBox.innerHTML = "";
 
   try {
-    const res = await fetch(`${API_BASE}/api/chat/${telefonoCliente}`);
+    const res = await fetch(`${API_BASE}/api/chat/${telefonoCliente}`, {
+      headers: getAuthHeaders(),
+    });
 
     if (!res.ok) {
       throw new Error(`No se pudo cargar el historial (${res.status})`);
