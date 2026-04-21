@@ -259,7 +259,9 @@ function conectarChat() {
   stompClient.debug = () => {};
 
   stompClient.connect(
-    {},
+    {
+      ...getAuthHeaders(),
+    },
     async () => {
       clearTimeout(reconnectTimer);
       estadoChat("Chat activo");

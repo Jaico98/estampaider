@@ -53,6 +53,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let chatSubscription = null;
   let onlineSubscription = null;
   let typingSubscription = null;
+  
+  let inboxSocketClient = null;
+  let inboxSubscription = null;
   const porPagina = 5;
 
   function getHeaders() {
@@ -387,26 +390,54 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function desconectarSocket() {
-    try {
-      chatSubscription?.unsubscribe();
-    } catch {}
-
-    try {
-      onlineSubscription?.unsubscribe();
-    } catch {}
-
-    try {
-      typingSubscription?.unsubscribe();
-    } catch {}
-
-    try {
-      stompClient?.disconnect(() => {});
-    } catch {}
-
+    try { chatSubscription?.unsubscribe(); } catch {}
+    try { onlineSubscription?.unsubscribe(); } catch {}
+    try { typingSubscription?.unsubscribe(); } catch {}
+    try { stompClient?.disconnect(() => {}); } catch {}
+  
     chatSubscription = null;
     onlineSubscription = null;
     typingSubscription = null;
     stompClient = null;
+  }
+
+  function conectarInboxSocket() {
+    if (inboxSocketClient?.connected) return;
+  
+    const socket = new SockJS(WS_BASE);
+    inboxSocketClient = Stomp.over(socket);
+    inboxSocketClient.debug = () => {};
+  
+    inboxSocketClient.connect({}, () => {
+      inboxSubscription = inboxSocketClient.subscribe("/topic/mensajes", (frame) => {
+        try {
+          const data = JSON.parse(frame.body);
+          const nuevo = normalizarMensajeListado(data);
+  
+          const index = mensajes.findIndex((m) => {
+            const telA = normalizarTelefono(m.telefono || m.whatsapp || "");
+            const telB = normalizarTelefono(nuevo.telefono || nuevo.whatsapp || "");
+            return telA && telA === telB;
+          });
+  
+          if (index >= 0) {
+            mensajes[index] = {
+              ...mensajes[index],
+              ...nuevo,
+            };
+          } else {
+            mensajes.unshift(nuevo);
+          }
+  
+          renderizarLista();
+        } catch (error) {
+          console.warn("No se pudo procesar actualización en vivo de mensajes:", error);
+          cargarMensajes();
+        }
+      });
+    }, (error) => {
+      console.warn("Inbox WS desconectado:", error);
+    });
   }
 
   function conectarSocket() {
@@ -418,7 +449,11 @@ document.addEventListener("DOMContentLoaded", () => {
     stompClient = Stomp.over(socket);
     stompClient.debug = () => {};
 
-    stompClient.connect({}, () => {
+    stompClient.connect(
+      {
+        Authorization: `Bearer ${auth.token}`,
+      },
+      () => {
       setEstadoChat("En línea", true);
 
       chatSubscription = stompClient.subscribe(`/topic/chat/${telefonoActivo}`, (frame) => {
@@ -700,6 +735,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   cargarMensajes();
-  activarFiltro("TODOS");
-  setInterval(cargarMensajes, 15000);
+conectarInboxSocket();
+activarFiltro("TODOS");
+setInterval(cargarMensajes, 15000);
 });

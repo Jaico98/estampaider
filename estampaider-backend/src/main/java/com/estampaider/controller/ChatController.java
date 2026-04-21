@@ -5,18 +5,17 @@ import com.estampaider.model.EstadoMensaje;
 import com.estampaider.model.Mensaje;
 import com.estampaider.repository.ChatMensajeRepository;
 import com.estampaider.repository.MensajeRepository;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/chat")
@@ -67,7 +66,6 @@ public class ChatController {
     @MessageMapping("/chat/leido")
     public void marcarLeido(@Payload String telefonoPayload) {
         final String telefono = normalizarTelefono(telefonoPayload);
-
         List<ChatMensaje> mensajes = repo.findByTelefonoOrderByFechaAsc(telefono);
         mensajes.forEach(m -> m.setLeido(true));
         repo.saveAll(mensajes);
@@ -94,8 +92,8 @@ public class ChatController {
     @MessageMapping("/chat/recibido")
     public void marcarRecibido(@Payload String telefonoPayload) {
         final String telefono = normalizarTelefono(telefonoPayload);
-
         List<ChatMensaje> mensajes = repo.findByTelefonoOrderByFechaAsc(telefono);
+
         mensajes.stream()
                 .filter(m -> !m.isLeido())
                 .forEach(m -> m.setRecibido(true));
@@ -119,13 +117,20 @@ public class ChatController {
             @PathVariable String telefono,
             Authentication authentication
     ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body("No autenticado");
+        }
+
         String usuarioActual = authentication.getName();
+
         boolean esAdmin = authentication.getAuthorities()
                 .stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
 
         String telefonoNormalizado = normalizarTelefono(telefono);
-        String usuarioNormalizado = esAdmin ? usuarioActual : normalizarTelefono(usuarioActual);
+        String usuarioNormalizado = esAdmin
+                ? usuarioActual
+                : normalizarTelefono(usuarioActual);
 
         if (!esAdmin && !telefonoNormalizado.equals(usuarioNormalizado)) {
             return ResponseEntity.status(403).body("No autorizado para ver este chat");
@@ -154,6 +159,7 @@ public class ChatController {
 
     private void sincronizarBandejaAdmin(ChatMensaje chatMensaje) {
         String telefono = normalizarTelefono(chatMensaje.getTelefono());
+
         if (telefono.isBlank()) {
             return;
         }
