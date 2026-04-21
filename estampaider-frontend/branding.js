@@ -96,22 +96,21 @@
     return match ? Number(match[1]) : Number.MAX_SAFE_INTEGER;
   }
 
-  function aplicarFondoGlobal(url) {
+  function aplicarFondoGlobal(API_BASE, url) {
     if (!url) return;
   
-    const imagen = /^https?:\/\//i.test(url)
-      ? url
-      : (url.startsWith("/") ? `${API}${url}` : `${API}/${url}`);
+    const finalUrl = /^https?:\/\//i.test(url)
+      ? `${url}${url.includes("?") ? "&" : "?"}v=${Date.now()}`
+      : `${API_BASE}${url}?v=${Date.now()}`;
   
-    const elementos = document.querySelectorAll(`
+    document.querySelectorAll(`
       .branding-bg,
       .colibri-bg,
       [data-branding-bg],
       [data-colibri-bg]
-    `);
-  
-    elementos.forEach((el) => {
-      el.style.backgroundImage = `url("${imagen}")`;
+    `).forEach((el) => {
+      el.style.setProperty("--branding-bg-url", `url('${finalUrl}')`);
+      el.style.backgroundImage = `url('${finalUrl}')`;
       el.style.backgroundSize = "cover";
       el.style.backgroundPosition = "center";
       el.style.backgroundRepeat = "no-repeat";

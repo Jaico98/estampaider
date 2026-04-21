@@ -106,53 +106,46 @@ async function fetchBrandingCurrent() {
   return res.json();
 }
 
-function actualizarOpcionesGaleria() {
-  const select = document.getElementById("videoSlot");
-  if (!select) return;
+function actualizarOpcionesGaleria(data) {
+  const selector = document.getElementById("videoSlot");
+  if (!selector) return;
 
-  const valorActual = select.value;
+  const valorActual = selector.value;
 
-  select.innerHTML = `
-    <option value="">Selecciona una posición</option>
-    <option value="hero">Hero principal</option>
-    <option value="highlight">Video destacado</option>
-  `;
+  Array.from(selector.querySelectorAll('option[data-gallery-dinamica="true"]'))
+    .forEach(opt => opt.remove());
 
-  const galleryVideos = Array.isArray(branding?.galleryVideos)
-    ? [...branding.galleryVideos]
-    : [];
+  const galleryVideos = Array.isArray(data?.galleryVideos) ? data.galleryVideos : [];
 
-  galleryVideos.sort((a, b) => {
-    const na = parseInt(String(a.slot || "").replace("gallery", ""), 10) || 0;
-    const nb = parseInt(String(b.slot || "").replace("gallery", ""), 10) || 0;
-    return na - nb;
-  });
+  const indices = galleryVideos
+    .map(item => obtenerIndiceGaleriaDesdeSlot(item?.slot))
+    .filter(n => Number.isInteger(n) && n > 0)
+    .sort((a, b) => a - b);
 
-  const usados = new Set();
+  const siguienteLibre = obtenerIndiceGaleriaDesdeSlot(obtenerPrimerSlotLibre(data)) || 1;
 
-  galleryVideos.forEach((video) => {
-    if (!video?.slot || !video.slot.startsWith("gallery")) return;
-    usados.add(video.slot);
-
-    const numero = parseInt(video.slot.replace("gallery", ""), 10);
-    const option = document.createElement("option");
-    option.value = video.slot;
-    option.textContent = `Galería ${Number.isFinite(numero) ? numero : video.slot}`;
-    select.appendChild(option);
-  });
-
-  let siguiente = 1;
-  while (usados.has(`gallery${siguiente}`)) {
-    siguiente++;
+  const indicesAMostrar = [...indices];
+  if (!indicesAMostrar.includes(siguienteLibre)) {
+    indicesAMostrar.push(siguienteLibre);
   }
 
-  const nueva = document.createElement("option");
-  nueva.value = `gallery${siguiente}`;
-  nueva.textContent = `Galería ${siguiente} (nueva posición)`;
-  select.appendChild(nueva);
+  indicesAMostrar.sort((a, b) => a - b);
 
-  const existeValorActual = [...select.options].some(opt => opt.value === valorActual);
-  select.value = existeValorActual ? valorActual : "";
+  indicesAMostrar.forEach((i) => {
+    const value = `gallery${i}`;
+    if (selector.querySelector(`option[value="${value}"]`)) return;
+
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = i === siguienteLibre && !indices.includes(i)
+      ? `Galería ${i} (nueva posición)`
+      : `Galería ${i}`;
+    option.setAttribute("data-gallery-dinamica", "true");
+    selector.appendChild(option);
+  });
+
+  const existeValorActual = Array.from(selector.options).some(opt => opt.value === valorActual);
+  selector.value = existeValorActual ? valorActual : "hero";
 }
 
 async function cargarBrandingAdmin() {
@@ -201,12 +194,18 @@ async function actualizarPreviewVideo(dataManual = null) {
 
     const actual = obtenerVideoPorSlot(data, slot);
 
-    if (actual) {
-      preview.src = `${getAPI()}${actual}?v=${Date.now()}`;
-      preview.load();
-    } else {
+    if (!actual) {
       limpiarPreviewVideo();
+      return;
     }
+
+    const urlFinal = /^https?:\/\//i.test(actual)
+      ? `${actual}${actual.includes("?") ? "&" : "?"}v=${Date.now()}`
+      : `${getAPI()}${actual}?v=${Date.now()}`;
+
+    preview.pause();
+    preview.src = urlFinal;
+    preview.load();
   } catch (error) {
     console.error("Error actualizando preview:", error);
     limpiarPreviewVideo();
