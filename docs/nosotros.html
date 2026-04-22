@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Conoce la historia y los valores de Estampaider, empresa de personalización y estampados en Colombia.">
+    <title>Nosotros | Estampaider</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ZONA DE HOVER PARA HEADER -->
+<div class="header-hover-zone"></div>
+
+<!-- HEADER -->
+<header class="header" role="banner">
+    <div class="header-container">
+
+        <div class="logo">
+            <a href="index.html" aria-label="Ir al inicio">
+                <img src="images/logo-estampaider.png" alt="Estampaider">
+            </a>
+        </div>
+
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú" aria-expanded="false">☰</button>
+
+        <nav class="menu" id="menu" role="navigation" aria-label="Menú principal">
+            <a href="index.html">Inicio</a>
+            <a href="productos.html">Productos</a>
+            <a href="nosotros.html" class="active">Nosotros</a>
+            <a href="contacto.html">Contacto</a>
+            <a href="#" class="nav-login" id="navLoginLink">👤 Ingresar</a>
+            <a href="carrito.html" class="carrito-icono" aria-label="Ver carrito">
+                🛒 <span id="contador-carrito">0</span>
+            </a>
+        </nav>
+
+    </div>
+</header>
+
+<main id="contenido-principal">
+
+    <!-- HERO NOSOTROS -->
+    <section class="nosotros-hero branding-bg" aria-label="Encabezado Nosotros">
+        <h1>Somos Estampaider</h1>
+        <p>
+            Personalización, creatividad y calidad en cada detalle.
+        </p>
+    </section>
+
+    <!-- HISTORIA -->
+    <section class="nosotros-historia fade-up" aria-label="Nuestra historia">
+        <h2>Nuestra historia</h2>
+        <p>
+            Estampaider nace con una idea clara: convertir momentos, ideas y emociones
+            en productos personalizados que realmente conecten con las personas.
+        </p>
+
+        <p>
+            Empezamos con pocos recursos pero con muchas ganas, aprendiendo,
+            mejorando y creciendo con cada pedido. Hoy seguimos trabajando
+            con el mismo compromiso: entregar productos bien hechos, con amor
+            y atención al detalle.
+        </p>
+    </section>
+
+    <!-- VALORES -->
+    <section class="nosotros-valores fade-up" aria-label="Nuestros valores">
+        <h2>Lo que nos representa</h2>
+
+        <div class="valores-grid">
+            <div class="valor-card">
+                <h3>🎨 Creatividad</h3>
+                <p>Cada diseño es único y pensado para ti.</p>
+            </div>
+
+            <div class="valor-card">
+                <h3>🧵 Calidad</h3>
+                <p>Materiales seleccionados y acabados responsables.</p>
+            </div>
+
+            <div class="valor-card">
+                <h3>🤝 Compromiso</h3>
+                <p>Cumplimos lo que prometemos, siempre.</p>
+            </div>
+
+            <div class="valor-card">
+                <h3>💬 Cercanía</h3>
+                <p>Trato directo, claro y honesto con cada cliente.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta-final fade-up" aria-label="Llamado a la acción">
+        <div class="cta-contenido">
+            <h2>¿Hacemos realidad tu idea?</h2>
+            <p>Escríbenos y personalicemos algo único para ti.</p>
+
+            <div class="cta-botones">
+                <a href="productos.html" class="btn-principal">Ver productos</a>
+                <a href="contacto.html" class="btn-secundario">Contáctanos</a>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- FOOTER -->
+<footer class="footer" role="contentinfo">
+    <div class="footer-container">
+
+        <div class="footer-col">
+            <img src="images/logo-estampaider.png" alt="Estampaider" class="footer-logo">
+            <p>Personalización con estilo y calidad.</p>
+        </div>
+
+        <div class="footer-col">
+            <h4>Explorar</h4>
+            <a href="index.html">Inicio</a>
+            <a href="productos.html">Productos</a>
+            <a href="nosotros.html">Nosotros</a>
+            <a href="contacto.html">Contacto</a>
+        </div>
+
+        <div class="footer-col">
+            <h4>Contacto</h4>
+            <a href="https://wa.me/573153625992" target="_blank" rel="noopener noreferrer">📲 WhatsApp</a>
+            <p>📍 Colombia</p>
+            <p>⏱ Atención personalizada</p>
+        </div>
+
+        <div class="footer-col">
+            <h4>Redes</h4>
+            <a href="#" class="disabled" aria-disabled="true" data-social="tiktok">TikTok</a>
+            <a href="#" class="disabled" aria-disabled="true" data-social="instagram">Instagram</a>
+            <a href="#" class="disabled" aria-disabled="true" data-social="facebook">Facebook</a>
+          </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        &copy; 2026 Estampaider &middot; Todos los derechos reservados
+    </div>
+</footer>
+
+<!-- TOAST GLOBAL -->
+<div id="toast-global" role="status" aria-live="polite"></div>
+
+<!-- SCRIPTS -->
+<script src="carrito-global.js"></script>
+
+<script>
+    // ── Menú hamburguesa ──
+    const toggle = document.getElementById("menuToggle");
+    const menu   = document.getElementById("menu");
+
+    toggle.addEventListener("click", () => {
+        const abierto = menu.classList.toggle("show");
+        toggle.setAttribute("aria-expanded", abierto);
+    });
+
+    // ── Header deslizable (solo desktop) ──
+    const header    = document.querySelector(".header");
+    const hoverZone = document.querySelector(".header-hover-zone");
+
+    if (hoverZone) {
+        hoverZone.addEventListener("mouseenter", () => header.classList.add("visible"));
+    }
+    if (header) {
+        header.addEventListener("mouseleave", () => header.classList.remove("visible"));
+    }
+
+    // ── Animaciones scroll ──
+    const fadeEls = document.querySelectorAll(".fade-up");
+    const scrollObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) entry.target.classList.add("show");
+        });
+    }, { threshold: 0.15 });
+
+    fadeEls.forEach(el => scrollObserver.observe(el));
+</script>
+<script>
+    (function () {
+      const link = document.getElementById("navLoginLink");
+      if (!link) return;
+  
+      const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
+  
+      if (auth && auth.token) {
+        if (auth.rol === "ADMIN") {
+          link.href = "mensajes.html";
+          link.textContent = "👤 Panel admin";
+        } else {
+          link.href = "mi-pedido.html";
+          link.textContent = "👤 Mi cuenta";
+        }
+      } else {
+        link.href = "admin/login.html";
+      }
+    })();
+  </script>
+<script src="branding.js"></script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión | Estampaider</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .login-hero-panel.branding-bg{
+  background-image:
+    linear-gradient(135deg, rgba(7, 24, 31, 0.82), rgba(12, 42, 54, 0.72)),
+    var(--branding-bg-url, none);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+    </style>
+</head>
+<body class="login-hero-panel branding-bg">
+
+    <main class="login-shell">
+        <section class="login-hero-panel">
+            <span class="eyebrow">Acceso Estampaider</span>
+            <h1>Ingresa a tu cuenta</h1>
+            <p>
+                Administra pedidos, consulta tu información y continúa tu experiencia
+                con el mismo estilo visual del catálogo.
+            </p>
+
+            <div class="login-mini-benefits">
+                <span>🔐 Acceso seguro</span>
+                <span>📦 Seguimiento de pedidos</span>
+                <span>💬 Soporte personalizado</span>
+            </div>
+
+            <a href="../productos.html" class="btn-outline-dark">⬅ Volver a productos</a>
+        </section>
+
+        <section class="auth-container auth-container-pro">
+            <div class="auth-brand">
+                <img src="../images/logo-estampaider.png" alt="Estampaider">
+                <h2>Iniciar Sesión</h2>
+                <p>Ingresa con tu teléfono y contraseña</p>
+            </div>
+
+            <form id="loginForm" autocomplete="on">
+                <label for="usuario" class="sr-only">Número de teléfono</label>
+                <input 
+                    type="text" 
+                    id="usuario" 
+                    placeholder="Número de teléfono"
+                    autocomplete="username"
+                    required>
+
+                <label for="password" class="sr-only">Contraseña</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    placeholder="Contraseña"
+                    autocomplete="current-password"
+                    required>
+
+                <button type="submit" class="btn-login-estampaider">Ingresar</button>
+            </form>
+
+            <p class="error" id="error"></p>
+
+            <div class="auth-links">
+                <p>
+                    <a href="forgot-password.html">¿Olvidaste tu contraseña?</a>
+                </p>
+
+                <p>
+                    ¿No tienes cuenta?
+                    <a href="register.html">Crear cuenta</a>
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        (function () {
+          const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
+      
+          if (!auth || !auth.token) return;
+      
+          if (auth.rol === "ADMIN") {
+            window.location.href = "../mensajes.html";
+            return;
+          }
+      
+          window.location.href = "../mi-pedido.html";
+        })();
+      </script>
+
+    <script src="../config.js"></script>
+    <script src="../branding.js"></script>
+    <script src="../carrito-global.js"></script>
+    <script src="login.js"></script>
+</body>
+</html>

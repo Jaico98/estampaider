@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Confirma tu compra en Estampaider. Ingresa tus datos de envío y método de pago.">
+    <title>Confirmar Compra | Estampaider</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ZONA DE HOVER PARA HEADER -->
+<div class="header-hover-zone"></div>
+
+<!-- HEADER -->
+<header class="header" role="banner">
+    <div class="header-container">
+
+        <div class="logo">
+            <a href="index.html" aria-label="Ir al inicio">
+                <img src="images/logo-estampaider.png" alt="Estampaider">
+            </a>
+        </div>
+
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú" aria-expanded="false">☰</button>
+
+        <nav class="menu" id="menu" role="navigation" aria-label="Menú principal">
+            <a href="index.html">Inicio</a>
+            <a href="productos.html">Productos</a>
+            <a href="nosotros.html">Nosotros</a>
+            <a href="contacto.html">Contacto</a>
+            <a href="carrito.html" class="carrito-icono" aria-label="Ver carrito">
+                🛒 <span id="contador-carrito">0</span>
+            </a>
+        </nav>
+
+    </div>
+</header>
+
+<!-- HERO CHECKOUT -->
+<section class="checkout-hero" aria-label="Confirmar compra">
+    <h1>✅ Confirmar Compra</h1>
+    <p>Completa tus datos para finalizar el pedido</p>
+</section>
+
+<!-- FORMULARIO CHECKOUT -->
+<main class="checkout-container" id="contenido-principal">
+    <div class="checkout-shell">
+
+        <!-- DATOS DEL CLIENTE -->
+        <h3>👤 Datos del cliente</h3>
+
+        <div class="campo-grupo">
+            <label for="cliente">Nombre completo</label>
+            <input type="text" id="cliente" name="cliente" placeholder="Ej: Juan Pérez" required autocomplete="name">
+        </div>
+
+        <div class="campo-grupo">
+            <label for="telefono">WhatsApp</label>
+            <input type="tel" id="telefono" name="telefono" placeholder="Ej: 3001234567" required autocomplete="tel">
+        </div>
+
+        <h3>🚚 Datos de envío</h3>
+
+        <div class="campo-grupo">
+            <label for="direccion">Dirección <span style="color:#e53935">*</span></label>
+            <input type="text" id="direccion" name="direccion" placeholder="Ej: Calle 10 # 5-30" required>
+        </div>
+
+        <div class="campo-grupo">
+            <label for="ciudad">Ciudad <span style="color:#e53935">*</span></label>
+            <input type="text" id="ciudad" name="ciudad" placeholder="Ej: Trinidad" required>
+        </div>
+
+        <div class="campo-grupo">
+            <label for="departamento">Departamento <span style="color:#e53935">*</span></label>
+            <input type="text" id="departamento" name="departamento" placeholder="Ej: Casanare" required>
+        </div>
+
+        <div class="campo-grupo">
+            <label for="barrio">Barrio</label>
+            <input type="text" id="barrio" name="barrio" placeholder="Ej: Centro">
+        </div>
+
+        <div class="campo-grupo">
+            <label for="referencia">Referencia (opcional)</label>
+            <input type="text" id="referencia" name="referencia" placeholder="Ej: Casa de esquina, portón azul">
+        </div>
+
+        <h3>🧾 Resumen del pedido</h3>
+        <div id="resumen" aria-live="polite"></div>
+
+        <p class="carrito-total">
+            Total a pagar: $<span id="total">0</span>
+        </p>
+
+        <h3>💳 Método de pago</h3>
+        <div id="metodosPago" class="metodos-pago" role="group" aria-label="Selecciona un método de pago"></div>
+
+        <div class="nota-pago">
+            📲 <strong>Importante:</strong><br>
+            Después de realizar el pago por cualquiera de los métodos,
+            envía el comprobante al WhatsApp
+            <strong>315 362 5992</strong>
+            para validar tu pedido.
+        </div>
+
+        <button id="confirmar" class="btn-confirmar" type="button">
+            Confirmar compra 🧾
+        </button>
+
+        <a href="carrito.html" class="btn-volver-checkout">
+            ⬅ Volver al carrito
+        </a>
+
+    </div>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer" role="contentinfo">
+    <div class="footer-container">
+
+        <div class="footer-col">
+            <img src="images/logo-estampaider.png" alt="Estampaider" class="footer-logo">
+            <p>Personalización con estilo y calidad.</p>
+        </div>
+
+        <div class="footer-col">
+            <h4>Explorar</h4>
+            <a href="index.html">Inicio</a>
+            <a href="productos.html">Productos</a>
+            <a href="nosotros.html">Nosotros</a>
+            <a href="contacto.html">Contacto</a>
+        </div>
+
+        <div class="footer-col">
+            <h4>Contacto</h4>
+            <a href="https://wa.me/573153625992" target="_blank" rel="noopener noreferrer">📲 WhatsApp</a>
+            <p>📍 Colombia</p>
+            <p>⏱ Atención personalizada</p>
+        </div>
+
+        <div class="footer-col">
+            <h4>Redes</h4>
+            <a href="#" class="disabled" aria-disabled="true" data-social="tiktok">TikTok</a>
+            <a href="#" class="disabled" aria-disabled="true" data-social="instagram">Instagram</a>
+            <a href="#" class="disabled" aria-disabled="true" data-social="facebook">Facebook</a>
+          </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        &copy; 2026 Estampaider &middot; Todos los derechos reservados
+    </div>
+</footer>
+
+<!-- TOAST GLOBAL -->
+<div id="toast-global" role="status" aria-live="polite"></div>
+
+<!-- SCRIPTS -->
+<script src="config.js"></script>
+<script src="branding.js"></script>
+<script src="carrito-global.js"></script>
+<script src="checkout.js"></script>
+
+<script>
+    // ── Menú hamburguesa ──
+    const toggle = document.getElementById("menuToggle");
+    const menu   = document.getElementById("menu");
+
+    toggle.addEventListener("click", () => {
+        const abierto = menu.classList.toggle("show");
+        toggle.setAttribute("aria-expanded", abierto);
+    });
+
+    // ── Header deslizable (solo desktop) ──
+    const header    = document.querySelector(".header");
+    const hoverZone = document.querySelector(".header-hover-zone");
+
+    if (hoverZone) {
+        hoverZone.addEventListener("mouseenter", () => header.classList.add("visible"));
+    }
+    if (header) {
+        header.addEventListener("mouseleave", () => header.classList.remove("visible"));
+    }
+</script>
+
+</body>
+</html>

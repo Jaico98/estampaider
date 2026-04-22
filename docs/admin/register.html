@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crear Cuenta | Estampaider</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../styles.css">
+    <style>
+        .login-hero-panel.branding-bg{
+  background-image:
+    linear-gradient(135deg, rgba(7, 24, 31, 0.82), rgba(12, 42, 54, 0.72)),
+    var(--branding-bg-url, none);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+    </style>
+</head>
+<body class="login-hero-panel branding-bg">
+
+    <main class="login-shell">
+        <section class="login-hero-panel">
+            <span class="eyebrow">Registro Estampaider</span>
+            <h1>Crea tu cuenta</h1>
+            <p>
+                Regístrate para hacer seguimiento de tus pedidos, guardar tu información
+                y disfrutar una experiencia más rápida y personalizada.
+            </p>
+
+            <div class="login-mini-benefits">
+                <span>🧾 Registro rápido</span>
+                <span>📦 Consulta de pedidos</span>
+                <span>💬 Atención personalizada</span>
+            </div>
+
+            <a href="../productos.html" class="btn-outline-dark">⬅ Volver a productos</a>
+        </section>
+
+        <section class="auth-container auth-container-pro">
+            <div class="auth-brand">
+                <div class="logo">
+                    <img src="../images/logo-estampaider.png" alt="Estampaider">
+                </div>
+                <h2>Crear Cuenta</h2>
+                <p>Completa tus datos para registrarte</p>
+            </div>
+
+            <form id="registerForm" autocomplete="on">
+                <label for="nombre" class="sr-only">Nombre completo</label>
+                <input type="text" id="nombre" placeholder="Nombre completo" required>
+
+                <label for="telefono" class="sr-only">Número de teléfono</label>
+                <input type="text" id="telefono" placeholder="Número de teléfono" required>
+
+                <input type="email" id="correo" name="correo" placeholder="Tu correo" required>
+
+                <label for="password" class="sr-only">Contraseña</label>
+                <input type="password" id="password" placeholder="Contraseña" required>
+
+                <button type="submit" class="btn-login-estampaider">Registrarme</button>
+            </form>
+
+            <p class="error" id="error"></p>
+
+            <div class="auth-links">
+                <p>
+                    ¿Ya tienes cuenta?
+                    <a href="login.html">Inicia sesión</a>
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        (function () {
+          const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
+      
+          if (!auth || !auth.token) return;
+      
+          if (auth.rol === "ADMIN") {
+            window.location.href = "../mensajes.html";
+            return;
+          }
+      
+          window.location.href = "../mi-pedido.html";
+        })();
+      </script>
+
+    <script src="../branding.js"></script>
+    <script src="register.js"></script>
+</body>
+</html>

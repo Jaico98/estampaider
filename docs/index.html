@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Estampaider: camisetas, mugs, gorras, carcasas y productos personalizados para regalos, eventos y marcas.">
+  <title>Estampaider | Personalización y estampados</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    :root{
+      --ink:#0f172a;
+      --muted:#64748b;
+      --line:#e2e8f0;
+      --card:#be8f8f;
+      --brand:#ff4b2b;
+      --brand-2:#ff8a00;
+      --dark:#14213d;
+      --light:#f8fafc;
+      --success:#16a34a;
+      --shadow:0 18px 40px rgba(15,23,42,.10);
+      --shadow-lg:0 26px 70px rgba(15,23,42,.18);
+      --radius:24px;
+      --radius-sm:18px;
+      --max:1180px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(255,138,0,.08), transparent 26%),
+        radial-gradient(circle at right center, rgba(37,99,235,.08), transparent 28%),
+        #fff;
+    }
+    img,video{max-width:100%;display:block}
+    .header-hover-zone{height:12px}
+    .header{
+      position:sticky;
+      top:0;
+      z-index:1000;
+      backdrop-filter:blur(14px);
+      background:rgba(185, 218, 240, 0.88);
+      border-bottom:1px solid rgba(226,232,240,.9);
+    }
+    .header-container{
+      max-width:var(--max);
+      margin:0 auto;
+      padding:14px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+    }
+    .logo img{height:52px;object-fit:contain}
+    .menu{
+      display:flex;
+      align-items:center;
+      gap:18px;
+      flex-wrap:wrap;
+    }
+    .menu a{
+      text-decoration:none;
+      color:var(--ink);
+      font-weight:700;
+      position:relative;
+    }
+    .menu a.active,
+    .menu a:hover{color:var(--brand)}
+    .menu-toggle{
+      display:none;
+      border:1px solid var(--line);
+      background:#fff;
+      border-radius:14px;
+      padding:10px 12px;
+      cursor:pointer;
+      font-size:1.1rem;
+    }
+    .cart-link{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:10px 14px;
+      border-radius:999px;
+      background:linear-gradient(135deg, rgba(255,75,43,.12), rgba(255,138,0,.12));
+      border:1px solid rgba(255,75,43,.18);
+    }
+    .hero{
+      max-width:var(--max);
+      margin:0 auto;
+      padding:42px 20px 16px;
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:28px;
+      align-items:center;
+    }
+    .hero-copy{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      width:max-content;
+      padding:8px 14px;
+      border-radius:999px;
+      background:#fff7ed;
+      border:1px solid rgba(255,138,0,.22);
+      color:#c2410c;
+      font-size:.92rem;
+      font-weight:800;
+    }
+    .hero h1{
+      margin:0;
+      font-size:clamp(2.3rem,5vw,4.5rem);
+      line-height:.98;
+      letter-spacing:-.03em;
+    }
+    .hero h1 span{
+      background:linear-gradient(135deg, var(--brand), var(--brand-2));
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+    }
+    .hero p{
+      margin:0;
+      color:#fff7ed;
+      font-size:1.08rem;
+      line-height:1.8;
+      max-width:58ch;
+    }
+    .hero-actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:14px;
+    }
+    .btn-principal,.btn-secundario,.btn-outline{
+      text-decoration:none;
+      border:none;
+      cursor:pointer;
+      padding:15px 20px;
+      border-radius:16px;
+      font-weight:800;
+      font-size:1rem;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+    }
+    .btn-principal:hover,.btn-secundario:hover,.btn-outline:hover{transform:translateY(-2px)}
+    .btn-principal{
+      color:#fff;
+      background:linear-gradient(135deg, var(--brand), var(--brand-2));
+      box-shadow:0 16px 30px rgba(255,75,43,.22);
+    }
+    .btn-secundario{
+      color:var(--ink);
+      background:#fff;
+      border:1px solid var(--line);
+      box-shadow:var(--shadow);
+    }
+    .btn-outline{
+      color:#f8fafc;
+      background:transparent;
+      border:1px dashed rgba(0, 0, 0, 0.25);
+    }
+    .hero-stats{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+      margin-top:10px;
+    }
+    .stat-card{
+      background:#0b252e;
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px;
+      box-shadow:var(--shadow);
+    }
+    .stat-card strong{
+      display:block;
+      font-size:1.6rem;
+      margin-bottom:6px;
+    }
+    .hero-visual{
+      position:relative;
+      min-height:560px;
+      display:grid;
+      place-items:center;
+    }
+    .hero-panel{
+      position:relative;
+      width:min(100%, 520px);
+      background:linear-gradient(180deg, #fff, #f8fafc);
+      border:1px solid rgba(226,232,240,.9);
+      border-radius:32px;
+      padding:22px;
+      box-shadow:var(--shadow-lg);
+      overflow:hidden;
+    }
+    .hero-main-video{
+      aspect-ratio:4 / 5;
+      border-radius:24px;
+      overflow:hidden;
+      background:#000;
+      box-shadow:0 16px 30px rgba(15,23,42,.18);
+    }
+    .hero-main-video video{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+    .floating-note{
+      position:absolute;
+      background:#fff;
+      border:1px solid rgba(226,232,240,.9);
+      border-radius:20px;
+      padding:14px 16px;
+      box-shadow:var(--shadow);
+      max-width:220px;
+      line-height:1.5;
+      color: #000;
+
+    }
+    .floating-note strong{display:block;margin-bottom:4px; color: #000;}
+    .note-a{top:18px;left:-18px}
+    .note-b{right:-18px;bottom:70px}
+    .section{
+      max-width:var(--max);
+      margin:0 auto;
+      padding:34px 20px;
+    }
+    .section-head{
+      display:flex;
+      flex-wrap:wrap;
+      justify-content:space-between;
+      gap:18px;
+      align-items:end;
+      margin-bottom:22px;
+    }
+    .section-head h2{
+      margin:0 0 8px;
+      font-size:clamp(1.8rem,3.2vw,2.8rem);
+      letter-spacing:-.02em;
+    }
+    .section-head p{
+      margin:0;
+      color:#0b111f;
+      max-width:60ch;
+      line-height:1.7;
+    }
+    .benefits-grid,
+    .steps-grid,
+    .productos-grid{
+      display:grid;
+      gap:18px;
+    }
+    .benefits-grid{grid-template-columns:repeat(4,1fr)}
+    .steps-grid{grid-template-columns:repeat(3,1fr)}
+    .productos-grid{grid-template-columns:repeat(4,1fr)}
+    .card{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      padding:22px;
+      box-shadow:var(--shadow);
+      transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .card:hover{
+      transform:translateY(-4px);
+      box-shadow:var(--shadow-lg);
+      border-color:rgba(255,75,43,.18);
+    }
+    .icon{
+      width:54px;
+      height:54px;
+      display:grid;
+      place-items:center;
+      border-radius:18px;
+      background:linear-gradient(135deg, rgba(255,75,43,.13), rgba(255,138,0,.13));
+      font-size:1.45rem;
+      margin-bottom:16px;
+    }
+    .card h3{
+      margin:0 0 10px;
+      font-size:1.15rem;
+    }
+    .card p{
+      margin:0;
+      color:#14213d;
+      line-height:1.7;
+    }
+    .products-strip{
+      display:grid;
+      grid-template-columns:1.1fr .9fr;
+      gap:18px;
+      align-items:stretch;
+    }
+    .products-highlight{
+      border-radius:30px;
+      overflow:hidden;
+      position:relative;
+      min-height:340px;
+      background:#111827;
+      box-shadow:var(--shadow-lg);
+    }
+    .products-highlight video{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      opacity:.88;
+    }
+    .products-overlay{
+      position:relative;
+      z-index:1;
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      justify-content:end;
+      gap:12px;
+      padding:28px;
+      background:linear-gradient(180deg, rgba(15,23,42,.1), rgba(15,23,42,.82));
+      color:#fff;
+    }
+    .products-overlay p{margin:0;color:rgba(255,255,255,.85)}
+    .gallery-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:16px;
+      margin-top:22px;
+    }
+    .video-card{
+      border-radius:22px;
+      overflow:hidden;
+      background:#111827;
+      box-shadow:var(--shadow);
+      position:relative;
+      cursor:pointer;
+    }
+    .video-card::after{
+      content:"Ver diseño";
+      position:absolute;
+      left:14px;
+      bottom:14px;
+      color:#fff;
+      font-weight:800;
+      font-size:.92rem;
+      padding:8px 12px;
+      border-radius:999px;
+      background:rgba(15,23,42,.66);
+      border:1px solid rgba(255,255,255,.15);
+      opacity:0;
+      transform:translateY(6px);
+      transition:all .18s ease;
+    }
+    .video-card:hover::after{opacity:1;transform:translateY(0)}
+    .video-card video{
+      width:100%;
+      aspect-ratio:1 / 1.12;
+      object-fit:cover;
+      transition:transform .2s ease, opacity .2s ease;
+    }
+    .video-card:hover video{transform:scale(1.03);opacity:.94}
+    .consultar-pedido{
+      max-width:var(--max);
+      margin:20px auto 0;
+      padding:0 20px 40px;
+    }
+    .consulta-wrap{
+      background:linear-gradient(135deg, #14213d, #1d4ed8);
+      border-radius:32px;
+      padding:30px;
+      color:#fff;
+      display:grid;
+      grid-template-columns:1fr auto;
+      gap:18px;
+      align-items:center;
+      box-shadow:var(--shadow-lg);
+    }
+    .consulta-wrap h2{
+      margin:0 0 10px;
+      font-size:clamp(1.7rem,3vw,2.3rem);
+    }
+    .consulta-wrap p{margin:0;color:rgba(255,255,255,.86);line-height:1.7}
+    .consulta-box{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      width:100%;
+    }
+    .consulta-box input{
+      flex:1 1 260px;
+      border:none;
+      border-radius:16px;
+      padding:16px 18px;
+      font-size:1rem;
+      min-width:0;
+    }
+    .consulta-box button{
+      border:none;
+      border-radius:16px;
+      padding:16px 22px;
+      font-size:1rem;
+      font-weight:800;
+      cursor:pointer;
+      color:var(--ink);
+      background:#fff;
+      white-space:nowrap;
+    }
+    .cta-final{
+      padding:10px 20px 48px;
+      max-width:var(--max);
+      margin:0 auto;
+    }
+    .cta-contenido{
+      border-radius:32px;
+      border:1px solid var(--line);
+      background:
+        radial-gradient(circle at top left, rgba(255,75,43,.1), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(37,99,235,.1), transparent 30%),
+        #fff;
+      padding:34px;
+      box-shadow:var(--shadow);
+      text-align:center;
+    }
+    .cta-contenido h2{
+      margin:0 0 10px;
+      font-size:clamp(1.8rem,3vw,2.6rem);
+    }
+    .cta-contenido p{
+      margin:0 auto 18px;
+      max-width:58ch;
+      color:#14213d;
+      line-height:1.7;
+    }
+    .cta-botones{
+      display:flex;
+      justify-content:center;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    .video-modal{
+      position:fixed;
+      inset:0;
+      background:rgba(15,23,42,.85);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      z-index:1400;
+    }
+    .video-modal.active{display:flex}
+    #videoGrande{
+      width:min(980px, 100%);
+      max-height:82vh;
+      border-radius:24px;
+      background:#000;
+      box-shadow:var(--shadow-lg);
+    }
+    .cerrar{
+      position:absolute;
+      top:18px;
+      right:18px;
+      border:none;
+      width:46px;
+      height:46px;
+      border-radius:50%;
+      font-size:1.2rem;
+      cursor:pointer;
+      background:#fff;
+      box-shadow:var(--shadow);
+    }
+    .footer{
+      background:#0f172a;
+      color:#fff;
+      margin-top:14px;
+    }
+    .footer-container{
+      max-width:var(--max);
+      margin:0 auto;
+      padding:38px 20px 20px;
+      display:grid;
+      grid-template-columns:1.2fr 1fr 1fr 1fr;
+      gap:20px;
+    }
+    .footer-col{
+      display:grid;
+      gap:10px;
+      align-content:start;
+    }
+    .footer-col h4{margin:0;font-size:1.05rem}
+    .footer-col p,.footer-col a{
+      color:rgba(255,255,255,.75);
+      text-decoration:none;
+      line-height:1.7;
+      margin:0;
+    }
+    .footer-col a:hover{color:#fff}
+    .footer-logo{height:60px;width:auto}
+    .footer-bottom{
+      max-width:var(--max);
+      margin:0 auto;
+      padding:0 20px 26px;
+      color:rgba(255,255,255,.62);
+    }
+    #toast-global{
+      position:fixed;
+      right:18px;
+      bottom:18px;
+      z-index:1500;
+      padding:14px 16px;
+      border-radius:16px;
+      background:#111827;
+      color:#fff;
+      opacity:0;
+      pointer-events:none;
+      transform:translateY(10px);
+      transition:all .2s ease;
+      box-shadow:var(--shadow-lg);
+    }
+    #toast-global.show{
+      opacity:1;
+      transform:translateY(0);
+    }
+    .fade-up{
+      opacity:0;
+      transform:translateY(22px);
+      transition:opacity .55s ease, transform .55s ease;
+    }
+    .fade-up.show{
+      opacity:1;
+      transform:translateY(0);
+    }
+    .sr-only{
+      position:absolute;
+      width:1px;
+      height:1px;
+      padding:0;
+      margin:-1px;
+      overflow:hidden;
+      clip:rect(0,0,0,0);
+      border:0;
+    }
+    .disabled{opacity:.65;pointer-events:none}
+    @media (max-width: 1100px){
+      .benefits-grid,.productos-grid{grid-template-columns:repeat(2,1fr)}
+      .gallery-grid{grid-template-columns:repeat(3,1fr)}
+      .hero,.products-strip,.consulta-wrap,.footer-container{grid-template-columns:1fr}
+      .hero-visual{min-height:auto}
+      .hero-panel{max-width:680px;margin-inline:auto}
+    }
+    @media (max-width: 760px){
+      .menu-toggle{display:block}
+      .menu{
+        position:absolute;
+        top:84px;
+        left:16px;
+        right:16px;
+        display:none;
+        flex-direction:column;
+        align-items:flex-start;
+        padding:18px;
+        border-radius:20px;
+        background:rgba(255,255,255,.98);
+        border:1px solid var(--line);
+        box-shadow:var(--shadow-lg);
+      }
+      .menu.show{display:flex}
+      .hero{padding-top:28px}
+      .hero-stats,.benefits-grid,.steps-grid,.productos-grid,.gallery-grid{grid-template-columns:1fr}
+      .section,.consultar-pedido,.cta-final{padding-left:16px;padding-right:16px}
+      .consulta-wrap,.cta-contenido,.card,.hero-panel{padding:22px}
+      .header-container{padding-inline:16px}
+      .logo img{height:46px}
+    }
+  </style>
+</head>
+<body>
+  <audio id="sonido-carrito" src="./notification.mp3" preload="auto"></audio>
+
+  <div class="header-hover-zone"></div>
+
+  <header class="header" role="banner">
+    <div class="header-container">
+      <div class="logo">
+        <a href="index.html" aria-label="Ir al inicio">
+          <img src="images/logo-estampaider.png" alt="Estampaider">
+        </a>
+      </div>
+
+      <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú" aria-expanded="false">☰</button>
+
+      <nav class="menu" id="menu" role="navigation" aria-label="Menú principal">
+        <a href="index.html" class="active">Inicio</a>
+        <a href="productos.html">Productos</a>
+        <a href="nosotros.html">Nosotros</a>
+        <a href="contacto.html">Contacto</a>
+        <a href="#" class="nav-login" id="navLoginLink">👤 Ingresar</a>
+        <a href="carrito.html" class="cart-link" aria-label="Ir al carrito">🛒 <span id="contador-carrito">0</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero branding-bg fade-up" aria-label="Presentación principal">
+      <div class="hero-copy">
+        <span class="eyebrow">✨ Regalos, marcas y eventos con identidad</span>
+        <h1>Hazlo único con <span>Estampaider</span></h1>
+        <p>
+          Personalizamos camisetas, mugs, gorras, carcasas y mucho más.
+          Convertimos tus ideas en productos reales, con acabados bonitos, atención cercana y un proceso claro desde el primer mensaje hasta la entrega.
+        </p>
+
+        <div class="hero-actions">
+          <a href="productos.html" class="btn-principal">Explorar productos</a>
+          <a href="contacto.html" class="btn-secundario">Hablar con nosotros</a>
+          <a href="#consulta-pedido" class="btn-outline">Consultar pedido</a>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat-card">
+            <strong>+9</strong>
+            <span>Categorías personalizables</span>
+          </div>
+          <div class="stat-card">
+            <strong>100%</strong>
+            <span>Atención personalizada</span>
+          </div>
+          <div class="stat-card">
+            <strong>1 solo chat</strong>
+            <span>Para acompañarte de principio a fin</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-panel">
+          <div class="hero-main-video">
+            <video id="heroVideo" autoplay muted loop playsinline title="Trabajo destacado Estampaider"></video>
+          </div>
+
+          <div class="floating-note note-a">
+            <strong>Diseño a tu gusto</strong>
+            <span>Adaptamos colores, frases, logos y estilos a tu idea.</span>
+          </div>
+
+          <div class="floating-note note-b">
+            <strong>Entrega con seguimiento</strong>
+            <span>Puedes revisar el estado de tu pedido con tu número de WhatsApp.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section fade-up" aria-label="Beneficios principales">
+      <div class="section-head">
+        <div>
+          <h2>¿Por qué elegir Estampaider?</h2>
+          <p>Nos enfocamos en que el producto final se vea bien, dure y represente exactamente lo que quieres comunicar.</p>
+        </div>
+      </div>
+
+      <div class="benefits-grid">
+        <article class="card">
+          <div class="icon">🎨</div>
+          <h3>Diseños personalizados</h3>
+          <p>Creamos cada pieza con identidad propia, sin que tu pedido se vea genérico o improvisado.</p>
+        </article>
+        <article class="card">
+          <div class="icon">🧵</div>
+          <h3>Calidad que se nota</h3>
+          <p>Trabajamos con materiales y acabados pensados para verse bien y resistir el uso real.</p>
+        </article>
+        <article class="card">
+          <div class="icon">⚡</div>
+          <h3>Proceso claro</h3>
+          <p>Te explicamos el avance, resolvemos dudas y evitamos que sientas que tu pedido quedó en el aire.</p>
+        </article>
+        <article class="card">
+          <div class="icon">🤝</div>
+          <h3>Atención cercana</h3>
+          <p>Te acompañamos desde la idea inicial hasta la confirmación del diseño y la entrega.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section fade-up" aria-label="Cómo funciona">
+      <div class="section-head">
+        <div>
+          <h2>Así funciona tu pedido</h2>
+          <p>Queremos que comprar algo personalizado sea fácil. Por eso lo resumimos en tres pasos.</p>
+        </div>
+      </div>
+
+      <div class="steps-grid">
+        <article class="card">
+          <div class="icon">1</div>
+          <h3>Cuéntanos tu idea</h3>
+          <p>Producto, cantidad, estilo, frase, imagen o referencia visual. Todo nos ayuda a guiarte mejor.</p>
+        </article>
+        <article class="card">
+          <div class="icon">2</div>
+          <h3>Confirmamos diseño</h3>
+          <p>Te mostramos propuesta, detalles y ajustes antes de pasar a producción.</p>
+        </article>
+        <article class="card">
+          <div class="icon">3</div>
+          <h3>Producimos y entregamos</h3>
+          <p>Hacemos seguimiento del pedido para que puedas consultarlo cuando quieras.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section fade-up" aria-label="Productos destacados">
+      <div class="section-head">
+        <div>
+          <h2>Personalizamos mucho más que una camiseta</h2>
+          <p>Trabajamos productos funcionales, regalos y detalles para celebraciones, marcas, grupos y eventos.</p>
+        </div>
+      </div>
+
+      <div class="products-strip">
+        <div class="products-highlight">
+          <video id="highlightVideo" autoplay muted loop playsinline title="Muestra de productos"></video>
+          <div class="products-overlay">
+            <span class="eyebrow" style="background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.18)">Top visual</span>
+            <h3 style="margin:0;font-size:2rem">Mugs, camisetas, carcasas, gorras y más</h3>
+            <p>Perfectos para regalos, emprendimientos, celebraciones y producción personalizada por pedido.</p>
+          </div>
+        </div>
+
+        <div class="productos-grid">
+          <article class="card">
+            <div class="icon">👕</div>
+            <h3>Camisetas</h3>
+            <p>Diseños para equipos, cumpleaños, marcas, eventos o detalles personales.</p>
+          </article>
+          <article class="card">
+            <div class="icon">☕</div>
+            <h3>Mugs y pocillos</h3>
+            <p>Un clásico para regalar con frases, fotos o diseños temáticos.</p>
+          </article>
+          <article class="card">
+            <div class="icon">🧢</div>
+            <h3>Gorras</h3>
+            <p>Ideales para branding, grupos y estilo urbano personalizado.</p>
+          </article>
+          <article class="card">
+            <div class="icon">📱</div>
+            <h3>Carcasas</h3>
+            <p>Protección y diseño en una sola pieza con identidad propia.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section fade-up" aria-label="Galería de trabajos realizados">
+      <div class="section-head">
+        <div>
+          <h2>Nuestros trabajos hablan por nosotros</h2>
+          <p>Estos videos muestran parte de lo que ya hemos creado. Tócalos para verlos más grandes.</p>
+        </div>
+      </div>
+
+      <div class="gallery-grid"></div>
+    </section>
+
+    <section class="consultar-pedido fade-up" id="consulta-pedido" aria-label="Consulta tu pedido">
+      <div class="consulta-wrap">
+        <div>
+          <h2>Consulta tu pedido en segundos</h2>
+          <p>Ingresa tu número de WhatsApp y revisa el estado de tus pedidos, el chat y el seguimiento del proceso.</p>
+        </div>
+
+        <div class="consulta-box">
+          <label for="telefonoConsulta" class="sr-only">Número de WhatsApp</label>
+          <input type="tel" id="telefonoConsulta" placeholder="Ej: 3153625992" maxlength="15" autocomplete="tel">
+          <button id="btnConsultarPedido" type="button">Consultar</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-final fade-up" aria-label="Llamado a la acción">
+      <div class="cta-contenido">
+        <h2>¿Listo para personalizar algo único?</h2>
+        <p>
+          En Estampaider transformamos ideas en productos con estilo, intención y detalle.
+          Explora el catálogo o escríbenos para empezar tu diseño.
+        </p>
+        <div class="cta-botones">
+          <a href="productos.html" class="btn-principal">Explorar productos</a>
+          <a href="contacto.html" class="btn-secundario">Contáctanos</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="videoModal" class="video-modal" role="dialog" aria-modal="true" aria-label="Reproducir video">
+    <button class="cerrar" id="cerrarModal" aria-label="Cerrar video">✕</button>
+    <video id="videoGrande" controls></video>
+  </div>
+
+  <footer class="footer" role="contentinfo">
+    <div class="footer-container">
+      <div class="footer-col">
+        <img src="images/logo-estampaider.png" alt="Estampaider" class="footer-logo">
+        <p>Personalización y estampados con identidad.<br>Creamos productos únicos que hablan por ti.</p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Explorar</h4>
+        <a href="index.html">Inicio</a>
+        <a href="productos.html">Productos</a>
+        <a href="nosotros.html">Nosotros</a>
+        <a href="contacto.html">Contacto</a>
+      </div>
+
+      <div class="footer-col">
+        <h4>Contacto</h4>
+        <a href="https://wa.me/573153625992" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+        <p>Colombia</p>
+        <p>⏱ Atención personalizada</p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Redes</h4>
+        <a href="#" class="disabled" aria-disabled="true" data-social="tiktok">TikTok</a>
+        <a href="#" class="disabled" aria-disabled="true" data-social="instagram">Instagram</a>
+        <a href="#" class="disabled" aria-disabled="true" data-social="facebook">Facebook</a>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      &copy; 2026 Estampaider &middot; Todos los derechos reservados
+    </div>
+  </footer>
+
+  <div id="toast-global" role="status" aria-live="polite"></div>
+
+  <script src="carrito-global.js"></script>
+
+  <script>
+    const toggle = document.getElementById("menuToggle");
+    const menu = document.getElementById("menu");
+    const header = document.querySelector(".header");
+    const hoverZone = document.querySelector(".header-hover-zone");
+    const modal = document.getElementById("videoModal");
+    const videoGrande = document.getElementById("videoGrande");
+    const cerrar = document.getElementById("cerrarModal");
+    const toast = document.getElementById("toast-global");
+
+    function showToast(message) {
+      if (!toast) return;
+      toast.textContent = message;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 2400);
+    }
+
+    if (toggle && menu) {
+      toggle.addEventListener("click", () => {
+        const abierto = menu.classList.toggle("show");
+        toggle.setAttribute("aria-expanded", abierto ? "true" : "false");
+      });
+    }
+
+    if (hoverZone && header) {
+      hoverZone.addEventListener("mouseenter", () => header.classList.add("visible"));
+      header.addEventListener("mouseleave", () => header.classList.remove("visible"));
+    }
+
+    function bindGalleryVideoClicks() {
+  document.querySelectorAll(".video-card video").forEach(video => {
+    video.onclick = () => {
+      const src = video.currentSrc || video.src;
+      if (!src) return;
+      videoGrande.src = src;
+      modal.classList.add("active");
+      videoGrande.play();
+    };
+  });
+}
+
+bindGalleryVideoClicks();
+window.__estampaiderRebindVideoModal = bindGalleryVideoClicks;
+
+    cerrar.addEventListener("click", () => {
+      videoGrande.pause();
+      videoGrande.src = "";
+      modal.classList.remove("active");
+    });
+
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) cerrar.click();
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && modal.classList.contains("active")) cerrar.click();
+    });
+
+    const fadeEls = document.querySelectorAll(".fade-up");
+    const scrollObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add("show");
+      });
+    }, { threshold: 0.14 });
+
+    fadeEls.forEach(el => scrollObserver.observe(el));
+
+    document.getElementById("btnConsultarPedido").addEventListener("click", () => {
+      const telefono = document.getElementById("telefonoConsulta").value.trim();
+      const telefonoLimpio = telefono.replace(/\D/g, "");
+
+      if (telefonoLimpio.length < 10) {
+        showToast("Ingresa un número válido de al menos 10 dígitos.");
+        return;
+      }
+
+      localStorage.setItem("telefonoConsulta", telefonoLimpio);
+      window.location.href = "mi-pedido.html";
+    });
+  </script>
+  <script>
+    (function () {
+      const link = document.getElementById("navLoginLink");
+      if (!link) return;
+  
+      const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
+  
+      if (auth && auth.token) {
+        if (auth.rol === "ADMIN") {
+          link.href = "mensajes.html";
+          link.textContent = "👤 Panel admin";
+        } else {
+          link.href = "mi-pedido.html";
+          link.textContent = "👤 Mi cuenta";
+        }
+      } else {
+        link.href = "admin/login.html";
+      }
+    })();
+  </script>
+  <script src="branding.js"></script>
+</body>
+</html>

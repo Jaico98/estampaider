@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis Pedidos | Estampaider</title>
+  <link rel="icon" href="favicon.ico">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .pedido-checklist{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin:10px 0 14px;
+}
+
+.check-item{
+  display:inline-flex;
+  align-items:center;
+  padding:6px 12px;
+  border-radius:999px;
+  background:#eef2f7;
+  color:#475569;
+  font-size:.9rem;
+  font-weight:700;
+  border:1px solid #dbe3ee;
+}
+
+.check-item.activo{
+  background:linear-gradient(135deg, #22c55e, #16a34a);
+  color:#fff;
+  border-color:#16a34a;
+}
+.pedido-progreso{
+  margin:14px 0 18px;
+}
+
+.pedido-progreso-barra{
+  position:relative;
+  width:100%;
+  height:8px;
+  border-radius:999px;
+  background:#e7edf5;
+  overflow:hidden;
+  margin-bottom:16px;
+}
+
+.pedido-progreso-fill{
+  height:100%;
+  border-radius:999px;
+  background:linear-gradient(90deg, #22c55e, #06b6d4);
+  transition:width .35s ease;
+}
+
+.pedido-checklist{
+  display:grid;
+  grid-template-columns:repeat(4, 1fr);
+  gap:10px;
+  align-items:start;
+}
+
+.check-step{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  gap:8px;
+}
+
+.check-dot{
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1rem;
+  background:#e2e8f0;
+  color:#64748b;
+  border:2px solid #cbd5e1;
+  transition:all .25s ease;
+}
+
+.check-label{
+  font-size:.84rem;
+  font-weight:700;
+  color:#64748b;
+  line-height:1.25;
+  transition:color .25s ease;
+}
+
+.check-step.activo .check-dot{
+  background:linear-gradient(135deg, #22c55e, #16a34a);
+  color:#fff;
+  border-color:#16a34a;
+}
+
+.check-step.activo .check-label{
+  color:#0f172a;
+}
+
+.check-step.actual .check-dot{
+  transform:scale(1.08);
+  box-shadow:0 0 0 5px rgba(34,197,94,.14);
+}
+
+@media (max-width: 640px){
+  .pedido-checklist{
+    grid-template-columns:repeat(2, 1fr);
+    row-gap:14px;
+  }
+
+  .check-label{
+    font-size:.8rem;
+  }
+}
+  </style>
+</head>
+<body>
+
+  <div class="mis-pedidos-shell">
+    <header class="mis-pedidos-topbar">
+      <div class="mis-pedidos-brand">
+        <div class="mis-pedidos-brand-mark">E</div>
+        <div>
+          <small>Zona de clientes</small>
+          <strong>Estampaider</strong>
+        </div>
+      </div>
+
+      <div class="mis-pedidos-actions">
+        <button class="btn" type="button" onclick="volver()">Volver a la tienda</button>
+        <button class="btn btn-primario" type="button" onclick="cerrarSesion()">Cerrar sesión</button>
+      </div>
+    </header>
+
+    <section class="mis-pedidos-hero">
+      <article class="mis-pedidos-hero-card">
+        <h1 class="mis-pedidos-hero-title">Tus pedidos y tu chat de soporte en un solo lugar.</h1>
+        <p>
+          Consulta el estado de cada pedido, revisa el historial y conversa con el equipo
+          de Estampaider con una interfaz más clara, limpia y cómoda.
+        </p>
+
+        <div class="mis-pedidos-stats">
+          <div class="mis-pedidos-stat">
+            <span>Estado</span>
+            <strong>En tiempo real</strong>
+          </div>
+          <div class="mis-pedidos-stat">
+            <span>Chat</span>
+            <strong>Soporte directo</strong>
+          </div>
+          <div class="mis-pedidos-stat">
+            <span>Seguimiento</span>
+            <strong>Más ordenado</strong>
+          </div>
+        </div>
+      </article>
+
+      <aside class="mis-pedidos-hero-card mis-pedidos-welcome">
+        <small>Hola de nuevo</small>
+        <h2>Bienvenido<span id="nombreUsuario"></span></h2>
+        <p>
+          Aquí puedes ver el resumen de tus pedidos y escribirnos si necesitas ayuda
+          con diseños, pagos o entregas.
+        </p>
+      </aside>
+    </section>
+
+    <section class="mis-pedidos-layout">
+      <article class="mis-pedidos-panel">
+        <h2>Mis pedidos</h2>
+        <p>Filtra por número de pedido para encontrarlo más rápido.</p>
+
+        <div class="mis-pedidos-search">
+          <input type="text" id="buscarPedido" placeholder="Buscar por número de pedido">
+        </div>
+
+        <div id="pedidos" class="mis-pedidos-grid">
+          <div class="mis-pedidos-empty">Cargando tus pedidos...</div>
+        </div>
+      </article>
+
+      <aside class="mis-pedidos-chat-card" id="chat-section">
+        <div class="mis-pedidos-chat-top">
+          <h2>Soporte Estampaider</h2>
+          <p>Escríbenos sobre tu pedido, personalización o cambios.</p>
+          <div class="mis-pedidos-chat-badge">Chat activo</div>
+        </div>
+
+        <div id="chat-mensajes"></div>
+
+        <div class="mis-pedidos-chat-composer">
+          <div class="mis-pedidos-chat-row">
+            <textarea id="chat-input" placeholder="Escribe tu mensaje aquí..."></textarea>
+            <button id="btn-enviar" class="btn btn-primario" type="button" onclick="enviarMensaje()" disabled>
+              ➤
+            </button>
+          </div>
+          <div class="mis-pedidos-chat-help">
+            Pulsa Enter para enviar. Usa Shift + Enter para un salto de línea.
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <div class="mis-pedidos-footer-note">
+      © 2026 Estampaider · Seguimiento y soporte personalizados.
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+  <script src="config.js"></script>
+  <script src="branding.js"></script>
+  <script src="carrito-global.js"></script>
+  <script src="mi-pedido.js"></script>
+</body>
+</html>

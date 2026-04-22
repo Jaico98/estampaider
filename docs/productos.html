@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Catálogo de productos personalizados de Estampaider: camisetas, mugs, gorras, carcasas y más." />
+    <title>Productos | Estampaider</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon" />
+    <link rel="stylesheet" href="../styles.css" />
+
+    <style>
+      .resenas-section{
+        margin-top: 56px;
+        padding: 34px 22px;
+        border-radius: 28px;
+        background:
+          radial-gradient(circle at top right, rgba(20,166,214,.10), transparent 25%),
+          linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
+        border: 1px solid #dbe7f0;
+        box-shadow: 0 20px 50px rgba(15,23,42,.08);
+      }
+
+      .resenas-header{
+        display:grid;
+        grid-template-columns: 1.15fr .85fr;
+        gap: 22px;
+        align-items: stretch;
+        margin-bottom: 26px;
+      }
+
+      .resenas-intro,
+      .resenas-score{
+        background:#fff;
+        border:1px solid #e2e8f0;
+        border-radius:22px;
+        padding:22px;
+        box-shadow:0 10px 24px rgba(15,23,42,.05);
+      }
+
+      .resenas-kicker{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        font-size:12px;
+        font-weight:800;
+        letter-spacing:.08em;
+        text-transform:uppercase;
+        color:#0ea5e9;
+        background:#e0f2fe;
+        border:1px solid #bae6fd;
+        padding:8px 12px;
+        border-radius:999px;
+        margin-bottom:14px;
+      }
+
+      .resenas-intro h2{
+        margin:0 0 10px;
+        font-size:clamp(28px, 4vw, 40px);
+        line-height:1.08;
+        color:#0f172a;
+      }
+
+      .resenas-intro p{
+        margin:0;
+        color:#64748b;
+        line-height:1.7;
+        font-size:15px;
+        max-width:58ch;
+      }
+
+      .resenas-score{
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        gap:12px;
+      }
+
+      .score-top{
+        display:flex;
+        align-items:flex-end;
+        gap:14px;
+      }
+
+      .score-number{
+        font-size:52px;
+        line-height:1;
+        font-weight:900;
+        color:#0f172a;
+      }
+
+      .score-stars{
+        font-size:24px;
+        letter-spacing:2px;
+      }
+
+      .score-meta{
+        color:#64748b;
+        font-size:14px;
+        line-height:1.6;
+      }
+
+      .resenas-layout{
+        display:grid;
+        grid-template-columns: 1.15fr .85fr;
+        gap: 22px;
+      }
+
+      #listaResenas{
+        display:grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap:16px;
+        align-content:start;
+      }
+
+      .resena-card{
+        background:#fff;
+        border:1px solid #e2e8f0;
+        border-radius:22px;
+        padding:18px;
+        box-shadow:0 10px 24px rgba(15,23,42,.05);
+        transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+      }
+
+      .resena-card:hover{
+        transform:translateY(-3px);
+        box-shadow:0 18px 34px rgba(15,23,42,.08);
+        border-color:#bfdbfe;
+      }
+
+      .resena-top{
+        display:flex;
+        justify-content:space-between;
+        align-items:flex-start;
+        gap:10px;
+        margin-bottom:10px;
+      }
+
+      .resena-nombre{
+        margin:0;
+        font-size:16px;
+        font-weight:800;
+        color:#0f172a;
+      }
+
+      .resena-fecha{
+        font-size:12px;
+        color:#94a3b8;
+        margin-top:4px;
+      }
+
+      .resena-estrellas{
+        font-size:16px;
+        letter-spacing:1px;
+        white-space:nowrap;
+      }
+
+      .resena-comentario{
+        margin:0;
+        color:#475569;
+        line-height:1.65;
+        font-size:14px;
+      }
+
+      .sin-resenas{
+        grid-column:1 / -1;
+        background:#fff;
+        border:1px dashed #cbd5e1;
+        border-radius:22px;
+        padding:26px 18px;
+        text-align:center;
+        color:#64748b;
+      }
+
+      .form-resena-wrap{
+        background:#fff;
+        border:1px solid #e2e8f0;
+        border-radius:24px;
+        padding:22px;
+        box-shadow:0 10px 24px rgba(15,23,42,.05);
+        align-self:start;
+        position:sticky;
+        top:90px;
+      }
+
+      .form-resena-wrap h3{
+        margin:0 0 8px;
+        font-size:24px;
+        color:#0f172a;
+      }
+
+      .form-resena-wrap p{
+        margin:0 0 18px;
+        color:#64748b;
+        line-height:1.6;
+        font-size:14px;
+      }
+
+      .form-resena{
+        display:grid;
+        gap:14px;
+      }
+
+      .form-resena input,
+      .form-resena textarea{
+        width:100%;
+        border:1px solid #dbe2ea;
+        border-radius:16px;
+        padding:14px 15px;
+        font-size:15px;
+        outline:none;
+        transition:border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+        background:#fcfdff;
+      }
+
+      .form-resena input:focus,
+      .form-resena textarea:focus{
+        border-color:#93c5fd;
+        box-shadow:0 0 0 4px rgba(59,130,246,.10);
+        transform:translateY(-1px);
+      }
+
+      .form-resena textarea{
+        min-height:120px;
+        resize:vertical;
+        line-height:1.55;
+      }
+
+      .estrellas-box{
+        display:grid;
+        gap:10px;
+      }
+
+      .estrellas-label{
+        font-size:13px;
+        font-weight:800;
+        color:#334155;
+      }
+
+      .estrellas{
+        display:flex;
+        gap:8px;
+        flex-wrap:wrap;
+      }
+
+      .estrellas span{
+        width:46px;
+        height:46px;
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        border-radius:14px;
+        cursor:pointer;
+        font-size:24px;
+        background:#f8fafc;
+        border:1px solid #dbe7f0;
+        transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease;
+        user-select:none;
+      }
+
+      .estrellas span:hover,
+      .estrellas span.activa{
+        transform:translateY(-2px);
+        background:#fff7ed;
+        border-color:#fdba74;
+        box-shadow:0 10px 20px rgba(249,115,22,.12);
+      }
+
+      .resena-helper{
+        margin-top:-2px;
+        font-size:13px;
+        color:#64748b;
+      }
+
+      .btn-resena{
+        border:none;
+        border-radius:16px;
+        padding:14px 16px;
+        background:linear-gradient(135deg,#14a6d6,#0ea5e9);
+        color:#fff;
+        font-weight:800;
+        font-size:15px;
+        cursor:pointer;
+        box-shadow:0 14px 30px rgba(14,165,233,.22);
+        transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease;
+      }
+
+      .btn-resena:hover{
+        transform:translateY(-2px);
+        box-shadow:0 18px 36px rgba(14,165,233,.28);
+      }
+
+      .btn-resena:disabled{
+        opacity:.7;
+        cursor:not-allowed;
+        transform:none;
+      }
+
+      @media (max-width: 1024px){
+        .resenas-header,
+        .resenas-layout{
+          grid-template-columns:1fr;
+        }
+
+        #listaResenas{
+          grid-template-columns:1fr 1fr;
+        }
+
+        .form-resena-wrap{
+          position:static;
+          top:auto;
+        }
+      }
+
+      @media (max-width: 768px){
+        .resenas-section{
+          padding:24px 16px;
+          margin-top:42px;
+          border-radius:22px;
+        }
+
+        #listaResenas{
+          grid-template-columns:1fr;
+        }
+
+        .score-top{
+          align-items:center;
+        }
+
+        .score-number{
+          font-size:42px;
+        }
+
+        .estrellas span{
+          width:42px;
+          height:42px;
+          font-size:22px;
+        }
+      }
+      .productos-hero.branding-bg{
+  background-image:
+    linear-gradient(135deg, rgba(22, 2, 92, 0.42), rgba(15, 23, 42, 0.55)),
+    var(--branding-bg-url);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+    </style>
+</head>
+<body>
+
+<audio id="sonido-carrito" src="notification.mp3" preload="auto"></audio>
+
+<div class="header-hover-zone"></div>
+
+<header class="header" role="banner">
+    <div class="header-container">
+
+        <div class="logo">
+            <a href="index.html" aria-label="Ir al inicio">
+                <img src="images/logo-estampaider.png" alt="Estampaider">
+            </a>
+        </div>
+
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú" aria-expanded="false">☰</button>
+
+        <nav class="menu" id="menu" role="navigation" aria-label="Menú principal">
+            <a href="index.html">Inicio</a>
+            <a href="productos.html" class="active">Productos</a>
+            <a href="nosotros.html">Nosotros</a>
+            <a href="contacto.html">Contacto</a>
+            <a href="#" class="nav-login" id="navLoginLink">👤 Ingresar</a>
+            <a href="carrito.html" class="carrito-icono" aria-label="Ver carrito">
+                🛒 <span id="contador-carrito">0</span>
+            </a>
+        </nav>
+
+    </div>
+</header>
+
+<section class="productos-hero branding-bg" aria-label="Encabezado de productos">
+  <div class="productos-hero-content">
+      <span class="eyebrow">Catálogo Estampaider</span>
+      <h1>Nuestros Productos</h1>
+      <p>
+          Personalización de alta calidad para cada ocasión.<br>
+          Elige tu producto y hazlo único ✨
+      </p>
+
+      <div class="productos-hero-actions">
+          <a href="#productos-container" class="btn-principal">Ver catálogo</a>
+          <a href="https://wa.me/573153625992" target="_blank" rel="noopener noreferrer" class="btn-outline">
+              Cotizar ahora
+          </a>
+      </div>
+  </div>
+</section>
+
+<main class="productos-main" id="contenido-principal">
+
+    <div class="productos-toolbar">
+        <a href="index.html" class="btn-volver">⬅ Volver al inicio</a>
+    </div>
+
+    <div class="filtrosp" role="group" aria-label="Filtrar productos">
+        <button data-filtro="todos" class="active">Todos</button>
+        <button data-filtro="camisetas">Camisetas</button>
+        <button data-filtro="mugs">Mugs</button>
+        <button data-filtro="otros">Otros</button>
+    </div>
+
+    <div id="productos-container" aria-live="polite">
+        <p>Cargando productos...</p>
+    </div>
+
+    <section class="productos-cta fade-up" aria-label="¿No encuentras lo que buscas?">
+        <h2>¿No encuentras lo que buscas?</h2>
+
+        <p>
+            Personalizamos camisetas, mugs, gorras, carcasas y más.
+            Escríbenos y creamos tu idea tal como la imaginas.
+        </p>
+
+        <div class="cta-beneficios">
+            <span>🎨 Diseño personalizado</span>
+            <span>🚚 Envíos a todo el país</span>
+            <span>💬 Atención directa por WhatsApp</span>
+        </div>
+
+        <div class="cta-botones">
+            <a
+              href="https://wa.me/573153625992"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn-whatsapp grande"
+            >
+                💬 Cotizar por WhatsApp
+            </a>
+
+            <a href="index.html" class="btn-secundario">
+                ⬅ Volver al inicio
+            </a>
+        </div>
+    </section>
+
+    <section class="resenas-section fade-up" aria-label="Reseñas de clientes">
+      <div class="resenas-header">
+        <div class="resenas-intro">
+          <span class="resenas-kicker">✨ Experiencias reales</span>
+          <h2>Lo que dicen nuestros clientes</h2>
+          <p>
+            Cada pedido en Estampaider lleva una historia detrás.
+            Aquí puedes leer experiencias reales y también dejar tu opinión
+            para ayudar a otros a elegir con confianza.
+          </p>
+        </div>
+
+        <div class="resenas-score">
+          <div class="score-top">
+            <div class="score-number" id="resenaPromedio">5.0</div>
+            <div>
+              <div class="score-stars" id="resenaPromedioStars">⭐⭐⭐⭐⭐</div>
+              <div class="score-meta">
+                Basado en <strong id="resenaTotal">0</strong> opiniones verificadas.
+              </div>
+            </div>
+          </div>
+          <div class="score-meta">
+            Calidad, atención, personalización y cumplimiento.
+          </div>
+        </div>
+      </div>
+
+      <div class="resenas-layout">
+        <div id="listaResenas">
+          <div class="sin-resenas">
+            Aún no hay reseñas publicadas. Sé el primero en compartir tu experiencia ✨
+          </div>
+        </div>
+
+        <aside class="form-resena-wrap">
+          <h3>⭐ Deja tu reseña</h3>
+          <p>
+            Cuéntanos cómo fue tu experiencia con Estampaider.
+            Tu opinión ayuda a mejorar y también inspira a nuevos clientes.
+          </p>
+
+          <div class="form-resena">
+            <input type="text" id="nombreResena" placeholder="Tu nombre" />
+            <textarea id="comentarioResena" placeholder="Cuéntanos tu experiencia"></textarea>
+
+            <div class="estrellas-box">
+              <div class="estrellas-label">Tu puntuación</div>
+              <div class="estrellas" id="selectorEstrellas">
+                <span data-value="1">⭐</span>
+                <span data-value="2">⭐</span>
+                <span data-value="3">⭐</span>
+                <span data-value="4">⭐</span>
+                <span data-value="5" class="activa">⭐</span>
+              </div>
+              <div class="resena-helper" id="textoEstrellas">Excelente experiencia</div>
+            </div>
+
+            <button type="button" class="btn-resena" onclick="enviarResena()">Enviar reseña</button>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+</main>
+
+<div id="modalpProducto" class="modalp hidden" role="dialog" aria-modal="true" aria-labelledby="modalpNombre">
+  <div class="modalp-content">
+
+      <button class="cerrar-modalp" aria-label="Cerrar">✖</button>
+
+      <img id="modalpImagen" alt="Imagen del producto">
+
+      <h2 id="modalpNombre"></h2>
+      <p id="modalpPrecio"></p>
+      <p id="modalpDescripcion"></p>
+
+      <div id="modalpOpciones"></div>
+
+      <div class="modalp-cantidad">
+          <label for="modalpCantidad">Cantidad:</label>
+          <input type="number" id="modalpCantidad" min="1" value="1">
+      </div>
+
+      <button id="modalpCarrito" class="btn-principal">
+          Agregar al carrito 🛒
+      </button>
+
+      <a id="modalpWhatsapp" class="btn-whatsapp-producto" target="_blank" rel="noopener noreferrer">
+          💬 Cotizar por WhatsApp
+      </a>
+
+  </div>
+</div>
+
+<footer class="footer" role="contentinfo">
+    <div class="footer-container">
+
+        <div class="footer-col">
+            <img src="images/logo-estampaider.png" alt="Estampaider" class="footer-logo">
+            <p>Personalización con estilo y calidad.</p>
+        </div>
+
+        <div class="footer-col">
+            <h4>Explorar</h4>
+            <a href="index.html">Inicio</a>
+            <a href="productos.html">Productos</a>
+            <a href="nosotros.html">Nosotros</a>
+            <a href="contacto.html">Contacto</a>
+        </div>
+
+        <div class="footer-col">
+            <h4>Contacto</h4>
+            <a href="https://wa.me/573153625992" target="_blank" rel="noopener noreferrer">📲 WhatsApp</a>
+            <p>📍 Colombia</p>
+            <p>⏱ Atención personalizada</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Redes</h4>
+          <a href="#" class="disabled" aria-disabled="true" data-social="tiktok">TikTok</a>
+          <a href="#" class="disabled" aria-disabled="true" data-social="instagram">Instagram</a>
+          <a href="#" class="disabled" aria-disabled="true" data-social="facebook">Facebook</a>
+        </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        &copy; 2026 Estampaider &middot; Todos los derechos reservados
+    </div>
+</footer>
+
+<div id="toast-global" role="status" aria-live="polite"></div>
+
+<script src="config.js"></script>
+<script src="branding.js"></script>
+<script src="carrito-global.js"></script>
+<script src="productos.js?v=20260420-1"></script>
+<script src="resenas.js"></script>
+
+<script>
+    const toggle = document.getElementById("menuToggle");
+    const menu   = document.getElementById("menu");
+
+    toggle.addEventListener("click", () => {
+        const abierto = menu.classList.toggle("show");
+        toggle.setAttribute("aria-expanded", abierto);
+    });
+
+    const header    = document.querySelector(".header");
+    const hoverZone = document.querySelector(".header-hover-zone");
+
+    if (hoverZone) {
+        hoverZone.addEventListener("mouseenter", () => header.classList.add("visible"));
+    }
+    if (header) {
+        header.addEventListener("mouseleave", () => header.classList.remove("visible"));
+    }
+
+    const fadeEls = document.querySelectorAll(".fade-up");
+    const scrollObserver = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) entry.target.classList.add("show");
+        });
+    }, { threshold: 0.15 });
+
+    fadeEls.forEach(el => scrollObserver.observe(el));
+
+    const textosResena = {
+      1: "Podemos mejorar mucho",
+      2: "Tu experiencia fue regular",
+      3: "Buena experiencia",
+      4: "Muy buena experiencia",
+      5: "Excelente experiencia"
+    };
+
+    const estrellas = document.querySelectorAll("#selectorEstrellas span");
+    const textoEstrellas = document.getElementById("textoEstrellas");
+
+    estrellas.forEach((star) => {
+      star.addEventListener("click", () => {
+        const value = Number(star.dataset.value || 5);
+
+        estrellas.forEach((s) => {
+          s.classList.toggle("activa", Number(s.dataset.value) <= value);
+        });
+
+        if (textoEstrellas) {
+          textoEstrellas.textContent = textosResena[value] || "Excelente experiencia";
+        }
+      });
+    });
+</script>
+<script>
+  (function () {
+    const link = document.getElementById("navLoginLink");
+    if (!link) return;
+
+    const auth = JSON.parse(sessionStorage.getItem("auth") || "null");
+
+    if (auth && auth.token) {
+      if (auth.rol === "ADMIN") {
+        link.href = "mensajes.html";
+        link.textContent = "👤 Panel admin";
+      } else {
+        link.href = "mi-pedido.html";
+        link.textContent = "👤 Mi cuenta";
+      }
+    } else {
+      link.href = "admin/login.html";
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="¡Gracias por tu compra en Estampaider! Tu pedido fue registrado correctamente.">
+    <title>¡Gracias por tu compra! | Estampaider</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ZONA DE HOVER PARA HEADER -->
+<div class="header-hover-zone"></div>
+
+<!-- HEADER -->
+<header class="header" role="banner">
+    <div class="header-container">
+
+        <div class="logo">
+            <a href="index.html" aria-label="Ir al inicio">
+                <img src="images/logo-estampaider.png" alt="Estampaider">
+            </a>
+        </div>
+
+        <button class="menu-toggle" id="menuToggle" aria-label="Abrir menú" aria-expanded="false">☰</button>
+
+        <nav class="menu" id="menu" role="navigation" aria-label="Menú principal">
+            <a href="index.html">Inicio</a>
+            <a href="productos.html">Productos</a>
+            <a href="nosotros.html">Nosotros</a>
+            <a href="contacto.html">Contacto</a>
+            <a href="carrito.html" class="carrito-icono" aria-label="Ver carrito">
+                🛒 <span id="contador-carrito">0</span>
+            </a>
+        </nav>
+
+    </div>
+</header>
+
+<!-- CONTENIDO PRINCIPAL -->
+<main id="contenido-principal">
+    <section class="gracias-section" aria-label="Pedido confirmado">
+        <div class="gracias-card">
+            <div class="icono" aria-hidden="true">🎉</div>
+
+            <span class="eyebrow">Pedido confirmado</span>
+
+            <h1>¡Gracias por tu compra!</h1>
+            <p>Tu pedido fue registrado correctamente y ya quedó en nuestro sistema.</p>
+
+            <div class="pedido-numero">
+                🧾 Pedido #<span id="pedidoId">—</span>
+            </div>
+
+            <p class="gracias-texto">
+                En breve nos comunicaremos contigo por WhatsApp para confirmar los detalles de entrega y pago.
+            </p>
+
+            <div class="gracias-acciones">
+                <button class="btn-principal" type="button" onclick="volver()">
+                    🏠 Volver a la tienda
+                </button>
+
+                <button class="btn-secundario gracias-btn-secundario" type="button" onclick="verPedido()">
+                    📄 Ver mi pedido
+                </button>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- FOOTER -->
+<footer class="footer" role="contentinfo">
+    <div class="footer-container">
+
+        <div class="footer-col">
+            <img src="images/logo-estampaider.png" alt="Estampaider" class="footer-logo">
+            <p>Personalización con estilo y calidad.</p>
+        </div>
+
+        <div class="footer-col">
+            <h4>Explorar</h4>
+            <a href="index.html">Inicio</a>
+            <a href="productos.html">Productos</a>
+            <a href="nosotros.html">Nosotros</a>
+            <a href="contacto.html">Contacto</a>
+        </div>
+
+        <div class="footer-col">
+            <h4>Contacto</h4>
+            <a href="https://wa.me/573153625992" target="_blank" rel="noopener noreferrer">📲 WhatsApp</a>
+            <p>📍 Colombia</p>
+            <p>⏱ Atención personalizada</p>
+        </div>
+
+        <div class="footer-col">
+            <h4>Redes</h4>
+            <a href="#" class="disabled" aria-disabled="true" data-social="tiktok">TikTok</a>
+            <a href="#" class="disabled" aria-disabled="true" data-social="instagram">Instagram</a>
+            <a href="#" class="disabled" aria-disabled="true" data-social="facebook">Facebook</a>
+          </div>
+
+    </div>
+
+    <div class="footer-bottom">
+        &copy; 2026 Estampaider &middot; Todos los derechos reservados
+    </div>
+</footer>
+
+<script src="carrito-global.js"></script>
+
+<script>
+    // ── Menú hamburguesa ──
+    const toggle = document.getElementById("menuToggle");
+    const menu = document.getElementById("menu");
+
+    toggle.addEventListener("click", () => {
+        const abierto = menu.classList.toggle("show");
+        toggle.setAttribute("aria-expanded", abierto);
+    });
+
+    // ── Header deslizable (solo desktop) ──
+    const header = document.querySelector(".header");
+    const hoverZone = document.querySelector(".header-hover-zone");
+
+    if (hoverZone) {
+        hoverZone.addEventListener("mouseenter", () => header.classList.add("visible"));
+    }
+    if (header) {
+        header.addEventListener("mouseleave", () => header.classList.remove("visible"));
+    }
+
+    // ── Pedido ──
+    const pedidoId = localStorage.getItem("pedidoId");
+    const pedidoIdSpan = document.getElementById("pedidoId");
+
+    if (!pedidoId) {
+        window.location.href = "index.html";
+    } else {
+        pedidoIdSpan.textContent = pedidoId;
+    }
+
+    function volver() {
+        localStorage.removeItem("pedidoId");
+        window.location.href = "index.html";
+    }
+
+    function verPedido() {
+        if (!pedidoId) {
+            window.location.href = "index.html";
+            return;
+        }
+        window.location.href = `mi-pedido.html?id=${pedidoId}`;
+    }
+</script>
+<script src="branding.js"></script>
+</body>
+</html>

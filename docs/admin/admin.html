@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión | Estampaider</title>
+    <link rel="icon" href="../favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body class="login-page">
+
+    <main class="login-shell">
+        <section class="login-hero-panel">
+            <span class="eyebrow">Acceso Estampaider</span>
+            <h1>Ingresa a tu cuenta</h1>
+            <p>
+                Administra pedidos, consulta tu información y continúa tu experiencia
+                con el mismo estilo visual del catálogo.
+            </p>
+
+            <div class="login-mini-benefits">
+                <span>🔐 Acceso seguro</span>
+                <span>📦 Seguimiento de pedidos</span>
+                <span>💬 Soporte personalizado</span>
+            </div>
+
+            <a href="../productos.html" class="btn-outline-dark">⬅ Volver a productos</a>
+        </section>
+
+        <section class="auth-container auth-container-pro">
+            <div class="auth-brand">
+                <div class="logo">
+                    <img src="../images/logo-estampaider.png" alt="Estampaider">
+                </div>
+                <h2>Iniciar Sesión</h2>
+                <p>Ingresa con tu teléfono y contraseña</p>
+            </div>
+
+            <form id="loginForm" autocomplete="on">
+                <label for="usuario" class="sr-only">Número de teléfono</label>
+                <input 
+                    type="text" 
+                    id="usuario" 
+                    placeholder="Número de teléfono"
+                    autocomplete="username"
+                    required>
+
+                <label for="password" class="sr-only">Contraseña</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    placeholder="Contraseña"
+                    autocomplete="current-password"
+                    required>
+
+                <button type="submit" class="btn-login-estampaider">Ingresar</button>
+            </form>
+
+            <p class="error" id="error"></p>
+
+            <div class="auth-links">
+                <p>
+                    <a href="forgot-password.html">¿Olvidaste tu contraseña?</a>
+                </p>
+
+                <p>
+                    ¿No tienes cuenta?
+                    <a href="register.html">Crear cuenta</a>
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <script src="login.js"></script>
+</body>
+</html>
