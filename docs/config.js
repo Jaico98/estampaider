@@ -16,7 +16,7 @@
       return `${protocol}//${hostname}:8080`;
     }
 
-    return "https://TU-BACKEND-EN-RENDER.onrender.com";
+    return "https://estampaider.onrender.com";
   }
 
   function textoSeguro(valor) {
