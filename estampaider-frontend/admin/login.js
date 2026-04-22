@@ -32,7 +32,8 @@ if (form) {
       });
 
       if (!response.ok) {
-        errorMsg.textContent = "❌ Credenciales incorrectas";
+        const detalle = await response.text();
+        errorMsg.textContent = `❌ ${detalle || "Error de autenticación"}`;
         return;
       }
 
