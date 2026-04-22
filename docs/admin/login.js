@@ -1,30 +1,11 @@
 const form = document.getElementById("loginForm");
 const errorMsg = document.getElementById("error");
 
-function resolverApiBase() {
-  if (window.ESTAMPAIDER_CONFIG?.API_BASE) {
-    return window.ESTAMPAIDER_CONFIG.API_BASE.replace(/\/$/, "");
-  }
-
-  const configurada = window.API_BASE_URL || window.__API_BASE__;
-  if (configurada) {
-    return String(configurada).replace(/\/$/, "");
-  }
-
-  const { protocol, hostname, port } = window.location;
-
-  if (protocol === "file:") {
-    return "http://localhost:8080";
-  }
-
-  const esLocal = hostname === "localhost" || hostname === "127.0.0.1";
-  if (esLocal && port && port !== "8080") {
-    return `${protocol}//${hostname}:8080`;
-  }
-
-  return "https://estampaider.onrender.com";
-}
-const API_BASE = resolverApiBase();
+const API_BASE =
+  window.ESTAMPAIDER_CONFIG?.API_BASE ||
+  (typeof resolverApiBase === "function"
+    ? resolverApiBase()
+    : "https://estampaider.onrender.com");
 
 if (form) {
   form.addEventListener("submit", async (e) => {
@@ -61,23 +42,23 @@ if (form) {
         ok: data.ok,
         rol: data.rol,
         nombre: data.nombre,
-        correo: data.correo,
         telefono: data.telefono,
         token: data.token
       });
-      
+
       sessionStorage.setItem("auth", authGuardado);
       localStorage.setItem("auth", authGuardado);
 
       const redirect =
-      sessionStorage.getItem("redirectAfterLogin") ||
-      localStorage.getItem("redirectAfterLogin");
+        sessionStorage.getItem("redirectAfterLogin") ||
+        localStorage.getItem("redirectAfterLogin");
+
       if (redirect) {
         sessionStorage.removeItem("redirectAfterLogin");
         localStorage.removeItem("redirectAfterLogin");
         window.location.href = redirect;
-  return;
-}
+        return;
+      }
 
       if (data.rol === "ADMIN") {
         window.location.href = "../pedidos.html";

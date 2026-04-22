@@ -13,16 +13,18 @@ public class CorsConfig {
 public CorsConfigurationSource corsConfigurationSource() {
     CorsConfiguration config = new CorsConfiguration();
 
-    config.setAllowedOrigins(List.of(
+    config.setAllowedOriginPatterns(List.of(
         "http://localhost:5501",
-        "http://127.0.0.1:5501"
+        "http://127.0.0.1:5501",
+        "http://localhost:*",
+        "http://127.0.0.1:*",
+        "https://jaico98.github.io",
+        "https://estampaider.com",
+        "https://www.estampaider.com"
     ));
-
-    config.setAllowedMethods(List.of(
-        "GET", "POST", "PUT", "DELETE", "OPTIONS"
-    ));
-
+    config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
     config.setAllowedHeaders(List.of("*"));
+    config.setExposedHeaders(List.of("Authorization"));
     config.setAllowCredentials(true);
 
     UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
