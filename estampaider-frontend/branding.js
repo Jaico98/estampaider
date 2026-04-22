@@ -17,12 +17,15 @@
 
     return `${protocol}//${host}`;
   }
+  function getAPI() {
+    return window.ESTAMPAIDER_CONFIG?.API_BASE || "http://localhost:8080";
+  }
 
   async function cargarBrandingActual() {
     const API_BASE = resolverApiBaseBranding();
 
     try {
-      const res = await fetch(`${API_BASE}/api/branding/current`, {
+      const res = await fetch(`${getAPI()}/api/branding/current`, {
         method: "GET",
         cache: "no-store"
       });

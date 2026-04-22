@@ -35,7 +35,9 @@ public class SecurityConfig {
                     "http://localhost:*",
                     "http://127.0.0.1:*",
                     "https://estampaider.com",
-                    "https://www.estampaider.com"
+                    "https://www.estampaider.com",
+                    "https://jaico98.github.io",
+                    "https://jaico98.github.io/estampaider"
                 ));
                 config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                 config.setAllowedHeaders(List.of("*"));
