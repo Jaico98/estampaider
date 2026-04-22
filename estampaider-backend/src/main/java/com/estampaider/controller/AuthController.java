@@ -77,19 +77,32 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        Usuario usuario = usuarioRepository.findByTelefono(request.getUsuario()).orElse(null);
+public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    String identificador = request.getUsuario() != null ? request.getUsuario().trim() : "";
+    String password = request.getPassword() != null ? request.getPassword().trim() : "";
 
-        if (usuario == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no encontrado");
-        }
+    if (identificador.isBlank() || password.isBlank()) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Usuario y contraseña son obligatorios");
+    }
 
-        if (!passwordEncoder.matches(request.getPassword(), usuario.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
-        }
+    Usuario usuario = usuarioRepository.findByUsuario(identificador)
+            .orElseGet(() -> usuarioRepository.findByTelefono(identificador).orElse(null));
 
-        String token = jwtService.generateToken(usuario.getTelefono(), usuario.getRol().name());
-        LoginResponse response = new LoginResponse(
+    if (usuario == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no encontrado");
+    }
+
+    if (!passwordEncoder.matches(password, usuario.getPassword())) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
+    }
+
+    String subject = (usuario.getUsuario() != null && !usuario.getUsuario().isBlank())
+            ? usuario.getUsuario()
+            : usuario.getTelefono();
+
+    String token = jwtService.generateToken(subject, usuario.getRol().name());
+
+    LoginResponse response = new LoginResponse(
             true,
             usuario.getRol().name(),
             usuario.getNombre(),
@@ -98,8 +111,8 @@ public class AuthController {
             token
     );
 
-        return ResponseEntity.ok(response);
-    }
+    return ResponseEntity.ok(response);
+}
 
     @PostMapping("/send-code")
     public ResponseEntity<?> sendCode(@RequestBody Map<String, String> request) {

@@ -15,6 +15,9 @@ public class Usuario {
     @Column(nullable = false)
     private String nombre;
 
+    @Column(unique = true, length = 60)
+    private String usuario;
+
     @Column(nullable = false, unique = true, length = 160)
     private String correo;
 
@@ -52,6 +55,14 @@ public class Usuario {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public String getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(String usuario) {
+        this.usuario = usuario;
     }
 
     public String getCorreo() {

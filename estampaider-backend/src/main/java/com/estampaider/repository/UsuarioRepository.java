@@ -8,18 +8,13 @@ import com.estampaider.model.Usuario;
 
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
-    /**
-     * Buscar usuario por teléfono
-     * Usado para:
-     * - Login de clientes
-     * - Asociar pedidos a usuarios existentes
-     */
     Optional<Usuario> findByTelefono(String telefono);
+
+    Optional<Usuario> findByUsuario(String usuario);
 
     boolean existsByTelefono(String telefono);
 
     Optional<Usuario> findByResetToken(String token);
 
     Optional<Usuario> findByCorreo(String correo);
-    
 }
