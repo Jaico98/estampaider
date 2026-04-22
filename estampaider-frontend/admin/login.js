@@ -58,6 +58,7 @@ if (form) {
         ok: data.ok,
         rol: data.rol,
         nombre: data.nombre,
+        correo: data.correo,
         telefono: data.telefono,
         token: data.token
       });

@@ -185,8 +185,10 @@ public class ChatController {
             registro.setNombre(chatMensaje.getNombre());
         }
 
-        if (registro.getCorreo() == null) {
-            registro.setCorreo("");
+        if (chatMensaje.getCorreo() != null && !chatMensaje.getCorreo().isBlank()) {
+            registro.setCorreo(chatMensaje.getCorreo().trim());
+        } else if (registro.getCorreo() == null || registro.getCorreo().isBlank()) {
+            registro.setCorreo("chat@estampaider.local");
         }
 
         registro.setWhatsapp(telefono);

@@ -6,6 +6,7 @@ form.addEventListener("submit", async (e) => {
 
     const nombre = document.getElementById("nombre").value.trim();
     const telefono = document.getElementById("telefono").value.trim();
+    const correo = document.getElementById("correo").value.trim();
     const password = document.getElementById("password").value.trim();
 
     errorMsg.textContent = "";
@@ -18,6 +19,7 @@ form.addEventListener("submit", async (e) => {
             },
             body: JSON.stringify({
                 nombre,
+                correo,
                 telefono,
                 password
             })
@@ -32,8 +34,11 @@ form.addEventListener("submit", async (e) => {
         const data = await response.json();
 
         sessionStorage.setItem("auth", JSON.stringify({
+            ok: data.ok,
             rol: data.rol,
             nombre: data.nombre,
+            correo: data.correo,
+            telefono: data.telefono,
             token: data.token
         }));
 

@@ -3,6 +3,7 @@ package com.estampaider.model;
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.Instant;
+
 @Entity
 public class ChatMensaje {
 
@@ -10,28 +11,24 @@ public class ChatMensaje {
     private String id;
 
     private String nombre;
+    private String correo;
 
     @Column(columnDefinition = "TEXT")
     private String mensaje;
 
     private String telefono;
-
-    private String tipo; // CLIENTE o ADMIN
+    private String tipo;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING)
     private Instant fecha;
 
     @PrePersist
     public void prePersist() {
-    this.fecha = Instant.now();
-
-    
-}
+        this.fecha = Instant.now();
+    }
 
     private boolean leido = false;
-
     private boolean recibido;
-    // ===== GETTERS =====
 
     public String getId() {
         return id;
@@ -39,6 +36,10 @@ public class ChatMensaje {
 
     public String getNombre() {
         return nombre;
+    }
+
+    public String getCorreo() {
+        return correo;
     }
 
     public String getMensaje() {
@@ -60,10 +61,10 @@ public class ChatMensaje {
     public boolean isLeido() {
         return leido;
     }
-    public boolean isRecibido() {
-        return recibido; }
 
-    // ===== SETTERS =====
+    public boolean isRecibido() {
+        return recibido;
+    }
 
     public void setId(String id) {
         this.id = id;
@@ -71,6 +72,10 @@ public class ChatMensaje {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo;
     }
 
     public void setMensaje(String mensaje) {
@@ -92,6 +97,8 @@ public class ChatMensaje {
     public void setLeido(boolean leido) {
         this.leido = leido;
     }
-    public void setRecibido(boolean recibido) { 
-        this.recibido = recibido; }
+
+    public void setRecibido(boolean recibido) {
+        this.recibido = recibido;
+    }
 }

@@ -2,7 +2,6 @@ package com.estampaider.model;
 
 import java.time.LocalDateTime;
 import java.util.List;
-
 import jakarta.persistence.*;
 
 @Entity
@@ -16,8 +15,11 @@ public class Usuario {
     @Column(nullable = false)
     private String nombre;
 
+    @Column(nullable = false, unique = true, length = 160)
+    private String correo;
+
     @Column(nullable = false, unique = true, length = 20)
-    private String telefono;    
+    private String telefono;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -33,20 +35,12 @@ public class Usuario {
 
     @Column(name = "reset_token")
     private String resetToken;
-    
-    /**
-     * Relación: Un usuario puede tener muchos pedidos
-     */
-    @OneToMany(
-        mappedBy = "usuario",
-        fetch = FetchType.LAZY
-    )
+
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.LAZY)
     private List<Pedido> pedidos;
-    
+
     public Usuario() {
     }
-
-    /* ===================== GETTERS Y SETTERS ===================== */
 
     public Long getId() {
         return id;
@@ -58,6 +52,14 @@ public class Usuario {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public String getCorreo() {
+        return correo;
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo;
     }
 
     public String getTelefono() {
@@ -75,40 +77,43 @@ public class Usuario {
     public void setRol(Rol rol) {
         this.rol = rol;
     }
-   
+
     public void setPedidos(List<Pedido> pedidos) {
         this.pedidos = pedidos;
-    }  
+    }
 
     public List<Pedido> getPedidos() {
         return pedidos;
-    }   
+    }
+
     public String getPassword() {
         return password;
     }
+
     public void setPassword(String password) {
         this.password = password;
-    }    
+    }
 
     public String getRecoveryCode() {
         return recoveryCode;
     }
-    
+
     public void setRecoveryCode(String recoveryCode) {
         this.recoveryCode = recoveryCode;
     }
-    
+
     public LocalDateTime getRecoveryCodeExpiration() {
         return recoveryCodeExpiration;
     }
-    
+
     public void setRecoveryCodeExpiration(LocalDateTime recoveryCodeExpiration) {
         this.recoveryCodeExpiration = recoveryCodeExpiration;
     }
+
     public String getResetToken() {
         return resetToken;
     }
-    
+
     public void setResetToken(String resetToken) {
         this.resetToken = resetToken;
     }

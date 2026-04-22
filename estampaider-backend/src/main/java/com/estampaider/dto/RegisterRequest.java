@@ -1,8 +1,8 @@
 package com.estampaider.dto;
 
 public class RegisterRequest {
-
     private String nombre;
+    private String correo;
     private String telefono;
     private String password;
 
@@ -15,6 +15,14 @@ public class RegisterRequest {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public String getCorreo() {
+        return correo;
+    }
+
+    public void setCorreo(String correo) {
+        this.correo = correo;
     }
 
     public String getTelefono() {

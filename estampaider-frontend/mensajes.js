@@ -689,7 +689,218 @@ document.addEventListener("DOMContentLoaded", () => {
 
     renderizarLista();
   }
+  async function obtenerDatosExportacionCompleta() {
+    const conversaciones = mensajesFiltrados();
+    const filas = [];
 
+    for (const conversacion of conversaciones) {
+      const telefono = normalizarTelefono(
+        conversacion?.telefono || conversacion?.whatsapp || ""
+      );
+
+      if (!telefono) continue;
+
+      try {
+        const res = await fetch(
+          `${API_BASE}/api/chat/${encodeURIComponent(telefono)}`,
+          { headers: getHeaders() }
+        );
+
+        if (!res.ok) {
+          throw new Error(`No se pudo cargar historial (${res.status})`);
+        }
+
+        const historial = await res.json();
+
+        if (!Array.isArray(historial) || !historial.length) {
+          filas.push({
+            Conversacion: textoSeguro(conversacion.nombre || "Cliente"),
+            Telefono: textoSeguro(telefono),
+            Correo: textoSeguro(conversacion.correo || ""),
+            Tipo: "",
+            Mensaje: textoSeguro(conversacion.mensaje || ""),
+            Fecha: formatearFecha(conversacion.fecha),
+            Estado: conversacion.leido ? "Leído" : "No leído",
+          });
+          continue;
+        }
+
+        historial.forEach((msg) => {
+          filas.push({
+            Conversacion: textoSeguro(conversacion.nombre || msg.nombre || "Cliente"),
+            Telefono: textoSeguro(telefono),
+            Correo: textoSeguro(msg.correo || conversacion.correo || ""),
+            Tipo: textoSeguro(msg.tipo || ""),
+            Mensaje: textoSeguro(msg.mensaje || ""),
+            Fecha: formatearFecha(msg.fecha),
+            Estado: conversacion.leido ? "Leído" : "No leído",
+          });
+        });
+      } catch (error) {
+        console.warn("No se pudo cargar historial para exportar:", telefono, error);
+
+        filas.push({
+          Conversacion: textoSeguro(conversacion.nombre || "Cliente"),
+          Telefono: textoSeguro(telefono),
+          Correo: textoSeguro(conversacion.correo || ""),
+          Tipo: "",
+          Mensaje: textoSeguro(conversacion.mensaje || ""),
+          Fecha: formatearFecha(conversacion.fecha),
+          Estado: conversacion.leido ? "Leído" : "No leído",
+        });
+      }
+    }
+
+    return filas;
+  }
+
+  async function exportarExcel() {
+    try {
+      const datos = await obtenerDatosExportacionCompleta();
+
+      if (!datos.length) {
+        mostrarToast("No hay conversaciones para exportar.");
+        return;
+      }
+
+      const fecha = new Date();
+      const stamp = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}-${String(fecha.getDate()).padStart(2, "0")}_${String(fecha.getHours()).padStart(2, "0")}-${String(fecha.getMinutes()).padStart(2, "0")}`;
+
+      const resumen = [
+        { Campo: "Empresa", Valor: "Estampaider" },
+        { Campo: "Reporte", Valor: "Mensajes de contacto" },
+        { Campo: "Generado", Valor: fecha.toLocaleString("es-CO") },
+        { Campo: "Filtro", Valor: filtroActual },
+        { Campo: "Total registros", Valor: datos.length },
+      ];
+
+      const hojaResumen = XLSX.utils.json_to_sheet(resumen);
+      const hojaHistorial = XLSX.utils.json_to_sheet(datos);
+
+      hojaResumen["!cols"] = [{ wch: 20 }, { wch: 45 }];
+      hojaHistorial["!cols"] = [
+        { wch: 28 },
+        { wch: 18 },
+        { wch: 32 },
+        { wch: 14 },
+        { wch: 70 },
+        { wch: 24 },
+        { wch: 14 },
+      ];
+
+      const libro = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(libro, hojaResumen, "Resumen");
+      XLSX.utils.book_append_sheet(libro, hojaHistorial, "Historial");
+
+      XLSX.writeFile(libro, `mensajes_estampaider_${stamp}.xlsx`);
+      mostrarToast("Excel exportado correctamente.");
+    } catch (error) {
+      console.error("Error exportando Excel:", error);
+      mostrarToast("No se pudo exportar el Excel.");
+    }
+  }
+
+  async function exportarPDF() {
+    try {
+      const datos = await obtenerDatosExportacionCompleta();
+
+      if (!datos.length) {
+        mostrarToast("No hay conversaciones para exportar.");
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF("l", "mm", "a4");
+      const fecha = new Date();
+      const fechaTexto = fecha.toLocaleString("es-CO");
+      const totalPaginasPlaceholder = "{total_pages_count_string}";
+
+      doc.setFillColor(37, 99, 235);
+      doc.rect(0, 0, 297, 22, "F");
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(18);
+      doc.text("Estampaider - Reporte de mensajes", 14, 14);
+
+      doc.setTextColor(40, 40, 40);
+      doc.setFontSize(10);
+      doc.text(`Generado: ${fechaTexto}`, 14, 30);
+      doc.text(`Filtro aplicado: ${filtroActual}`, 14, 36);
+      doc.text(`Total registros exportados: ${datos.length}`, 14, 42);
+
+      doc.autoTable({
+        startY: 48,
+        head: [[
+          "Conversación",
+          "Teléfono",
+          "Correo",
+          "Tipo",
+          "Mensaje",
+          "Fecha",
+          "Estado"
+        ]],
+        body: datos.map((fila) => [
+          fila.Conversacion,
+          fila.Telefono,
+          fila.Correo,
+          fila.Tipo,
+          fila.Mensaje,
+          fila.Fecha,
+          fila.Estado,
+        ]),
+        theme: "striped",
+        styles: {
+          fontSize: 8,
+          cellPadding: 3,
+          overflow: "linebreak",
+          valign: "middle",
+          textColor: [33, 37, 41],
+        },
+        headStyles: {
+          fillColor: [37, 99, 235],
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+          halign: "center",
+        },
+        alternateRowStyles: {
+          fillColor: [245, 247, 250],
+        },
+        columnStyles: {
+          0: { cellWidth: 34 },
+          1: { cellWidth: 24 },
+          2: { cellWidth: 42 },
+          3: { cellWidth: 18, halign: "center" },
+          4: { cellWidth: 95 },
+          5: { cellWidth: 32 },
+          6: { cellWidth: 20, halign: "center" },
+        },
+        margin: { top: 48, left: 10, right: 10, bottom: 18 },
+        didDrawPage: function () {
+          const pageSize = doc.internal.pageSize;
+          const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+
+          doc.setFontSize(9);
+          doc.setTextColor(120, 120, 120);
+          doc.text(
+            `Página ${doc.internal.getNumberOfPages()} de ${totalPaginasPlaceholder}`,
+            pageSize.width - 55,
+            pageHeight - 8
+          );
+        },
+      });
+
+      if (typeof doc.putTotalPages === "function") {
+        doc.putTotalPages(totalPaginasPlaceholder);
+      }
+
+      const stamp = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}-${String(fecha.getDate()).padStart(2, "0")}_${String(fecha.getHours()).padStart(2, "0")}-${String(fecha.getMinutes()).padStart(2, "0")}`;
+      doc.save(`mensajes_estampaider_${stamp}.pdf`);
+      mostrarToast("PDF exportado correctamente.");
+    } catch (error) {
+      console.error("Error exportando PDF:", error);
+      mostrarToast("No se pudo exportar el PDF.");
+    }
+  }
   buscador?.addEventListener("input", (e) => {
     textoBusqueda = e.target.value || "";
     paginaActual = 1;
@@ -707,13 +918,8 @@ document.addEventListener("DOMContentLoaded", () => {
   btnCerrarChat?.addEventListener("click", cerrarChat);
   btnEliminarChat?.addEventListener("click", eliminarChatActivo);
 
-  btnExcel?.addEventListener("click", () => {
-    mostrarToast("La exportación Excel sigue igual. No la toqué en esta corrección.");
-  });
-
-  btnPDF?.addEventListener("click", () => {
-    mostrarToast("La exportación PDF sigue igual. No la toqué en esta corrección.");
-  });
+  btnExcel?.addEventListener("click", exportarExcel);
+  btnPDF?.addEventListener("click", exportarPDF);
 
   chatInput?.addEventListener("keydown", (event) => {
     if (event.key === "Enter" && !event.shiftKey) {

@@ -47,9 +47,17 @@ public class AuthController {
         if (usuarioRepository.existsByTelefono(request.getTelefono())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El teléfono ya está registrado");
         }
+        if (request.getCorreo() == null || request.getCorreo().isBlank()) {
+            return ResponseEntity.badRequest().body("El correo es obligatorio");
+        }
+        
+        if (usuarioRepository.findByCorreo(request.getCorreo()).isPresent()) {
+            return ResponseEntity.badRequest().body("Ya existe un usuario con ese correo");
+        }
 
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setNombre(request.getNombre());
+        nuevoUsuario.setCorreo(request.getCorreo());
         nuevoUsuario.setTelefono(request.getTelefono());
         nuevoUsuario.setRol(Rol.CLIENTE);
         nuevoUsuario.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -57,11 +65,13 @@ public class AuthController {
 
         String token = jwtService.generateToken(nuevoUsuario.getTelefono(), nuevoUsuario.getRol().name());
         LoginResponse response = new LoginResponse(
-                true,
-                nuevoUsuario.getRol().name(),
-                nuevoUsuario.getNombre(),
-                nuevoUsuario.getTelefono(),
-                token);
+            true,
+            nuevoUsuario.getRol().name(),
+            nuevoUsuario.getNombre(),
+            nuevoUsuario.getCorreo(),
+            nuevoUsuario.getTelefono(),
+            token
+    );
 
         return ResponseEntity.ok(response);
     }
@@ -80,11 +90,13 @@ public class AuthController {
 
         String token = jwtService.generateToken(usuario.getTelefono(), usuario.getRol().name());
         LoginResponse response = new LoginResponse(
-                true,
-                usuario.getRol().name(),
-                usuario.getNombre(),
-                usuario.getTelefono(),
-                token);
+            true,
+            usuario.getRol().name(),
+            usuario.getNombre(),
+            usuario.getCorreo(),
+            usuario.getTelefono(),
+            token
+    );
 
         return ResponseEntity.ok(response);
     }

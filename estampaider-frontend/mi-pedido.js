@@ -323,6 +323,7 @@ function enviarMensaje() {
   const mensaje = {
     id: generarIdTemporal(),
     nombre: authData?.nombre || "Cliente",
+    correo: authData?.correo || "",
     mensaje: texto,
     telefono: telefonoCliente,
     tipo: "CLIENTE",
