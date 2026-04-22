@@ -14,7 +14,7 @@ import java.util.Arrays;
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Value("${app.cors.allowed-origins:http://localhost:5501,http://127.0.0.1:5501,http://localhost:3000,http://127.0.0.1:3000,https://jaico98.github.io,https://estampaider.com,https://www.estampaider.com}")
-    private String allowedOrigins;
+private String allowedOrigins;
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry config) {
