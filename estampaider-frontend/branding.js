@@ -21,6 +21,34 @@
     return window.ESTAMPAIDER_CONFIG?.API_BASE || "http://localhost:8080";
   }
 
+  async function fetchConReintento(url, options = {}, intentos = 4, esperaMs = 2500) {
+    let ultimoError;
+  
+    for (let i = 0; i < intentos; i++) {
+      try {
+        const res = await fetch(url, options);
+  
+        if (res.ok) {
+          return res;
+        }
+  
+        if (res.status === 503 || res.status === 502 || res.status === 504) {
+          ultimoError = new Error(`Servicio temporalmente no disponible (${res.status})`);
+        } else {
+          return res;
+        }
+      } catch (error) {
+        ultimoError = error;
+      }
+  
+      if (i < intentos - 1) {
+        await new Promise(resolve => setTimeout(resolve, esperaMs));
+      }
+    }
+  
+    throw ultimoError || new Error("No se pudo conectar con el servidor");
+  }
+
   async function cargarBrandingActual() {
     const API_BASE = resolverApiBaseBranding();
 
@@ -43,6 +71,9 @@
       aplicarVideosInicio(API_BASE, data);
     } catch (error) {
       console.warn("No se pudo cargar branding dinámico:", error);
+      setTimeout(() => {
+        cargarBrandingActual();
+      }, 4000);
     }
   }
 
