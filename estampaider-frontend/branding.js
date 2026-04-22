@@ -63,7 +63,12 @@
       }
 
       const data = await res.json();
-      
+
+      if (brandingVacio(data)) {
+        console.info("Branding dinámico vacío; se conservan los recursos locales.");
+        return;
+      }
+
       aplicarLogoGlobal(API_BASE, data.logoUrl || "");
       aplicarFaviconGlobal(API_BASE, data.faviconUrl || "");
       aplicarRedesSociales(data.socialLinks || {});
@@ -124,6 +129,32 @@
     aplicarLinkSocial('[data-social="instagram"]', links.instagram || "");
     aplicarLinkSocial('[data-social="facebook"]', links.facebook || "");
   }
+  function brandingVacio(data) {
+    if (!data) return true;
+
+    const sinLogo = !textoSeguro(data.logoUrl).trim();
+    const sinFavicon = !textoSeguro(data.faviconUrl).trim();
+    const sinFondo = !textoSeguro(data.heroBackgroundUrl).trim();
+    const sinHeroVideo = !textoSeguro(data.heroMainVideoUrl).trim();
+    const sinHighlight = !textoSeguro(data.highlightVideoUrl).trim();
+    const sinGaleria = !Array.isArray(data.galleryVideos) || data.galleryVideos.length === 0;
+
+    const redes = data.socialLinks || {};
+    const sinRedes =
+      !textoSeguro(redes.tiktok).trim() &&
+      !textoSeguro(redes.instagram).trim() &&
+      !textoSeguro(redes.facebook).trim();
+
+    return (
+      sinLogo &&
+      sinFavicon &&
+      sinFondo &&
+      sinHeroVideo &&
+      sinHighlight &&
+      sinGaleria &&
+      sinRedes
+    );
+  }
 
   function obtenerIndiceGaleria(slot) {
     const match = String(slot || "").match(/^gallery(\d+)$/);
@@ -183,6 +214,10 @@
   function aplicarGaleriaVideos(API_BASE, videos) {
     const contenedor = document.querySelector(".gallery-grid");
     if (!contenedor) return;
+
+    if (!Array.isArray(videos) || videos.length === 0) {
+      return;
+    }
 
     contenedor.innerHTML = "";
 
