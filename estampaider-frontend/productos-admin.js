@@ -504,6 +504,48 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  const campoVideoArchivo = document.getElementById("videoArchivo");
+const btnSubirVideo = document.getElementById("btnSubirVideo");
+
+async function subirVideo() {
+  const archivo = campoVideoArchivo?.files?.[0];
+
+  if (!archivo) {
+    mostrarToast("Selecciona un video", "error");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", archivo);
+
+  btnSubirVideo.disabled = true;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/uploads/video`, {
+      method: "POST",
+      headers: getAuthOnlyHeaders(),
+      body: formData
+    });
+
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error(txt || "Error subiendo video");
+    }
+
+    const data = await res.json();
+
+    mostrarToast("Video subido correctamente", "ok");
+    console.log("Video URL:", data.url);
+
+  } catch (e) {
+    console.error(e);
+    mostrarToast("Error subiendo video", "error");
+  } finally {
+    btnSubirVideo.disabled = false;
+  }
+}
+
+btnSubirVideo?.addEventListener("click", subirVideo);
   async function eliminarProducto(id, nombre) {
     const confirmado = confirm(`¿Eliminar el producto "${nombre}"?`);
     if (!confirmado) return;
