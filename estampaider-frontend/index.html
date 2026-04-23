@@ -7,6 +7,7 @@
   <title>Estampaider | Personalización y estampados</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://estampaider.onrender.com" crossorigin>
   <style>
     :root{
       --ink:#0f172a;
@@ -642,7 +643,7 @@
       <div class="hero-visual">
         <div class="hero-panel">
           <div class="hero-main-video">
-            <video id="heroVideo" autoplay muted loop playsinline title="Trabajo destacado Estampaider"></video>
+            <video id="heroVideo" autoplay muted loop playsinline preload="metadata" title="Trabajo destacado Estampaider"></video>
           </div>
 
           <div class="floating-note note-a">
@@ -727,7 +728,7 @@
 
       <div class="products-strip">
         <div class="products-highlight">
-          <video id="highlightVideo" autoplay muted loop playsinline title="Muestra de productos"></video>
+          <video id="highlightVideo" autoplay muted loop playsinline preload="Muestra de productos"></video>
           <div class="products-overlay">
             <span class="eyebrow" style="background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.18)">Top visual</span>
             <h3 style="margin:0;font-size:2rem">Mugs, camisetas, carcasas, gorras y más</h3>
@@ -843,8 +844,6 @@
 
   <div id="toast-global" role="status" aria-live="polite"></div>
 
-  <script src="carrito-global.js"></script>
-
   <script>
     const toggle = document.getElementById("menuToggle");
     const menu = document.getElementById("menu");
@@ -947,5 +946,6 @@ window.__estampaiderRebindVideoModal = bindGalleryVideoClicks;
   </script>
   <script src="config.js"></script>
   <script src="branding.js"></script>
+  <script src="carrito-global.js"></script>
 </body>
 </html>

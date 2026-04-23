@@ -118,37 +118,98 @@ document.addEventListener("DOMContentLoaded", () => {
     previewImagen.src = "images/hero-bg.jpg";
   });
 
+  async function optimizarImagenAntesDeSubir(file, maxWidth = 1200, quality = 0.78) {
+    return new Promise((resolve, reject) => {
+      if (!file || !file.type.startsWith("image/")) {
+        reject(new Error("Archivo no válido"));
+        return;
+      }
+  
+      const reader = new FileReader();
+  
+      reader.onload = () => {
+        const img = new Image();
+  
+        img.onload = () => {
+          let { width, height } = img;
+  
+          if (width > maxWidth) {
+            const ratio = maxWidth / width;
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+  
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+  
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, width, height);
+  
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error("No se pudo optimizar la imagen"));
+                return;
+              }
+  
+              const archivoOptimizado = new File(
+                [blob],
+                file.name.replace(/\.\w+$/, ".jpg"),
+                { type: "image/jpeg" }
+              );
+  
+              resolve(archivoOptimizado);
+            },
+            "image/jpeg",
+            quality
+          );
+        };
+  
+        img.onerror = () => reject(new Error("No se pudo leer la imagen"));
+        img.src = reader.result;
+      };
+  
+      reader.onerror = () => reject(new Error("No se pudo cargar el archivo"));
+      reader.readAsDataURL(file);
+    });
+  }
+  
   async function subirImagen() {
-    const archivo = campoImagenArchivo?.files?.[0];
-
-    if (!archivo) {
+    const archivoOriginal = campoImagenArchivo?.files?.[0];
+  
+    if (!archivoOriginal) {
       mostrarEstado("Selecciona una imagen antes de subir.", "error");
       mostrarToast("Selecciona una imagen", "error");
       return;
     }
-
-    const formData = new FormData();
-    formData.append("file", archivo);
-
+  
     btnSubirImagen.disabled = true;
-    mostrarEstado("Subiendo imagen...", "info");
-
+    mostrarEstado("Optimizando imagen...", "info");
+  
     try {
+      const archivo = await optimizarImagenAntesDeSubir(archivoOriginal);
+  
+      const formData = new FormData();
+      formData.append("file", archivo);
+  
+      mostrarEstado("Subiendo imagen...", "info");
+  
       const res = await fetch(`${API_BASE}/api/uploads/producto`, {
         method: "POST",
         headers: getAuthOnlyHeaders(),
         body: formData
       });
-
+  
       if (!res.ok) {
         const texto = await res.text().catch(() => "");
         throw new Error(texto || "No se pudo subir la imagen");
       }
-
+  
       const data = await res.json();
       campoImagenUrl.value = data.url || "";
       actualizarPreview();
-
+  
       mostrarEstado("Imagen subida correctamente.", "ok");
       mostrarToast("Imagen subida correctamente", "ok");
     } catch (error) {
