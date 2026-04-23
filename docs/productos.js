@@ -4,32 +4,10 @@
 
 const API_BASE =
   window.ESTAMPAIDER_CONFIG?.API_BASE ||
-  (typeof window.resolverApiBase === "function"
-    ? window.resolverApiBase()
-    : "https://estampaider.onrender.com");
+  "https://estampaider.onrender.com";
 
 const API_URL = `${API_BASE}/api/productos`;
 const PRODUCTOS_CACHE_KEY = "estampaider_productos_cache_v1";
-
-function resolverApiBase() {
-  const configurada = window.API_BASE_URL || window.__API_BASE__;
-  if (configurada) {
-    return String(configurada).replace(/\/$/, "");
-  }
-
-  const { protocol, hostname, port, host } = window.location;
-
-  if (protocol === "file:") {
-    return "http://localhost:8080";
-  }
-
-  const esLocal = hostname === "localhost" || hostname === "127.0.0.1";
-  if (esLocal && port && port !== "8080") {
-    return `${protocol}//${hostname}:8080`;
-  }
-
-  return `${protocol}//${host}`;
-}
 
 function resolverSrcImagen(imagenUrl) {
   const valor = String(imagenUrl || "").trim();
@@ -60,6 +38,15 @@ function guardarProductosCache(productos) {
     sessionStorage.setItem(PRODUCTOS_CACHE_KEY, JSON.stringify(productos));
   } catch {
     // ignorar
+  }
+}
+
+function leerProductosCache() {
+  try {
+    const raw = sessionStorage.getItem(PRODUCTOS_CACHE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
   }
 }
 
@@ -200,26 +187,19 @@ function renderizarProductos(productos) {
     botonWhatsapp.className = "btn-whatsapp-producto";
     botonWhatsapp.textContent = "💬 Cotizar por WhatsApp";
 
-    if (badge) {
-      card.appendChild(badge);
-    }
+    if (badge) card.appendChild(badge);
 
-card.appendChild(imagen);
-card.appendChild(nombre);
-card.appendChild(precio);
+    card.appendChild(imagen);
+    card.appendChild(nombre);
+    card.appendChild(precio);
 
-if (selectTalla) {
-  card.appendChild(selectTalla);
-}
+    if (selectTalla) card.appendChild(selectTalla);
+    if (selectColor) card.appendChild(selectColor);
 
-if (selectColor) {
-  card.appendChild(selectColor);
-}
-
-card.appendChild(cantidad);
-card.appendChild(botonCarrito);
-card.appendChild(botonVer);
-card.appendChild(botonWhatsapp);
+    card.appendChild(cantidad);
+    card.appendChild(botonCarrito);
+    card.appendChild(botonVer);
+    card.appendChild(botonWhatsapp);
 
     fragment.appendChild(card);
   });
@@ -232,12 +212,16 @@ async function cargarProductos() {
   const contenedor = document.getElementById("productos-container");
   if (!contenedor) return;
 
-  sessionStorage.removeItem(PRODUCTOS_CACHE_KEY);
-
   try {
+    const cache = leerProductosCache();
+    if (cache && Array.isArray(cache) && cache.length) {
+      renderizarProductos(cache);
+    } else {
+      contenedor.innerHTML = "<p>Cargando productos...</p>";
+    }
+
     const response = await fetch(API_URL, {
-      headers: { Accept: "application/json" },
-      cache: "no-store"
+      headers: { Accept: "application/json" }
     });
 
     if (!response.ok) {
@@ -249,6 +233,13 @@ async function cargarProductos() {
     renderizarProductos(productos);
   } catch (err) {
     console.error(err);
+
+    const cache = leerProductosCache();
+    if (cache && Array.isArray(cache) && cache.length) {
+      renderizarProductos(cache);
+      return;
+    }
+
     contenedor.innerHTML = "<p>Error al cargar productos. Intenta más tarde 😢</p>";
   }
 }
@@ -468,7 +459,6 @@ window.addEventListener("storage", (event) => {
 });
 
 document.addEventListener("DOMContentLoaded", () => {
-  sessionStorage.removeItem(PRODUCTOS_CACHE_KEY);
   cargarProductos();
 
   document.querySelectorAll(".fade-up").forEach((el) => {
