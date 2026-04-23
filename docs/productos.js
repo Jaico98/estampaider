@@ -2,7 +2,12 @@
 //  productos.js  —  Estampaider
 // ============================================================
 
-const API_BASE = resolverApiBase();
+const API_BASE =
+  window.ESTAMPAIDER_CONFIG?.API_BASE ||
+  (typeof window.resolverApiBase === "function"
+    ? window.resolverApiBase()
+    : "https://estampaider.onrender.com");
+
 const API_URL = `${API_BASE}/api/productos`;
 const PRODUCTOS_CACHE_KEY = "estampaider_productos_cache_v1";
 
@@ -39,7 +44,15 @@ function resolverSrcImagen(imagenUrl) {
     return `${API_BASE}${valor}`;
   }
 
-  return `images/${valor}`;
+  if (valor.startsWith("uploads/")) {
+    return `${API_BASE}/${valor}`;
+  }
+
+  if (valor.startsWith("/images/")) {
+    return valor;
+  }
+
+  return `images/${valor.replace(/^\.?\//, "")}`;
 }
 
 function guardarProductosCache(productos) {
