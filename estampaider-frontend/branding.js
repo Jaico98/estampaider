@@ -1,4 +1,13 @@
 (function () {
+  const BRANDING_CACHE_KEY = "estampaider_branding_cache_v1";
+  const BRANDING_VERSION_KEY = "estampaider_branding_version_v1";
+  const BRANDING_REFRESH_KEYS = [
+    "estampaider_branding_refresh",
+    "estampaider_favicon_refresh",
+    "estampaider_social_refresh",
+    "estampaider_home_refresh"
+  ];
+
   function resolverApiBaseBranding() {
     if (window.ESTAMPAIDER_CONFIG?.API_BASE) {
       return window.ESTAMPAIDER_CONFIG.API_BASE.replace(/\/$/, "");
@@ -17,21 +26,67 @@
 
     return `${protocol}//${host}`;
   }
+
   function getAPI() {
     return window.ESTAMPAIDER_CONFIG?.API_BASE || "http://localhost:8080";
   }
 
-  async function fetchConReintento(url, options = {}, intentos = 4, esperaMs = 2500) {
+  function textoSeguro(valor) {
+    return String(valor ?? "");
+  }
+
+  function getBrandingVersion() {
+    return localStorage.getItem(BRANDING_VERSION_KEY) || "base";
+  }
+
+  function bumpBrandingVersion() {
+    localStorage.setItem(BRANDING_VERSION_KEY, String(Date.now()));
+  }
+
+  function limpiarCacheBranding() {
+    try {
+      sessionStorage.removeItem(BRANDING_CACHE_KEY);
+    } catch (_) {}
+  }
+
+  function leerCacheBranding() {
+    try {
+      const raw = sessionStorage.getItem(BRANDING_CACHE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function guardarCacheBranding(data) {
+    try {
+      sessionStorage.setItem(BRANDING_CACHE_KEY, JSON.stringify(data));
+    } catch (_) {}
+  }
+
+  function construirAssetUrl(API_BASE, url) {
+    if (!url) return "";
+
+    const version = getBrandingVersion();
+
+    if (/^https?:\/\//i.test(url)) {
+      return `${url}${url.includes("?") ? "&" : "?"}v=${version}`;
+    }
+
+    return `${API_BASE}${url}?v=${version}`;
+  }
+
+  async function fetchConReintento(url, options = {}, intentos = 3, esperaMs = 2000) {
     let ultimoError;
-  
+
     for (let i = 0; i < intentos; i++) {
       try {
         const res = await fetch(url, options);
-  
+
         if (res.ok) {
           return res;
         }
-  
+
         if (res.status === 503 || res.status === 502 || res.status === 504) {
           ultimoError = new Error(`Servicio temporalmente no disponible (${res.status})`);
         } else {
@@ -40,22 +95,26 @@
       } catch (error) {
         ultimoError = error;
       }
-  
+
       if (i < intentos - 1) {
         await new Promise(resolve => setTimeout(resolve, esperaMs));
       }
     }
-  
+
     throw ultimoError || new Error("No se pudo conectar con el servidor");
   }
 
-  async function cargarBrandingActual() {
+  async function obtenerBrandingActual() {
     const API_BASE = resolverApiBaseBranding();
 
+    const cache = leerCacheBranding();
+    if (cache && !brandingVacio(cache)) {
+      aplicarBranding(API_BASE, cache);
+    }
+
     try {
-      const res = await fetch(`${getAPI()}/api/branding/current`, {
-        method: "GET",
-        cache: "no-store"
+      const res = await fetchConReintento(`${getAPI()}/api/branding/current`, {
+        method: "GET"
       });
 
       if (!res.ok) {
@@ -69,17 +128,19 @@
         return;
       }
 
-      aplicarLogoGlobal(API_BASE, data.logoUrl || "");
-      aplicarFaviconGlobal(API_BASE, data.faviconUrl || "");
-      aplicarRedesSociales(data.socialLinks || {});
-      aplicarFondoGlobal(API_BASE, data.heroBackgroundUrl || "");
-      aplicarVideosInicio(API_BASE, data);
+      guardarCacheBranding(data);
+      aplicarBranding(API_BASE, data);
     } catch (error) {
       console.warn("No se pudo cargar branding dinámico:", error);
-      setTimeout(() => {
-        cargarBrandingActual();
-      }, 4000);
     }
+  }
+
+  function aplicarBranding(API_BASE, data) {
+    aplicarLogoGlobal(API_BASE, data.logoUrl || "");
+    aplicarFaviconGlobal(API_BASE, data.faviconUrl || "");
+    aplicarRedesSociales(data.socialLinks || {});
+    aplicarFondoGlobal(API_BASE, data.heroBackgroundUrl || "");
+    aplicarVideosInicio(API_BASE, data);
   }
 
   function aplicarLogoGlobal(API_BASE, logoUrl) {
@@ -87,7 +148,7 @@
       const fallback = img.getAttribute("src") || "";
 
       if (logoUrl) {
-        img.src = `${API_BASE}${logoUrl}?v=${Date.now()}`;
+        img.src = construirAssetUrl(API_BASE, logoUrl);
       } else {
         img.src = fallback;
       }
@@ -99,7 +160,7 @@
     if (!links.length) return;
 
     const fallbackHref = links[0].getAttribute("href") || "favicon.ico";
-    const finalHref = faviconUrl ? `${API_BASE}${faviconUrl}?v=${Date.now()}` : fallbackHref;
+    const finalHref = faviconUrl ? construirAssetUrl(API_BASE, faviconUrl) : fallbackHref;
 
     links.forEach((link) => {
       link.setAttribute("href", finalHref);
@@ -129,6 +190,7 @@
     aplicarLinkSocial('[data-social="instagram"]', links.instagram || "");
     aplicarLinkSocial('[data-social="facebook"]', links.facebook || "");
   }
+
   function brandingVacio(data) {
     if (!data) return true;
 
@@ -163,11 +225,9 @@
 
   function aplicarFondoGlobal(API_BASE, url) {
     if (!url) return;
-  
-    const finalUrl = /^https?:\/\//i.test(url)
-      ? `${url}${url.includes("?") ? "&" : "?"}v=${Date.now()}`
-      : `${API_BASE}${url}?v=${Date.now()}`;
-  
+
+    const finalUrl = construirAssetUrl(API_BASE, url);
+
     document.querySelectorAll(`
       .branding-bg,
       .colibri-bg,
@@ -193,20 +253,22 @@
 
   function aplicarHeroVideo(API_BASE, url) {
     const video = document.getElementById("heroVideo");
-    if (!video) return;
+    if (!video || !url) return;
 
-    if (url) {
-      video.src = `${API_BASE}${url}?v=${Date.now()}`;
+    const finalUrl = construirAssetUrl(API_BASE, url);
+    if (video.src !== finalUrl) {
+      video.src = finalUrl;
       video.load();
     }
   }
 
   function aplicarHighlightVideo(API_BASE, url) {
     const video = document.getElementById("highlightVideo");
-    if (!video) return;
+    if (!video || !url) return;
 
-    if (url) {
-      video.src = `${API_BASE}${url}?v=${Date.now()}`;
+    const finalUrl = construirAssetUrl(API_BASE, url);
+    if (video.src !== finalUrl) {
+      video.src = finalUrl;
       video.load();
     }
   }
@@ -236,8 +298,9 @@
       video.muted = true;
       video.loop = true;
       video.playsInline = true;
+      video.preload = "metadata";
       video.title = item.slot || "Video de galería";
-      video.src = `${API_BASE}${item.url}?v=${Date.now()}`;
+      video.src = construirAssetUrl(API_BASE, item.url);
 
       card.appendChild(video);
       contenedor.appendChild(card);
@@ -249,16 +312,13 @@
   }
 
   function aplicarBrandingGlobal() {
-    cargarBrandingActual();
+    obtenerBrandingActual();
   }
 
   window.addEventListener("storage", (event) => {
-    if (
-      event.key === "estampaider_branding_refresh" ||
-      event.key === "estampaider_favicon_refresh" ||
-      event.key === "estampaider_social_refresh" ||
-      event.key === "estampaider_home_refresh"
-    ) {
+    if (BRANDING_REFRESH_KEYS.includes(event.key)) {
+      bumpBrandingVersion();
+      limpiarCacheBranding();
       location.reload();
     }
   });
