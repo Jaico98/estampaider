@@ -366,12 +366,13 @@ document.addEventListener("DOMContentLoaded", () => {
       },
       body: JSON.stringify(pedido)
     })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error("Error al registrar el pedido");
-        }
-        return res.json();
-      })
+    .then(async (res) => {
+      if (!res.ok) {
+        const detalle = await res.text();
+        throw new Error(`HTTP ${res.status}: ${detalle || "Error al registrar el pedido"}`);
+      }
+      return res.json();
+    })
       .then((pedidoGuardado) => {
         localStorage.setItem("pedidoId", pedidoGuardado.id);
         localStorage.removeItem("carrito");

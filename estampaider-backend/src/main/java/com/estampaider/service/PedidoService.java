@@ -66,17 +66,21 @@ public class PedidoService {
     
         // ✅ 2. Usuario
 
-    if (pedido.getTelefono() != null && !pedido.getTelefono().isBlank()) {
-
-    Usuario usuario = usuarioRepository
-            .findByTelefono(pedido.getTelefono())
-            .orElseThrow(() -> new ResponseStatusException(
+        if (pedido.getTelefono() != null && !pedido.getTelefono().isBlank()) {
+            String telefonoNormalizado = pedido.getTelefono().replaceAll("\\D", "");
+        
+            Usuario usuario = usuarioRepository.findAll().stream()
+                .filter(u -> u.getTelefono() != null)
+                .filter(u -> u.getTelefono().replaceAll("\\D", "").equals(telefonoNormalizado))
+                .findFirst()
+                .orElseThrow(() -> new ResponseStatusException(
                     HttpStatus.NOT_FOUND,
                     "Usuario no encontrado con teléfono: " + pedido.getTelefono()
-            ));
-
-    pedido.setUsuario(usuario);
-}
+                ));
+        
+            pedido.setUsuario(usuario);
+            pedido.setTelefono(telefonoNormalizado);
+        }
     
         // ✅ 3. Detalles
         if (pedido.getDetalles() != null) {
