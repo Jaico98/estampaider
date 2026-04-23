@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
     campoTallasDisponibles.value = "";
     campoColoresDisponibles.value = "";
     if (campoImagenArchivo) campoImagenArchivo.value = "";
-    previewImagen.src = "images/placeholder.jpg";
+    previewImagen.src = "images/hero-bg.jpg";
     tituloFormulario.textContent = "Nuevo producto";
     btnGuardar.textContent = "Guardar producto";
     mostrarEstado("");
@@ -96,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function resolverSrcImagen(imagenUrl) {
     const valor = textoSeguro(imagenUrl).trim();
-    if (!valor) return "images/placeholder.jpg";
+    if (!valor) return "images/hero-bg.jpg";
 
     if (valor.startsWith("http://") || valor.startsWith("https://")) {
       return valor;
@@ -115,7 +115,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   campoImagenUrl.addEventListener("input", actualizarPreview);
   previewImagen.addEventListener("error", () => {
-    previewImagen.src = "images/placeholder.jpg";
+    previewImagen.src = "images/hero-bg.jpg";
   });
 
   async function subirImagen() {
@@ -246,7 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
       img.alt = producto.nombre || "Producto";
       img.loading = "lazy";
       img.onerror = () => {
-        img.src = "images/placeholder.jpg";
+        img.src = "images/hero-bg.jpg";
       };
   
       const body = document.createElement("div");

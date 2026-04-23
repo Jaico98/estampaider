@@ -29,7 +29,7 @@ function resolverApiBase() {
 function resolverSrcImagen(imagenUrl) {
   const valor = String(imagenUrl || "").trim();
 
-  if (!valor) return "images/placeholder.jpg";
+  if (!valor) return "images/hero-bg.jpg";
 
   if (valor.startsWith("http://") || valor.startsWith("https://")) {
     return valor;
@@ -95,7 +95,7 @@ function renderizarProductos(productos) {
     imagen.loading = "lazy";
     imagen.decoding = "async";
     imagen.onerror = () => {
-      imagen.src = "images/placeholder.jpg";
+      imagen.src = "images/hero-bg.jpg";
     };
 
     const nombre = document.createElement("h3");
