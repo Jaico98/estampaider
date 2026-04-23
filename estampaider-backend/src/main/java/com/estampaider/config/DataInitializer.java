@@ -44,7 +44,7 @@ public class DataInitializer {
                         "Código QR",
                         "QR",
                         "Escanea el código QR para pagar",
-                        "./images/qr-nequi.png"
+                        "https://jaico98.github.io/estampaider/images/qr-nequi.png"
                 ));
             }
 
