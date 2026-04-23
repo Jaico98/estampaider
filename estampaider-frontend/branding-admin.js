@@ -38,6 +38,69 @@ function msg(texto, ok = true) {
   el.textContent = texto;
   el.style.color = ok ? "#166534" : "#b91c1c";
 }
+function actualizarProgreso(porcentaje) {
+  const el = document.getElementById("progresoSubida");
+  if (!el) return;
+
+  if (porcentaje >= 100) {
+    el.textContent = "Procesando video...";
+  } else {
+    el.textContent = `Subiendo video... ${porcentaje}%`;
+  }
+}
+
+function limpiarProgreso() {
+  const el = document.getElementById("progresoSubida");
+  if (!el) return;
+  el.textContent = "";
+}
+
+function subirConProgreso(url, formData) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+
+    xhr.open("POST", url);
+
+    const headers = authHeaders();
+    Object.entries(headers).forEach(([key, value]) => {
+      xhr.setRequestHeader(key, value);
+    });
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        const porcentaje = Math.round((event.loaded / event.total) * 100);
+        actualizarProgreso(porcentaje);
+      }
+    };
+
+    xhr.onload = () => {
+      actualizarProgreso(100);
+
+      const responseText = xhr.responseText || "";
+      const contentType = xhr.getResponseHeader("content-type") || "";
+
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          if (contentType.includes("application/json")) {
+            resolve(JSON.parse(responseText));
+          } else {
+            resolve(responseText);
+          }
+        } catch {
+          resolve(responseText);
+        }
+      } else {
+        reject(new Error(responseText || "Error al subir video"));
+      }
+    };
+
+    xhr.onerror = () => {
+      reject(new Error("Error de red al subir video"));
+    };
+
+    xhr.send(formData);
+  });
+}
 
 function limpiarPreviewVideo() {
   const video = document.getElementById("previewVideoActual");
@@ -255,6 +318,8 @@ async function subirVideoHome(e) {
   }
 
   try {
+    limpiarProgreso();
+
     if (slot === "new") {
       await agregarVideo();
       return;
@@ -264,23 +329,20 @@ async function subirVideoHome(e) {
     fd.append("file", file);
     fd.append("slot", slot);
 
-    const res = await fetch(`${getAPI()}/api/branding/home-video`, {
-      method: "POST",
-      headers: authHeaders(),
-      body: fd
-    });
+    const esGaleria = /^gallery\d+$/.test(slot);
 
-    const contentType = res.headers.get("content-type") || "";
-    const data = contentType.includes("application/json")
-      ? await res.json()
-      : await res.text();
+    const url = esGaleria
+      ? `${getAPI()}/api/branding/gallery-video`
+      : `${getAPI()}/api/branding/home-video`;
 
-    if (!res.ok) {
-      const mensaje =
-        typeof data === "string"
-          ? data
-          : (data?.message || data?.error || "No se pudo guardar el video");
+    const data = await subirConProgreso(url, fd);
 
+    const mensaje =
+      typeof data === "string"
+        ? data
+        : (data?.message || data?.error || "");
+
+    if (mensaje && /error|no se pudo|forbidden|unauthorized/i.test(mensaje)) {
       throw new Error(mensaje);
     }
 
@@ -288,9 +350,14 @@ async function subirVideoHome(e) {
     msg(`Video guardado correctamente en ${slot}`);
     await cargarBrandingAdmin();
     document.getElementById("videoFile").value = "";
+
+    setTimeout(() => {
+      limpiarProgreso();
+    }, 2000);
   } catch (error) {
     console.error(error);
     msg(error.message || "Error guardando video", false);
+    limpiarProgreso();
   }
 }
 
@@ -304,6 +371,8 @@ async function agregarVideo(e) {
   }
 
   try {
+    limpiarProgreso();
+
     const dataActual = await fetchBrandingCurrent();
     const slotLibre = obtenerPrimerSlotLibre(dataActual);
 
@@ -311,36 +380,17 @@ async function agregarVideo(e) {
     fd.append("file", file);
     fd.append("slot", slotLibre);
 
-    const res = await fetch(`${getAPI()}/api/branding/gallery-video`, {
-      method: "POST",
-      headers: authHeaders(),
-      body: fd
-    });
+    const responseData = await subirConProgreso(
+      `${getAPI()}/api/branding/gallery-video`,
+      fd
+    );
 
-    const contentType = res.headers.get("content-type") || "";
-    const responseData = contentType.includes("application/json")
-      ? await res.json()
-      : await res.text();
+    const mensaje =
+      typeof responseData === "string"
+        ? responseData
+        : (responseData?.message || responseData?.error || "");
 
-    if (!res.ok) {
-      let mensaje = "No se pudo agregar el video";
-
-      if (typeof responseData === "string" && responseData.trim()) {
-        mensaje = responseData;
-      } else if (responseData?.message) {
-        mensaje = responseData.message;
-      } else if (responseData?.error) {
-        mensaje = responseData.error;
-      }
-
-      if (res.status === 401) {
-        throw new Error("Tu sesión venció. Inicia sesión nuevamente.");
-      }
-
-      if (res.status === 403) {
-        throw new Error("Tu usuario no tiene permisos ADMIN en esta petición.");
-      }
-
+    if (mensaje && /error|no se pudo|forbidden|unauthorized/i.test(mensaje)) {
       throw new Error(mensaje);
     }
 
@@ -358,9 +408,14 @@ async function agregarVideo(e) {
     }
 
     await actualizarPreviewVideo();
+
+    setTimeout(() => {
+      limpiarProgreso();
+    }, 2000);
   } catch (error) {
     console.error("Error agregando video:", error);
     msg(error.message || "Error agregando video", false);
+    limpiarProgreso();
   }
 }
 
