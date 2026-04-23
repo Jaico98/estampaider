@@ -264,7 +264,13 @@ async function subirVideoHome(e) {
     fd.append("file", file);
     fd.append("slot", slot);
 
-    const res = await fetch(`${getAPI()}/api/branding/home-video`, {
+    const esGaleria = /^gallery\d+$/.test(slot);
+
+    const url = esGaleria
+      ? `${getAPI()}/api/branding/gallery-video`
+      : `${getAPI()}/api/branding/home-video`;
+
+    const res = await fetch(url, {
       method: "POST",
       headers: authHeaders(),
       body: fd
