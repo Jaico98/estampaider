@@ -96,6 +96,8 @@ public class PedidoController {
         pedido.setBarrio(textoSeguro(request.getBarrio()));
         pedido.setReferencia(textoSeguro(request.getReferencia()));
         pedido.setMetodoPago(textoSeguro(request.getMetodoPago()));
+        pedido.setEstado("RECIBIDO");
+        pedido.setEstadoPago("PENDIENTE");
 
         List<DetallePedido> detalles = request.getDetalles().stream().map(d -> {
             if (d == null) {

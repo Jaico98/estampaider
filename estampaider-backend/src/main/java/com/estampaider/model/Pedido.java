@@ -47,7 +47,7 @@ public class Pedido {
     /**
      * Relación: Un pedido pertenece a un usuario
      */
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne
     @JoinColumn(name = "usuario_id")
     @JsonIgnore
     private Usuario usuario;
