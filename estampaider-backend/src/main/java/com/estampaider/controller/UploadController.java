@@ -1,6 +1,6 @@
 package com.estampaider.controller;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.estampaider.service.CloudinaryService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
@@ -8,19 +8,19 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.io.IOException;
-import java.nio.file.*;
 import java.text.Normalizer;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/uploads")
 public class UploadController {
 
-    @Value("${app.upload.dir:uploads}")
-    private String uploadDir;
+    private final CloudinaryService cloudinaryService;
+
+    public UploadController(CloudinaryService cloudinaryService) {
+        this.cloudinaryService = cloudinaryService;
+    }
 
     @PostMapping("/producto")
     public ResponseEntity<Map<String, String>> subirImagenProducto(
@@ -38,6 +38,7 @@ public class UploadController {
         String nombreOriginal = StringUtils.cleanPath(
             file.getOriginalFilename() == null ? "imagen" : file.getOriginalFilename()
         );
+
         String extension = obtenerExtension(nombreOriginal);
 
         if (!esExtensionPermitida(extension)) {
@@ -47,7 +48,7 @@ public class UploadController {
             );
         }
 
-        long maxBytes = 10 * 1024 * 1024; // 10 MB
+        long maxBytes = 10 * 1024 * 1024;
         if (file.getSize() > maxBytes) {
             throw new ResponseStatusException(
                 HttpStatus.BAD_REQUEST,
@@ -55,30 +56,13 @@ public class UploadController {
             );
         }
 
-        try {
-            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
-            Files.createDirectories(uploadPath);
+        String url = cloudinaryService.subirImagen(file, "estampaider/productos");
 
-            String nombreBase = limpiarNombre(nombreOriginal.replace("." + extension, ""));
-            String nombreArchivo = nombreBase + "-" + UUID.randomUUID().toString().substring(0, 8) + "." + extension;
+        Map<String, String> response = new HashMap<>();
+        response.put("fileName", limpiarNombre(nombreOriginal));
+        response.put("url", url);
 
-            Path destino = uploadPath.resolve(nombreArchivo).normalize();
-
-            if (!destino.startsWith(uploadPath)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ruta de archivo inválida");
-            }
-
-            Files.copy(file.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
-
-            Map<String, String> response = new HashMap<>();
-            response.put("fileName", nombreArchivo);
-            response.put("url", "/uploads/" + nombreArchivo);
-
-            return ResponseEntity.ok(response);
-
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "No se pudo guardar la imagen");
-        }
+        return ResponseEntity.ok(response);
     }
 
     private String obtenerExtension(String nombreArchivo) {
@@ -99,7 +83,7 @@ public class UploadController {
     private String limpiarNombre(String texto) {
         String limpio = Normalizer.normalize(texto, Normalizer.Form.NFD)
             .replaceAll("\\p{M}", "")
-            .replaceAll("[^a-zA-Z0-9-_]", "-")
+            .replaceAll("[^a-zA-Z0-9-_\\.]", "-")
             .replaceAll("-{2,}", "-")
             .replaceAll("^-|-$", "")
             .toLowerCase();
