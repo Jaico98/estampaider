@@ -218,7 +218,7 @@ async function cargarBrandingAdmin() {
     const bg = document.getElementById("previewHeroBg");
     if (bg) {
       if (data.heroBackgroundUrl) {
-        bg.src = `${getAPI()}${data.heroBackgroundUrl}?v=${Date.now()}`;
+        bg.src = `${resolverAssetUrl(data.heroBackgroundUrl)}?v=${Date.now()}`;
         bg.style.display = "block";
       } else {
         bg.removeAttribute("src");
@@ -258,7 +258,7 @@ async function actualizarPreviewVideo(dataManual = null) {
     const actual = obtenerVideoPorSlot(data, slot);
 
     if (actual) {
-      preview.src = `${getAPI()}${actual}?v=${Date.now()}`;
+      preview.src = `${resolverAssetUrl(actual)}?v=${Date.now()}`;
       preview.load();
     } else {
       limpiarPreviewVideo();
@@ -359,6 +359,17 @@ async function subirVideoHome(e) {
     msg(error.message || "Error guardando video", false);
     limpiarProgreso();
   }
+}
+
+function resolverAssetUrl(url) {
+  const valor = String(url || "").trim();
+  if (!valor) return "";
+
+  if (valor.startsWith("http://") || valor.startsWith("https://")) {
+    return valor;
+  }
+
+  return `${getAPI()}${valor}`;
 }
 
 async function agregarVideo(e) {
