@@ -2704,7 +2704,7 @@ textarea:focus-visible {
   color: #fff;
   padding: 42px;
   border-radius: 30px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.10), rgba(255,255,255,0.04));
+  background: linear-gradient(135deg, rgba(7, 24, 31, 0.9), rgba(12, 42, 54, 0.85)), radial-gradient(circle at top right, rgba(57, 215, 226, 0.25), transparent 30%);
   border: 1px solid rgba(255,255,255,0.12);
   backdrop-filter: blur(10px);
   box-shadow: 0 24px 60px rgba(0,0,0,0.24);
