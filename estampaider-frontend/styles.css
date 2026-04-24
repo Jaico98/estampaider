@@ -2694,6 +2694,7 @@ textarea:focus-visible {
 .login-shell {
   width: 100%;
   max-width: 1100px;
+  background: linear-gradient(135deg, rgba(7, 24, 31, 0.9), rgba(12, 42, 54, 0.85)), radial-gradient(circle at top right, rgba(57, 215, 226, 0.25), transparent 30%);
   display: grid;
   grid-template-columns: 1fr 430px;
   gap: 28px;
