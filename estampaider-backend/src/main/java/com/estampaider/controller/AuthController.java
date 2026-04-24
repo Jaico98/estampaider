@@ -150,11 +150,11 @@ public ResponseEntity<?> login(@RequestBody LoginRequest request) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                     .body("La integración de WhatsApp no está configurada correctamente.");
-        } catch (RuntimeException e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                    .body("WhatsApp rechazó el envío del código. Verifica token y phone number id.");
-        } catch (Exception e) {
+                } catch (RuntimeException e) {
+                    e.printStackTrace();
+                    return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                            .body(e.getMessage());
+                } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error interno enviando el código.");
