@@ -35,7 +35,7 @@ function resolverSrcImagen(imagenUrl) {
 
 function guardarProductosCache(productos) {
   try {
-    sessionStorage.setItem(PRODUCTOS_CACHE_KEY, JSON.stringify(productos));
+    localStorage.setItem(PRODUCTOS_CACHE_KEY, JSON.stringify(productos));
   } catch {
     // ignorar
   }
@@ -43,7 +43,7 @@ function guardarProductosCache(productos) {
 
 function leerProductosCache() {
   try {
-    const raw = sessionStorage.getItem(PRODUCTOS_CACHE_KEY);
+    const raw = localStorage.getItem(PRODUCTOS_CACHE_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -212,14 +212,15 @@ async function cargarProductos() {
   const contenedor = document.getElementById("productos-container");
   if (!contenedor) return;
 
-  try {
-    const cache = leerProductosCache();
-    if (cache && Array.isArray(cache) && cache.length) {
-      renderizarProductos(cache);
-    } else {
-      contenedor.innerHTML = "<p>Cargando productos...</p>";
-    }
+  const cache = leerProductosCache();
 
+  if (cache && Array.isArray(cache) && cache.length) {
+    renderizarProductos(cache);
+  } else {
+    contenedor.innerHTML = "<p>Cargando productos...</p>";
+  }
+
+  try {
     const response = await fetch(API_URL, {
       headers: { Accept: "application/json" }
     });
@@ -229,14 +230,19 @@ async function cargarProductos() {
     }
 
     const productos = await response.json();
+
     guardarProductosCache(productos);
-    renderizarProductos(productos);
+
+    const cacheTexto = JSON.stringify(cache || []);
+    const productosTexto = JSON.stringify(productos || []);
+
+    if (cacheTexto !== productosTexto) {
+      renderizarProductos(productos);
+    }
   } catch (err) {
     console.error(err);
 
-    const cache = leerProductosCache();
     if (cache && Array.isArray(cache) && cache.length) {
-      renderizarProductos(cache);
       return;
     }
 
@@ -453,7 +459,7 @@ document.addEventListener("keydown", (e) => {
 
 window.addEventListener("storage", (event) => {
   if (event.key === "estampaider_productos_refresh") {
-    sessionStorage.removeItem(PRODUCTOS_CACHE_KEY);
+    localStorage.removeItem(PRODUCTOS_CACHE_KEY);
     cargarProductos();
   }
 });
