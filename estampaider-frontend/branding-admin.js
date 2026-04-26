@@ -295,7 +295,7 @@ async function subirHeroBackground() {
     if (!res.ok) {
       throw new Error(typeof data === "string" ? data : "No se pudo guardar el fondo");
     }
-
+    localStorage.removeItem("estampaider_branding_cache_v1");
     localStorage.setItem("estampaider_home_refresh", Date.now().toString());
     msg("Fondo actualizado correctamente");
     await cargarBrandingAdmin();
@@ -345,7 +345,7 @@ async function subirVideoHome(e) {
     if (mensaje && /error|no se pudo|forbidden|unauthorized/i.test(mensaje)) {
       throw new Error(mensaje);
     }
-
+    localStorage.removeItem("estampaider_branding_cache_v1");
     localStorage.setItem("estampaider_home_refresh", Date.now().toString());
     msg(`Video guardado correctamente en ${slot}`);
     await cargarBrandingAdmin();
@@ -406,7 +406,7 @@ async function agregarVideo(e) {
     }
 
     const slotAsignado = responseData?.slot || slotLibre;
-
+    localStorage.removeItem("estampaider_branding_cache_v1");
     localStorage.setItem("estampaider_home_refresh", Date.now().toString());
     msg(`Video agregado en ${slotAsignado}`);
     await cargarBrandingAdmin();
@@ -464,7 +464,7 @@ async function eliminarVideoHome() {
           : (data?.message || "No se pudo eliminar el video")
       );
     }
-
+    localStorage.removeItem("estampaider_branding_cache_v1");
     localStorage.setItem("estampaider_home_refresh", Date.now().toString());
     msg("Video eliminado correctamente");
     await cargarBrandingAdmin();
@@ -496,7 +496,7 @@ async function guardarRedes() {
     if (!res.ok) {
       throw new Error(typeof data === "string" ? data : "No se pudieron guardar las redes");
     }
-
+    localStorage.removeItem("estampaider_branding_cache_v1");
     localStorage.setItem("estampaider_social_refresh", Date.now().toString());
     msg("Redes guardadas correctamente");
   } catch (error) {

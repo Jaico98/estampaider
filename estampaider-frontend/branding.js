@@ -45,22 +45,22 @@
 
   function limpiarCacheBranding() {
     try {
-      sessionStorage.removeItem(BRANDING_CACHE_KEY);
+      localStorage.removeItem(BRANDING_CACHE_KEY);
     } catch (_) {}
   }
-
+  
   function leerCacheBranding() {
     try {
-      const raw = sessionStorage.getItem(BRANDING_CACHE_KEY);
+      const raw = localStorage.getItem(BRANDING_CACHE_KEY);
       return raw ? JSON.parse(raw) : null;
     } catch {
       return null;
     }
   }
-
+  
   function guardarCacheBranding(data) {
     try {
-      sessionStorage.setItem(BRANDING_CACHE_KEY, JSON.stringify(data));
+      localStorage.setItem(BRANDING_CACHE_KEY, JSON.stringify(data));
     } catch (_) {}
   }
 

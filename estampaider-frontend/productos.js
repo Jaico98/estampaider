@@ -35,7 +35,7 @@ function resolverSrcImagen(imagenUrl) {
 
 function guardarProductosCache(productos) {
   try {
-    sessionStorage.setItem(PRODUCTOS_CACHE_KEY, JSON.stringify(productos));
+    localStorage.setItem(PRODUCTOS_CACHE_KEY, JSON.stringify(productos));
   } catch {
     // ignorar
   }
@@ -43,7 +43,7 @@ function guardarProductosCache(productos) {
 
 function leerProductosCache() {
   try {
-    const raw = sessionStorage.getItem(PRODUCTOS_CACHE_KEY);
+    const raw = localStorage.getItem(PRODUCTOS_CACHE_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
@@ -453,7 +453,7 @@ document.addEventListener("keydown", (e) => {
 
 window.addEventListener("storage", (event) => {
   if (event.key === "estampaider_productos_refresh") {
-    sessionStorage.removeItem(PRODUCTOS_CACHE_KEY);
+    localStorage.removeItem(PRODUCTOS_CACHE_KEY);
     cargarProductos();
   }
 });

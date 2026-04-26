@@ -440,7 +440,7 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error(texto || "No se pudo guardar el orden");
       }
   
-      sessionStorage.removeItem("estampaider_productos_cache_v1");
+      localStorage.removeItem("estampaider_productos_cache_v1");
       localStorage.setItem("estampaider_productos_refresh", Date.now().toString());
   
       mostrarToast("Orden guardado correctamente", "ok");
@@ -524,7 +524,7 @@ document.addEventListener("DOMContentLoaded", () => {
       );
       
       // limpiar cache de productos del frontend
-      sessionStorage.removeItem("estampaider_productos_cache_v1");
+      localStorage.removeItem("estampaider_productos_cache_v1");
       localStorage.setItem("estampaider_productos_refresh", Date.now().toString());
 
     limpiarFormulario();
@@ -551,7 +551,7 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error(texto || "No se pudo cambiar el estado del producto");
       }
   
-      sessionStorage.removeItem("estampaider_productos_cache_v1");
+      localStorage.removeItem("estampaider_productos_cache_v1");
       localStorage.setItem("estampaider_productos_refresh", Date.now().toString());
       await cargarProductos();
   
@@ -583,7 +583,7 @@ document.addEventListener("DOMContentLoaded", () => {
         limpiarFormulario();
       }
   
-      sessionStorage.removeItem("estampaider_productos_cache_v1");
+      localStorage.removeItem("estampaider_productos_cache_v1");;
       localStorage.setItem("estampaider_productos_refresh", Date.now().toString());
       await cargarProductos();
   

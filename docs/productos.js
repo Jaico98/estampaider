@@ -33,22 +33,7 @@ function resolverSrcImagen(imagenUrl) {
   return `images/${valor.replace(/^\.?\//, "")}`;
 }
 
-function guardarProductosCache(productos) {
-  try {
-    sessionStorage.setItem(PRODUCTOS_CACHE_KEY, JSON.stringify(productos));
-  } catch {
-    // ignorar
-  }
-}
 
-function leerProductosCache() {
-  try {
-    const raw = sessionStorage.getItem(PRODUCTOS_CACHE_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
 
 function parsearOpciones(valor) {
   return String(valor || "")
@@ -453,7 +438,7 @@ document.addEventListener("keydown", (e) => {
 
 window.addEventListener("storage", (event) => {
   if (event.key === "estampaider_productos_refresh") {
-    sessionStorage.removeItem(PRODUCTOS_CACHE_KEY);
+    localStorage.removeItem(PRODUCTOS_CACHE_KEY);
     cargarProductos();
   }
 });
