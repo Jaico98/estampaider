@@ -1,6 +1,6 @@
 // ============================================================
 // checkout.js — Estampaider
-// Gestiona el formulario de confirmación de compra
+// Gestiona el formulario de registro de pedido
 // ============================================================
 
 function obtenerAuth() {
@@ -110,7 +110,7 @@ function crearBloqueQr(metodo) {
   }
 
   const texto = document.createElement("p");
-  texto.textContent = "Escanea este código QR para realizar el pago:";
+  texto.textContent = "Código QR de referencia para pago externo:";
   texto.style.marginBottom = "10px";
   texto.style.fontWeight = "700";
 
@@ -337,7 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     enviando = true;
     btnConfirmar.disabled = true;
-    btnConfirmar.textContent = "⏳ Procesando pedido...";
+    btnConfirmar.textContent = "⏳ Registrando pedido...";
 
     const pedido = {
       cliente,
@@ -382,7 +382,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("Error pedido:", error);
         enviando = false;
         btnConfirmar.disabled = false;
-        btnConfirmar.textContent = "Confirmar compra";
+        btnConfirmar.textContent = "Registrar pedido";
         alert("❌ No se pudo registrar el pedido. Intenta de nuevo o contáctanos por WhatsApp.");
       });
   });
