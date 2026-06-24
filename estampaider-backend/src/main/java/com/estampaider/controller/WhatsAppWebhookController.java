@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.context.annotation.Profile;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -21,6 +22,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Componente experimental preparado para una posible integración futura
+ * con WhatsApp Business API. No forma parte del alcance funcional validado
+ * ni de la versión sustentada del proyecto de grado.
+ */
 @RestController
 @RequestMapping("/webhook")
 public class WhatsAppWebhookController {
