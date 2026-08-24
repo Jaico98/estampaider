@@ -549,6 +549,25 @@
       border:0;
     }
     .disabled{opacity:.65;pointer-events:none}
+    .media-fallback{
+      margin:22px 0 0;
+      padding:18px;
+      border:1px dashed rgba(100,116,139,.45);
+      border-radius:16px;
+      color:#475569;
+      background:#f8fafc;
+      text-align:center;
+    }
+    .media-fallback[hidden]{display:none}
+    @media (prefers-reduced-motion: reduce){
+      *,*::before,*::after{
+        scroll-behavior:auto !important;
+        transition-duration:.01ms !important;
+        animation-duration:.01ms !important;
+        animation-iteration-count:1 !important;
+      }
+      .fade-up{opacity:1;transform:none}
+    }
     @media (max-width: 1100px){
       .benefits-grid,.productos-grid{grid-template-columns:repeat(2,1fr)}
       .gallery-grid{grid-template-columns:repeat(3,1fr)}
@@ -643,7 +662,7 @@
       <div class="hero-visual">
         <div class="hero-panel">
           <div class="hero-main-video">
-            <video id="heroVideo" autoplay muted loop playsinline preload="metadata" title="Trabajo destacado Estampaider"></video>
+            <video id="heroVideo" autoplay muted loop playsinline preload="metadata" poster="images/hero-bg.jpg" title="Trabajo destacado Estampaider"></video>
           </div>
 
           <div class="floating-note note-a">
@@ -728,7 +747,7 @@
 
       <div class="products-strip">
         <div class="products-highlight">
-          <video id="highlightVideo" autoplay muted loop playsinline preload="Muestra de productos"></video>
+          <video id="highlightVideo" autoplay muted loop playsinline preload="metadata" poster="images/img4.jpg" title="Muestra de productos"></video>
           <div class="products-overlay">
             <span class="eyebrow" style="background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.18)">Top visual</span>
             <h3 style="margin:0;font-size:2rem">Mugs, camisetas, carcasas, gorras y más</h3>
@@ -770,6 +789,7 @@
       </div>
 
       <div class="gallery-grid"></div>
+      <p id="galleryStatus" class="media-fallback" role="status">Cargando trabajos destacados…</p>
     </section>
 
     <section class="consultar-pedido fade-up" id="consulta-pedido" aria-label="Consulta tu pedido">
@@ -865,7 +885,13 @@
       toggle.addEventListener("click", () => {
         const abierto = menu.classList.toggle("show");
         toggle.setAttribute("aria-expanded", abierto ? "true" : "false");
+        toggle.setAttribute("aria-label", abierto ? "Cerrar menú" : "Abrir menú");
       });
+      menu.querySelectorAll("a").forEach((link) => link.addEventListener("click", () => {
+        menu.classList.remove("show");
+        toggle.setAttribute("aria-expanded", "false");
+        toggle.setAttribute("aria-label", "Abrir menú");
+      }));
     }
 
     if (hoverZone && header) {
@@ -874,7 +900,7 @@
     }
 
     function bindGalleryVideoClicks() {
-  document.querySelectorAll(".video-card video").forEach(video => {
+    document.querySelectorAll(".video-card video").forEach(video => {
     video.onclick = () => {
       const src = video.currentSrc || video.src;
       if (!src) return;

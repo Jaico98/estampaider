@@ -277,7 +277,13 @@
     const contenedor = document.querySelector(".gallery-grid");
     if (!contenedor) return;
 
+    const estado = document.getElementById("galleryStatus");
+
     if (!Array.isArray(videos) || videos.length === 0) {
+      if (estado) {
+        estado.hidden = false;
+        estado.textContent = "Los trabajos destacados estarán disponibles cuando se cargue el contenido multimedia.";
+      }
       return;
     }
 
@@ -305,6 +311,8 @@
       card.appendChild(video);
       contenedor.appendChild(card);
     });
+
+    if (estado) estado.hidden = contenedor.children.length > 0;
 
     if (window.__estampaiderRebindVideoModal) {
       window.__estampaiderRebindVideoModal();
