@@ -747,7 +747,7 @@
 
       <div class="products-strip">
         <div class="products-highlight">
-          <video id="highlightVideo" autoplay muted loop playsinline preload="metadata" poster="images/img4.jpg" title="Muestra de productos"></video>
+          <video id="highlightVideo" autoplay muted loop playsinline preload="none" poster="images/img4.jpg" title="Muestra de productos"></video>
           <div class="products-overlay">
             <span class="eyebrow" style="background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.18)">Top visual</span>
             <h3 style="margin:0;font-size:2rem">Mugs, camisetas, carcasas, gorras y más</h3>
@@ -902,6 +902,7 @@
     function bindGalleryVideoClicks() {
     document.querySelectorAll(".video-card video").forEach(video => {
     video.onclick = () => {
+      if (!video.src && video.dataset.src) video.src = video.dataset.src;
       const src = video.currentSrc || video.src;
       if (!src) return;
       videoGrande.src = src;

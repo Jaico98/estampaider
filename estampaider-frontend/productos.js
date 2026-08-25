@@ -8,6 +8,18 @@ const API_BASE =
 
 const API_URL = `${API_BASE}/api/productos`;
 const PRODUCTOS_CACHE_KEY = "estampaider_productos_cache_v1";
+const PRODUCTOS_TIMEOUT_MS = 8000;
+
+async function fetchConTimeout(url, options = {}, timeoutMs = PRODUCTOS_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 function resolverSrcImagen(imagenUrl) {
   const valor = String(imagenUrl || "").trim();
@@ -221,7 +233,7 @@ async function cargarProductos() {
   }
 
   try {
-    const response = await fetch(API_URL, {
+    const response = await fetchConTimeout(API_URL, {
       headers: { Accept: "application/json" }
     });
 
@@ -246,7 +258,10 @@ async function cargarProductos() {
       return;
     }
 
-    contenedor.innerHTML = "<p>Error al cargar productos. Intenta más tarde 😢</p>";
+    const mensaje = err?.name === "AbortError"
+      ? "El catálogo está tardando en responder. Intenta actualizar en unos segundos."
+      : "Error al cargar productos. Intenta más tarde 😢";
+    contenedor.innerHTML = `<p>${mensaje}</p>`;
   }
 }
 

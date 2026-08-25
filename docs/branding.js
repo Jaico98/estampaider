@@ -76,32 +76,15 @@
     return `${API_BASE}${url}?v=${version}`;
   }
 
-  async function fetchConReintento(url, options = {}, intentos = 3, esperaMs = 2000) {
-    let ultimoError;
+  async function fetchConTimeout(url, options = {}, timeoutMs = 7000) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
-    for (let i = 0; i < intentos; i++) {
-      try {
-        const res = await fetch(url, options);
-
-        if (res.ok) {
-          return res;
-        }
-
-        if (res.status === 503 || res.status === 502 || res.status === 504) {
-          ultimoError = new Error(`Servicio temporalmente no disponible (${res.status})`);
-        } else {
-          return res;
-        }
-      } catch (error) {
-        ultimoError = error;
-      }
-
-      if (i < intentos - 1) {
-        await new Promise(resolve => setTimeout(resolve, esperaMs));
-      }
+    try {
+      return await fetch(url, { ...options, signal: controller.signal });
+    } finally {
+      clearTimeout(timeout);
     }
-
-    throw ultimoError || new Error("No se pudo conectar con el servidor");
   }
 
   async function obtenerBrandingActual() {
@@ -113,7 +96,7 @@
     }
 
     try {
-      const res = await fetchConReintento(`${getAPI()}/api/branding/current`, {
+      const res = await fetchConTimeout(`${getAPI()}/api/branding/current`, {
         method: "GET"
       });
 
@@ -304,12 +287,27 @@
       video.muted = true;
       video.loop = true;
       video.playsInline = true;
-      video.preload = "metadata";
+      video.preload = "none";
       video.title = item.slot || "Video de galería";
-      video.src = construirAssetUrl(API_BASE, item.url);
+      video.poster = "images/hero-bg.jpg";
+      video.dataset.src = construirAssetUrl(API_BASE, item.url);
 
       card.appendChild(video);
       contenedor.appendChild(card);
+
+      if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver(([entry]) => {
+          if (entry.isIntersecting) {
+            if (!video.src) video.src = video.dataset.src;
+            video.play().catch(() => {});
+          } else {
+            video.pause();
+          }
+        }, { rootMargin: "240px 0px" });
+        observer.observe(card);
+      } else {
+        video.src = video.dataset.src;
+      }
     });
 
     if (estado) estado.hidden = contenedor.children.length > 0;
