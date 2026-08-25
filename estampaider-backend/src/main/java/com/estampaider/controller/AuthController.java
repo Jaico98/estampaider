@@ -9,6 +9,7 @@ import com.estampaider.repository.UsuarioRepository;
 import com.estampaider.security.JwtService;
 import com.estampaider.service.WhatsAppService;
 import java.time.LocalDateTime;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    private static final Map<String, RecoveryData> RECOVERY_CODES = new ConcurrentHashMap<>();
 
     private final UsuarioRepository usuarioRepository;
     private final JwtService jwtService;
@@ -133,9 +136,7 @@ public ResponseEntity<?> login(@RequestBody LoginRequest request) {
 
             String codigo = String.valueOf((int) (Math.random() * 900000) + 100000);
 
-            usuario.setRecoveryCode(codigo);
-            usuario.setRecoveryCodeExpiration(LocalDateTime.now().plusMinutes(5));
-            usuarioRepository.save(usuario);
+            RECOVERY_CODES.put(telefono, new RecoveryData(codigo, LocalDateTime.now().plusMinutes(5)));
 
             System.out.println("=== RECOVERY DEBUG ===");
             System.out.println("Usuario encontrado: " + usuario.getNombre());
@@ -171,11 +172,10 @@ public ResponseEntity<?> login(@RequestBody LoginRequest request) {
             return ResponseEntity.badRequest().body("Usuario no encontrado");
         }
 
-        Usuario usuario = optionalUsuario.get();
-        if (usuario.getRecoveryCode() == null
-                || !usuario.getRecoveryCode().equals(codigo)
-                || usuario.getRecoveryCodeExpiration() == null
-                || usuario.getRecoveryCodeExpiration().isBefore(LocalDateTime.now())) {
+        RecoveryData recovery = RECOVERY_CODES.get(telefono);
+        if (recovery == null
+                || !recovery.codigo().equals(codigo)
+                || recovery.expiracion().isBefore(LocalDateTime.now())) {
             return ResponseEntity.badRequest().body("Código inválido o expirado");
         }
 
@@ -193,11 +193,10 @@ public ResponseEntity<?> login(@RequestBody LoginRequest request) {
             return ResponseEntity.badRequest().body("Usuario no encontrado");
         }
 
-        Usuario usuario = optionalUsuario.get();
-        if (usuario.getRecoveryCode() == null
-                || !usuario.getRecoveryCode().equals(codigo)
-                || usuario.getRecoveryCodeExpiration() == null
-                || usuario.getRecoveryCodeExpiration().isBefore(LocalDateTime.now())) {
+        RecoveryData recovery = RECOVERY_CODES.get(telefono);
+        if (recovery == null
+                || !recovery.codigo().equals(codigo)
+                || recovery.expiracion().isBefore(LocalDateTime.now())) {
             return ResponseEntity.badRequest().body("Código inválido o expirado");
         }
 
@@ -207,10 +206,11 @@ public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         }
 
         usuario.setPassword(passwordEncoder.encode(nuevaPassword));
-        usuario.setRecoveryCode(null);
-        usuario.setRecoveryCodeExpiration(null);
         usuarioRepository.save(usuario);
+        RECOVERY_CODES.remove(telefono);
 
         return ResponseEntity.ok("Contraseña actualizada correctamente");
     }
+
+    private record RecoveryData(String codigo, LocalDateTime expiracion) { }
 }

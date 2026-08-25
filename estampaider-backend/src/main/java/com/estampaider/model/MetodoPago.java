@@ -3,16 +3,22 @@ package com.estampaider.model;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "metodo_pago")
 public class MetodoPago {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false, unique = true, length = 60)
     private String nombre;       // NEQUI, PRESENCIAL, QR
+    @Column(length = 40)
     private String tipo;         // TRANSFERENCIA, PRESENCIAL, QR
+    @Column(length = 200)
     private String descripcion;  // Texto para el cliente
+    @Column(length = 120)
     private String dato;         // Teléfono, dirección o ruta QR
+    @Column(nullable = false)
     private boolean activo = true;
 
     public MetodoPago() {}

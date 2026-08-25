@@ -1,7 +1,17 @@
 package com.estampaider.model;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "detalle_pedido")
@@ -11,87 +21,92 @@ public class DetallePedido {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String producto;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "pedido_id", nullable = false)
+    @JsonIgnore
+    private Pedido pedido;
+
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "producto_id", nullable = false)
+    @JsonIgnore
+    private Producto productoEntidad;
+
+    @Column(name = "producto_nombre", nullable = false, length = 120)
+    private String productoNombre;
+
+    @Column(name = "precio_unitario", nullable = false, precision = 12, scale = 2)
+    private BigDecimal precioUnitario;
 
     @Column(nullable = false)
     private int cantidad;
 
-    @Column(nullable = false)
-    private double precioUnitario;
-
-    @Column(length = 50)
-    private String talla;
-
-    @Column(length = 50)
-    private String color;
-
-    @ManyToOne
-    @JoinColumn(name = "pedido_id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "talla_id")
     @JsonIgnore
-    private Pedido pedido;
+    private Talla tallaEntidad;
 
-    public DetallePedido() {
-    }
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "color_id")
+    @JsonIgnore
+    private Color colorEntidad;
 
-    /* ===================== GETTERS Y SETTERS ===================== */
+    /* Campos transitorios de compatibilidad con el contrato JSON anterior. */
+    @Transient private String producto;
+    @Transient private String talla;
+    @Transient private String color;
 
-    public Long getId() {
-        return id;
+    public Long getId() { return id; }
+    public Pedido getPedido() { return pedido; }
+    public void setPedido(Pedido pedido) { this.pedido = pedido; }
+    @JsonIgnore
+    public Producto getProductoEntidad() { return productoEntidad; }
+    public void setProductoEntidad(Producto productoEntidad) {
+        this.productoEntidad = productoEntidad;
+        if (productoEntidad != null) {
+            this.producto = productoEntidad.getNombre();
+        }
     }
 
     public String getProducto() {
-        return producto;
+        return productoEntidad != null ? productoEntidad.getNombre() : producto;
     }
 
-    public void setProducto(String producto) {
-        this.producto = producto;
-    }
-
-    public int getCantidad() {
-        return cantidad;
-    }
-
-    public void setCantidad(int cantidad) {
-        this.cantidad = cantidad;
-    }
+    public void setProducto(String producto) { this.producto = producto; }
+    public String getProductoNombre() { return productoNombre != null ? productoNombre : getProducto(); }
+    public void setProductoNombre(String productoNombre) { this.productoNombre = productoNombre; }
 
     public double getPrecioUnitario() {
-        return precioUnitario;
+        return precioUnitario == null ? 0D : precioUnitario.doubleValue();
     }
 
     public void setPrecioUnitario(double precioUnitario) {
-        this.precioUnitario = precioUnitario;
+        this.precioUnitario = BigDecimal.valueOf(precioUnitario);
     }
 
-    public Pedido getPedido() {
-        return pedido;
+    @JsonIgnore
+    public BigDecimal getPrecioUnitarioDecimal() { return precioUnitario; }
+    public void setPrecioUnitarioDecimal(BigDecimal value) { this.precioUnitario = value; }
+    public int getCantidad() { return cantidad; }
+    public void setCantidad(int cantidad) { this.cantidad = cantidad; }
+
+    @JsonIgnore
+    public Talla getTallaEntidad() { return tallaEntidad; }
+    public void setTallaEntidad(Talla tallaEntidad) {
+        this.tallaEntidad = tallaEntidad;
+        this.talla = tallaEntidad == null ? null : tallaEntidad.getNombre();
     }
 
-    public void setPedido(Pedido pedido) {
-        this.pedido = pedido;
+    @JsonIgnore
+    public Color getColorEntidad() { return colorEntidad; }
+    public void setColorEntidad(Color colorEntidad) {
+        this.colorEntidad = colorEntidad;
+        this.color = colorEntidad == null ? null : colorEntidad.getNombre();
     }
 
-    /**
-     * Cálculo del subtotal
-     */
-    public double getSubtotal() {
-        return cantidad * precioUnitario;
-    }
-    public String getTalla() {
-        return talla;
-    }
-    
-    public void setTalla(String talla) {
-        this.talla = talla;
-    }
-    
-    public String getColor() {
-        return color;
-    }
-    
-    public void setColor(String color) {
-        this.color = color;
-    }
+    public String getTalla() { return tallaEntidad != null ? tallaEntidad.getNombre() : talla; }
+    public void setTalla(String talla) { this.talla = talla; }
+    public String getColor() { return colorEntidad != null ? colorEntidad.getNombre() : color; }
+    public void setColor(String color) { this.color = color; }
+
+    public double getSubtotal() { return cantidad * getPrecioUnitario(); }
 }
-

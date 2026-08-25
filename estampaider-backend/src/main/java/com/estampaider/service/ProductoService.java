@@ -1,90 +1,100 @@
 package com.estampaider.service;
 
+import com.estampaider.model.Categoria;
+import com.estampaider.model.Color;
+import com.estampaider.model.Producto;
+import com.estampaider.model.Talla;
+import com.estampaider.repository.CategoriaRepository;
+import com.estampaider.repository.ColorRepository;
+import com.estampaider.repository.ProductoRepository;
+import com.estampaider.repository.TallaRepository;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
-
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
-
-import com.estampaider.model.Producto;
-import com.estampaider.repository.ProductoRepository;
 
 @Service
 public class ProductoService {
 
-    private final ProductoRepository productoRepository;
+    private static final String CATEGORIA_POR_DEFECTO = "Sin categoría";
 
-    public ProductoService(ProductoRepository productoRepository) {
+    private final ProductoRepository productoRepository;
+    private final CategoriaRepository categoriaRepository;
+    private final TallaRepository tallaRepository;
+    private final ColorRepository colorRepository;
+
+    public ProductoService(
+            ProductoRepository productoRepository,
+            CategoriaRepository categoriaRepository,
+            TallaRepository tallaRepository,
+            ColorRepository colorRepository) {
         this.productoRepository = productoRepository;
+        this.categoriaRepository = categoriaRepository;
+        this.tallaRepository = tallaRepository;
+        this.colorRepository = colorRepository;
     }
 
     public List<Producto> listarProductosActivos() {
-        return productoRepository.findByActivoTrueOrderByOrdenAscIdAsc();
+        return productoRepository.findByActivoTrueOrderByIdAsc();
     }
 
     public List<Producto> listarTodos() {
-        return productoRepository.findAllByOrderByOrdenAscIdAsc();
+        return productoRepository.findAllByOrderByIdAsc();
     }
 
+    @Transactional
     public Producto crearProducto(Producto producto) {
         validarProducto(producto);
+        String nombre = producto.getNombre().trim();
 
-        productoRepository.findByNombreIgnoreCase(producto.getNombre().trim())
-            .ifPresent(p -> {
-                throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Ya existe un producto con ese nombre"
-                );
-            });
+        productoRepository.findByNombreIgnoreCase(nombre).ifPresent(p -> {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Ya existe un producto con ese nombre");
+        });
 
-        producto.setNombre(producto.getNombre().trim());
+        producto.setNombre(nombre);
         producto.setImagenUrl(producto.getImagenUrl().trim());
-        producto.setActivo(true);
+        producto.setDescripcion(trimOrNull(producto.getDescripcion()));
         producto.setEtiqueta(normalizarEtiqueta(producto.getEtiqueta()));
-        producto.setOrden(productoRepository.findAll().size());
-        producto.setTallasDisponibles(normalizarOpciones(producto.getTallasDisponibles()));
-        producto.setColoresDisponibles(normalizarOpciones(producto.getColoresDisponibles()));
-
+        producto.setCategoriaEntidad(obtenerCategoria(producto.getCategoria()));
+        producto.setTallas(resolverTallas(producto.getTallasDisponibles()));
+        producto.setColores(resolverColores(producto.getColoresDisponibles()));
+        producto.setActivo(true);
         return productoRepository.save(producto);
     }
 
+    @Transactional
     public Producto actualizarProducto(Long id, Producto datos) {
         Producto existente = buscarPorId(id);
-
         validarProducto(datos);
+        String nombre = datos.getNombre().trim();
 
-        productoRepository.findByNombreIgnoreCase(datos.getNombre().trim())
-            .ifPresent(p -> {
-                if (!p.getId().equals(id)) {
-                    throw new ResponseStatusException(
-                        HttpStatus.BAD_REQUEST,
-                        "Ya existe otro producto con ese nombre"
-                    );
-                }
-            });
+        productoRepository.findByNombreIgnoreCase(nombre).ifPresent(p -> {
+            if (!p.getId().equals(id)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Ya existe otro producto con ese nombre");
+            }
+        });
 
-        existente.setNombre(datos.getNombre().trim());
+        existente.setNombre(nombre);
         existente.setImagenUrl(datos.getImagenUrl().trim());
         existente.setPrecio(datos.getPrecio());
-        existente.setDescripcion(datos.getDescripcion());
-        existente.setCategoria(datos.getCategoria());
+        existente.setDescripcion(trimOrNull(datos.getDescripcion()));
         existente.setEtiqueta(normalizarEtiqueta(datos.getEtiqueta()));
-        existente.setDescripcion(datos.getDescripcion() != null ? datos.getDescripcion().trim() : null);
-        existente.setCategoria(datos.getCategoria() != null ? datos.getCategoria().trim() : null);
-        existente.setTallasDisponibles(normalizarOpciones(datos.getTallasDisponibles()));
-        existente.setColoresDisponibles(normalizarOpciones(datos.getColoresDisponibles()));
-
+        existente.setCategoriaEntidad(obtenerCategoria(datos.getCategoria()));
+        existente.setTallas(resolverTallas(datos.getTallasDisponibles()));
+        existente.setColores(resolverColores(datos.getColoresDisponibles()));
         return productoRepository.save(existente);
     }
 
     public Producto buscarPorId(Long id) {
-        return productoRepository.findById(id)
-            .orElseThrow(() ->
-                new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Producto no encontrado"
-                )
-            );
+        return productoRepository.findById(id).orElseThrow(() ->
+                new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado"));
     }
 
     public Producto cambiarEstadoActivo(Long id, boolean activo) {
@@ -93,68 +103,93 @@ public class ProductoService {
         return productoRepository.save(producto);
     }
 
+    /** El orden dejó de ser persistente; se conserva el contrato del endpoint antiguo. */
     public void actualizarOrden(List<Long> idsEnOrden) {
         if (idsEnOrden == null || idsEnOrden.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lista de orden vacía");
         }
-
-        for (int i = 0; i < idsEnOrden.size(); i++) {
-            Producto producto = buscarPorId(idsEnOrden.get(i));
-            producto.setOrden(i);
-            productoRepository.save(producto);
-        }
+        idsEnOrden.forEach(this::buscarPorId);
     }
 
+    /** Desactivación lógica para conservar las referencias históricas de los pedidos. */
+    @Transactional
     public void eliminarProducto(Long id) {
         Producto producto = buscarPorId(id);
-        productoRepository.delete(producto);
+        producto.setActivo(false);
+        productoRepository.save(producto);
+    }
+
+    private Categoria obtenerCategoria(String nombre) {
+        String valor = nombre == null || nombre.isBlank()
+                ? CATEGORIA_POR_DEFECTO
+                : nombre.trim();
+        return categoriaRepository.findByNombreIgnoreCase(valor).orElseGet(() -> {
+            Categoria categoria = new Categoria();
+            categoria.setNombre(valor);
+            categoria.setActivo(true);
+            return categoriaRepository.save(categoria);
+        });
+    }
+
+    private Set<Talla> resolverTallas(String valor) {
+        Set<Talla> resultado = new LinkedHashSet<>();
+        for (String nombre : nombres(valor)) {
+            resultado.add(tallaRepository.findByNombreIgnoreCase(nombre).orElseGet(() -> {
+                Talla talla = new Talla();
+                talla.setNombre(nombre);
+                return tallaRepository.save(talla);
+            }));
+        }
+        return resultado;
+    }
+
+    private Set<Color> resolverColores(String valor) {
+        Set<Color> resultado = new LinkedHashSet<>();
+        for (String nombre : nombres(valor)) {
+            resultado.add(colorRepository.findByNombreIgnoreCase(nombre).orElseGet(() -> {
+                Color color = new Color();
+                color.setNombre(nombre);
+                return colorRepository.save(color);
+            }));
+        }
+        return resultado;
+    }
+
+    private List<String> nombres(String valor) {
+        if (valor == null || valor.isBlank()) return List.of();
+        return Arrays.stream(valor.split(","))
+                .map(String::trim)
+                .filter(v -> !v.isBlank())
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     private void validarProducto(Producto producto) {
         if (producto == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Producto inválido");
         }
-
         if (producto.getNombre() == null || producto.getNombre().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre es obligatorio");
         }
-
         if (producto.getImagenUrl() == null || producto.getImagenUrl().trim().isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La imagen es obligatoria");
         }
-
         if (producto.getPrecio() <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El precio debe ser mayor a 0");
         }
     }
 
     private String normalizarEtiqueta(String etiqueta) {
-        if (etiqueta == null || etiqueta.isBlank()) {
-            return null;
-        }
-
+        if (etiqueta == null || etiqueta.isBlank()) return null;
         String valor = etiqueta.trim().toUpperCase();
-
         if (!valor.equals("MAS_VENDIDO") && !valor.equals("NUEVO")) {
-            throw new ResponseStatusException(
-                HttpStatus.BAD_REQUEST,
-                "Etiqueta inválida. Usa MAS_VENDIDO o NUEVO"
-            );
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Etiqueta inválida. Usa MAS_VENDIDO o NUEVO");
         }
-
         return valor;
     }
-    private String normalizarOpciones(String valor) {
-        if (valor == null || valor.isBlank()) {
-            return null;
-        }
-    
-        return java.util.Arrays.stream(valor.split(","))
-            .map(String::trim)
-            .filter(v -> !v.isBlank())
-            .distinct()
-            .reduce((a, b) -> a + "," + b)
-            .orElse(null);
+
+    private String trimOrNull(String valor) {
+        return valor == null || valor.isBlank() ? null : valor.trim();
     }
 }
-

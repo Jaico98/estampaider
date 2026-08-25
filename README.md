@@ -100,6 +100,8 @@ estampaider/
 └── README.md
 ```
 
+Los scripts de creación, migración y verificación del esquema normalizado se encuentran en `database/`. El esquema principal está compuesto por las 18 tablas definidas para el modelo 3FN; `chat_mensaje` y `cotizacion` se conservan como tablas auxiliares de compatibilidad para el flujo heredado de WhatsApp.
+
 ## Arquitectura general
 
 El sistema utiliza una arquitectura cliente-servidor. El frontend consume servicios REST expuestos por el backend. El backend procesa la lógica de negocio, gestiona la autenticación administrativa mediante JWT, se comunica con la base de datos MySQL alojada en Railway y utiliza Cloudinary para el almacenamiento de imágenes y videos.

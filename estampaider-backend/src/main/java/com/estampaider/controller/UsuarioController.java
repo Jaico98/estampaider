@@ -46,9 +46,11 @@ public class UsuarioController {
             return ResponseEntity.status(401).body("Usuario no autenticado");
         }
 
-        String telefono = authentication.getName();
+        String identificador = authentication.getName();
 
-        Usuario usuario = usuarioRepository.findByTelefono(telefono)
+        Usuario usuario = usuarioRepository.findByTelefono(identificador)
+                .or(() -> usuarioRepository.findByTelefono(identificador.replaceAll("\\D", "")))
+                .or(() -> usuarioRepository.findByUsuario(identificador))
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         if (request.getPasswordActual() == null || request.getPasswordActual().isBlank()) {

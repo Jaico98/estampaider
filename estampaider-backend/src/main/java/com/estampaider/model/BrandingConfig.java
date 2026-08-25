@@ -9,26 +9,20 @@ public class BrandingConfig {
     @Id
     private Long id = 1L;
 
-    @Column(length = 1200)
+    @Column(length = 500)
     private String logoUrl = "";
 
-    @Column(length = 1200)
+    @Column(length = 500)
     private String faviconUrl = "";
 
-    @Column(length = 1200)
+    @Column(length = 500)
     private String heroBackgroundUrl = "";
 
-    @Column(length = 1200)
+    @Column(length = 500)
     private String heroMainVideoUrl = "";
 
-    @Column(length = 1200)
+    @Column(length = 500)
     private String highlightVideoUrl = "";
-
-    @Lob
-    private String galleryVideosJson = "[]";
-
-    @Lob
-    private String socialLinksJson = "{}";
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -48,9 +42,4 @@ public class BrandingConfig {
     public String getHighlightVideoUrl() { return highlightVideoUrl; }
     public void setHighlightVideoUrl(String highlightVideoUrl) { this.highlightVideoUrl = highlightVideoUrl; }
 
-    public String getGalleryVideosJson() { return galleryVideosJson; }
-    public void setGalleryVideosJson(String galleryVideosJson) { this.galleryVideosJson = galleryVideosJson; }
-
-    public String getSocialLinksJson() { return socialLinksJson; }
-    public void setSocialLinksJson(String socialLinksJson) { this.socialLinksJson = socialLinksJson; }
 }

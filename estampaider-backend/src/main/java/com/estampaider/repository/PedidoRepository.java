@@ -11,9 +11,9 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long> {
     /**
      * Buscar pedidos por estado
      */
-    List<Pedido> findByEstado(String estado);
+    List<Pedido> findByEstadoEntidad_NombreIgnoreCase(String estado);
 
-    List<Pedido> findByUsuario_TelefonoOrderByFechaDesc(String telefono);
+    List<Pedido> findByUsuario_IdOrderByFechaDesc(Long usuarioId);
 }
 
 

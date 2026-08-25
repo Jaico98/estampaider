@@ -45,6 +45,16 @@ public class AdminInitializer {
                     actualizado = true;
                 }
 
+                if (admin.getCorreo() == null || admin.getCorreo().isBlank()) {
+                    admin.setCorreo(adminCorreo);
+                    actualizado = true;
+                }
+
+                if (admin.getTelefono() == null || admin.getTelefono().isBlank()) {
+                    admin.setTelefono(adminTelefono);
+                    actualizado = true;
+                }
+
                 if (admin.getPassword() == null || !passwordEncoder.matches(adminPassword, admin.getPassword())) {
                     admin.setPassword(passwordEncoder.encode(adminPassword));
                     actualizado = true;

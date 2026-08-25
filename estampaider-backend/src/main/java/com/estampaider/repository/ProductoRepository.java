@@ -13,7 +13,7 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
 
     Optional<Producto> findByNombreIgnoreCase(String nombre);
 
-    List<Producto> findByActivoTrueOrderByOrdenAscIdAsc();
+    List<Producto> findByActivoTrueOrderByIdAsc();
 
-    List<Producto> findAllByOrderByOrdenAscIdAsc();
+    List<Producto> findAllByOrderByIdAsc();
 }

@@ -196,7 +196,9 @@ WHERE p.estado_id IS NOT NULL
 -- válido. Las nuevas tablas no se relacionan por FK con branding_config,
 -- conforme al Excel 3FN.
 INSERT INTO branding_galeria (tipo, url, orden, activo)
-SELECT 'VIDEO', j.url,
+SELECT COALESCE(NULLIF(LOWER(j.slot), ''),
+                CONCAT('gallery', COALESCE(CAST(REGEXP_SUBSTR(j.slot, '[0-9]+') AS UNSIGNED), 0))),
+       j.url,
        COALESCE(CAST(REGEXP_SUBSTR(j.slot, '[0-9]+') AS UNSIGNED), 0),
        TRUE
 FROM branding_config b

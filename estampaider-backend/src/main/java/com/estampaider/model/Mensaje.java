@@ -1,5 +1,6 @@
 package com.estampaider.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -16,20 +17,23 @@ public class Mensaje {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id")
+    @JsonIgnore
+    private Usuario usuario;
+
     @NotBlank(message = "El nombre es obligatorio")
     @Size(max = 120, message = "El nombre no puede superar 120 caracteres")
     @Column(nullable = false, length = 120)
     private String nombre;
 
-    @NotBlank(message = "El correo es obligatorio")
     @Email(message = "El correo no es válido")
     @Size(max = 160, message = "El correo no puede superar 160 caracteres")
-    @Column(nullable = false, length = 160)
+    @Column(length = 160)
     private String correo;
 
-    @NotBlank(message = "El whatsapp es obligatorio")
-    @Pattern(regexp = "^[0-9+\\s()-]{7,25}$", message = "El whatsapp no es válido")
-    @Column(nullable = false, length = 25)
+    @Pattern(regexp = "^$|^[0-9+\\s()-]{7,25}$", message = "El whatsapp no es válido")
+    @Column(length = 25)
     private String whatsapp;
 
     @NotBlank(message = "El mensaje es obligatorio")
@@ -45,6 +49,14 @@ public class Mensaje {
 
     public Long getId() {
         return id;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
     }
 
     public String getNombre() {

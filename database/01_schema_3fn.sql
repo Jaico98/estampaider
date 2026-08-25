@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS usuarios (
     correo VARCHAR(160) NOT NULL,
     telefono VARCHAR(20) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
-    rol ENUM('CLIENTE', 'ADMINISTRADOR') NOT NULL,
+    rol ENUM('CLIENTE', 'ADMIN') NOT NULL,
     PRIMARY KEY (id),
     UNIQUE KEY uq_usuarios_usuario (usuario),
     UNIQUE KEY uq_usuarios_correo (correo),
@@ -216,5 +216,32 @@ CREATE TABLE IF NOT EXISTS branding_redes (
     url VARCHAR(500) NOT NULL,
     orden INT NOT NULL,
     activo BOOLEAN NOT NULL DEFAULT TRUE,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Compatibilidad operativa del código heredado de WhatsApp.
+-- Estas tablas no forman parte del modelo 3FN de la aplicación web principal.
+CREATE TABLE IF NOT EXISTS chat_mensaje (
+    id VARCHAR(255) NOT NULL,
+    nombre VARCHAR(255) NULL,
+    correo VARCHAR(255) NULL,
+    mensaje TEXT NULL,
+    telefono VARCHAR(255) NULL,
+    tipo VARCHAR(255) NULL,
+    fecha TIMESTAMP NULL,
+    leido BOOLEAN NOT NULL DEFAULT FALSE,
+    recibido BOOLEAN NOT NULL DEFAULT FALSE,
+    PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS cotizacion (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    telefono VARCHAR(255) NULL,
+    producto VARCHAR(255) NULL,
+    cantidad VARCHAR(255) NULL,
+    estampado VARCHAR(255) NULL,
+    fecha DATETIME NULL,
+    precio DOUBLE NULL,
+    total DOUBLE NULL,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

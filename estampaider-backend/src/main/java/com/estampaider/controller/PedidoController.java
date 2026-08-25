@@ -85,11 +85,11 @@ public class PedidoController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El pedido debe tener al menos un producto");
         }
 
-        String telefono = normalizarTelefono(authentication.getName());
+        String identificador = authentication.getName();
 
         Pedido pedido = new Pedido();
         pedido.setCliente(textoSeguro(request.getCliente()));
-        pedido.setTelefono(telefono);
+        pedido.setTelefono(identificador);
         pedido.setDireccion(textoSeguro(request.getDireccion()));
         pedido.setCiudad(textoSeguro(request.getCiudad()));
         pedido.setDepartamento(textoSeguro(request.getDepartamento()));
@@ -109,10 +109,6 @@ public class PedidoController {
             if (d.getCantidad() <= 0) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La cantidad debe ser mayor a 0");
             }
-            if (d.getPrecioUnitario() <= 0) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El precio unitario debe ser mayor a 0");
-            }
-        
             DetallePedido detalle = new DetallePedido();
             detalle.setProducto(d.getProducto().trim());
             detalle.setCantidad(d.getCantidad());
@@ -140,8 +136,7 @@ public class PedidoController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No autenticado");
         }
 
-        String telefono = normalizarTelefono(authentication.getName());
-        List<Pedido> pedidos = pedidoService.listarPorTelefono(telefono);
+        List<Pedido> pedidos = pedidoService.listarPorIdentificador(authentication.getName());
         return ResponseEntity.ok(pedidos);
     }
 
@@ -156,11 +151,7 @@ public class PedidoController {
 
     @PutMapping("/{id}/pago")
     public ResponseEntity<Pedido> marcarPago(@PathVariable Long id) {
-        Pedido pedido = pedidoService.obtenerPorId(id)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
-
-        pedido.setEstadoPago("PAGADO");
-        Pedido pedidoActualizado = pedidoService.guardarPedido(pedido);
+        Pedido pedidoActualizado = pedidoService.marcarPago(id);
         return ResponseEntity.ok(pedidoActualizado);
     }
 
@@ -248,13 +239,7 @@ public class PedidoController {
     }
 
     private boolean esPropietario(Authentication authentication, Pedido pedido) {
-        String telefonoAuth = normalizarTelefono(authentication.getName());
-        String telefonoPedido = normalizarTelefono(pedido.getTelefono());
-        return !telefonoAuth.isBlank() && telefonoAuth.equals(telefonoPedido);
-    }
-
-    private String normalizarTelefono(String telefono) {
-        return telefono == null ? "" : telefono.replaceAll("\\D", "");
+        return pedidoService.esPropietario(authentication.getName(), pedido);
     }
 
     private String textoSeguro(String valor) {

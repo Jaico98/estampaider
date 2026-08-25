@@ -1,15 +1,13 @@
 package com.estampaider.config;
 
 import com.estampaider.model.MetodoPago;
-import com.estampaider.model.Usuario;
-import com.estampaider.model.Rol;
+import com.estampaider.model.EstadoPedido;
+import com.estampaider.repository.EstadoPedidoRepository;
 import com.estampaider.repository.MetodoPagoRepository;
-import com.estampaider.repository.UsuarioRepository;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Configuration
 public class DataInitializer {
@@ -17,8 +15,7 @@ public class DataInitializer {
     @Bean
     CommandLineRunner initData(
             MetodoPagoRepository metodoRepo,
-            UsuarioRepository usuarioRepo
-    ) {
+            EstadoPedidoRepository estadoRepo) {
         return args -> {
 
             /* =========================
@@ -48,21 +45,16 @@ public class DataInitializer {
                 ));
             }
 
-            /* =========================
-               USUARIO ADMIN
-            ========================== */
-            if (usuarioRepo.findByTelefono("admin").isEmpty()) {
-
-                BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-
-                Usuario admin = new Usuario();
-                admin.setNombre("Administrador");
-                admin.setTelefono("admin");
-                admin.setRol(Rol.ADMIN);
-                admin.setPassword(encoder.encode("1234"));
-
-                usuarioRepo.save(admin);
+            if (estadoRepo.count() == 0) {
+                String[] estados = {"RECIBIDO", "PENDIENTE", "ENVIADO", "ENTREGADO", "CANCELADO"};
+                for (int i = 0; i < estados.length; i++) {
+                    EstadoPedido estado = new EstadoPedido();
+                    estado.setNombre(estados[i]);
+                    estado.setOrden(i + 1);
+                    estadoRepo.save(estado);
+                }
             }
+
         };
     }
 }
