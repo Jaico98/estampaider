@@ -205,6 +205,7 @@ public ResponseEntity<?> login(@RequestBody LoginRequest request) {
                     "La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un carácter especial.");
         }
 
+        Usuario usuario = optionalUsuario.get();
         usuario.setPassword(passwordEncoder.encode(nuevaPassword));
         usuarioRepository.save(usuario);
         RECOVERY_CODES.remove(telefono);
