@@ -47,6 +47,7 @@ public class PedidoHistorial {
     public void setEstado(EstadoPedido estado) { this.estado = estado; }
     public LocalDateTime getFecha() { return fecha; }
     public void setFecha(LocalDateTime fecha) { this.fecha = fecha; }
+    @JsonIgnore
     public Usuario getUsuario() { return usuario; }
     public void setUsuario(Usuario usuario) { this.usuario = usuario; }
     public String getObservacion() { return observacion; }
