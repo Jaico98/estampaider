@@ -13,7 +13,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -62,16 +61,38 @@ public class Pedido {
     @OneToMany(mappedBy = "pedido", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<PedidoHistorial> historial = new ArrayList<>();
 
-    /* Campos transitorios de compatibilidad con el contrato anterior. */
-    @Transient private String cliente;
-    @Transient private String telefono;
-    @Transient private String estado;
-    @Transient private String metodoPago;
-    @Transient private String direccion;
-    @Transient private String ciudad;
-    @Transient private String departamento;
-    @Transient private String barrio;
-    @Transient private String referencia;
+    /*
+     * Columnas heredadas conservadas durante la transición al esquema 3FN.
+     * Se mantienen sincronizadas con las relaciones normalizadas para que la
+     * aplicación pueda operar mientras la migración completa no retire esas
+     * columnas de la base de datos existente.
+     */
+    @Column(name = "cliente", nullable = false)
+    private String cliente;
+
+    @Column(name = "telefono", nullable = false, length = 20)
+    private String telefono;
+
+    @Column(name = "estado", nullable = false)
+    private String estado;
+
+    @Column(name = "metodo_pago", nullable = false)
+    private String metodoPago;
+
+    @Column(name = "direccion", nullable = false)
+    private String direccion;
+
+    @Column(name = "ciudad", nullable = false)
+    private String ciudad;
+
+    @Column(name = "departamento", nullable = false)
+    private String departamento;
+
+    @Column(name = "barrio", nullable = false)
+    private String barrio;
+
+    @Column(name = "referencia")
+    private String referencia;
 
     @PrePersist
     public void prePersist() {

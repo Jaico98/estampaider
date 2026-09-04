@@ -10,7 +10,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import java.math.BigDecimal;
 
 @Entity
@@ -50,10 +49,15 @@ public class DetallePedido {
     @JsonIgnore
     private Color colorEntidad;
 
-    /* Campos transitorios de compatibilidad con el contrato JSON anterior. */
-    @Transient private String producto;
-    @Transient private String talla;
-    @Transient private String color;
+    /* Columnas heredadas conservadas durante la transición al esquema 3FN. */
+    @Column(name = "producto", nullable = false)
+    private String producto;
+
+    @Column(name = "talla")
+    private String talla;
+
+    @Column(name = "color")
+    private String color;
 
     public Long getId() { return id; }
     public Pedido getPedido() { return pedido; }
