@@ -11,6 +11,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 @Entity
 @Table(name = "detalle_pedido")
@@ -27,6 +29,7 @@ public class DetallePedido {
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "producto_id", nullable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
     @JsonIgnore
     private Producto productoEntidad;
 
@@ -41,11 +44,13 @@ public class DetallePedido {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "talla_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     @JsonIgnore
     private Talla tallaEntidad;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "color_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     @JsonIgnore
     private Color colorEntidad;
 
@@ -60,6 +65,7 @@ public class DetallePedido {
     private String color;
 
     public Long getId() { return id; }
+    @JsonIgnore
     public Pedido getPedido() { return pedido; }
     public void setPedido(Pedido pedido) { this.pedido = pedido; }
     @JsonIgnore

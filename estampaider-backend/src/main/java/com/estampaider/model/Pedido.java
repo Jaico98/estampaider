@@ -17,6 +17,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 @Entity
 @Table(name = "pedidos")
@@ -28,21 +30,25 @@ public class Pedido {
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "usuario_id", nullable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
     @JsonIgnore
     private Usuario usuario;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "direccion_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     @JsonIgnore
     private DireccionEntrega direccionEntidad;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "metodo_pago_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     @JsonIgnore
     private MetodoPago metodoPagoEntidad;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "estado_id", nullable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
     @JsonIgnore
     private EstadoPedido estadoEntidad;
 

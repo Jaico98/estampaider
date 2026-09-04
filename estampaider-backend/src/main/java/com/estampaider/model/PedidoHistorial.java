@@ -11,6 +11,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import org.hibernate.annotations.NotFound;
+import org.hibernate.annotations.NotFoundAction;
 
 @Entity
 @Table(name = "pedido_historial")
@@ -27,6 +29,7 @@ public class PedidoHistorial {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "estado_id", nullable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
     private EstadoPedido estado;
 
     @Column(nullable = false)
@@ -34,12 +37,14 @@ public class PedidoHistorial {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id")
+    @NotFound(action = NotFoundAction.IGNORE)
     private Usuario usuario;
 
     @Column(length = 300)
     private String observacion;
 
     public Long getId() { return id; }
+    @JsonIgnore
     public Pedido getPedido() { return pedido; }
     public void setPedido(Pedido pedido) { this.pedido = pedido; }
     @JsonIgnore
