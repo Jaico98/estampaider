@@ -1,6 +1,6 @@
 # Estampaider
 
-**Plataforma web para la personalización y comercialización de productos estampados del emprendimiento Estampaider.**
+**PLATAFORMA WEB PARA LA GESTIÓN COMERCIAL Y PRESENTACIÓN DE PRODUCTOS PERSONALIZADOS DEL EMPRENDIMIENTO ESTAMPAIDER.**
 
 Este repositorio contiene el desarrollo del proyecto de grado de Ingeniería de Sistemas titulado:
 
@@ -16,7 +16,7 @@ https://jaico98.github.io/estampaider/
 
 ## Objetivo del proyecto
 
-Desarrollar una plataforma web que permita apoyar la personalización y comercialización de productos estampados mediante catálogo dinámico, carrito de compras, registro de pedidos, consulta mediante número de WhatsApp, panel administrativo y gestión de productos, pedidos, mensajes, reseñas, branding y contenido multimedia.
+Desarrollar una plataforma web para apoyar la gestión comercial del emprendimiento Estampaider, mediante la presentación de productos personalizados en catálogo dinámico, el registro y consulta de pedidos, y la administración centralizada de la información del negocio.
 
 ## Alcance funcional
 
@@ -26,7 +26,7 @@ La plataforma incluye las siguientes funcionalidades principales:
 * Búsqueda y filtrado de productos.
 * Carrito de compras para organizar productos seleccionados.
 * Registro de pedidos con datos del cliente.
-* Consulta de pedidos mediante número de WhatsApp registrado.
+* Consulta de los pedidos asociados con la cuenta autenticada.
 * Redirección a WhatsApp como canal externo de contacto y cotización.
 * Formulario de mensajes de contacto.
 * Visualización y gestión de reseñas.
@@ -51,7 +51,7 @@ La versión actual del sistema no incluye:
 * Integración oficial completa con WhatsApp Business API.
 * Automatización certificada de mensajes por WhatsApp.
 
-WhatsApp se utiliza únicamente como canal externo de contacto y cotización. El número de WhatsApp registrado por el cliente se usa como dato de referencia para consultar pedidos dentro de la plataforma.
+WhatsApp se utiliza únicamente como canal externo de contacto y cotización. El número de teléfono se utiliza como dato de contacto y como identificador para el inicio de sesión del cliente; la consulta de pedidos se realiza a partir de la sesión autenticada y de la relación persistente pedidos.usuario_id.
 
 ## Tecnologías utilizadas
 
