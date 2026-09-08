@@ -4,7 +4,7 @@
 
 Este repositorio contiene el desarrollo del proyecto de grado de Ingeniería de Sistemas titulado:
 
-**“Plataforma web para la personalización y comercialización de productos del emprendimiento Estampaider”**
+**“Plataforma web para la gestión comercial y presentación de productos personalizados del emprendimiento Estampaider”**
 
 La solución fue desarrollada para apoyar la presentación de productos personalizados, el registro de pedidos, la consulta de solicitudes y la administración de información comercial del emprendimiento.
 
