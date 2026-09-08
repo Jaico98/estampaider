@@ -2859,6 +2859,13 @@ textarea:focus-visible {
   box-shadow: 0 18px 34px rgba(20,166,214,0.28);
 }
 
+.btn-login-estampaider:disabled {
+  cursor: wait;
+  opacity: 0.78;
+  transform: none;
+  box-shadow: 0 10px 22px rgba(20,166,214,0.16);
+}
+
 .auth-links {
   margin-top: 18px;
   text-align: center;
@@ -2885,6 +2892,10 @@ textarea:focus-visible {
   color: #c62828;
   font-weight: 600;
   text-align: center;
+}
+
+.auth-container-pro .error.loading {
+  color: #475569;
 }
 
 @media (max-width: 900px) {

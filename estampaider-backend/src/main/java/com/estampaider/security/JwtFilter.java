@@ -30,6 +30,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 || path.startsWith("/topic")
                 || path.startsWith("/app")
                 || path.startsWith("/api/auth")
+                || path.equals("/api/hello")
                 || path.startsWith("/api/metodos-pago")
                 || path.startsWith("/images")
                 || path.startsWith("/uploads")

@@ -7,6 +7,29 @@
     "estampaider_social_refresh",
     "estampaider_home_refresh"
   ];
+  const FRONTEND_BASE_URL = new URL(
+    ".",
+    document.currentScript?.src || window.location.href
+  );
+  const VIDEOS_LOCALES = Object.freeze({
+    heroMainVideoUrl: new URL("videos/durazno.mp4", FRONTEND_BASE_URL).href,
+    highlightVideoUrl: new URL("videos/piscina.mp4", FRONTEND_BASE_URL).href,
+    galleryVideos: [
+      "cara.mp4",
+      "cami.mp4",
+      "pocillosdocentes.mp4",
+      "claro.mp4",
+      "polos.mp4",
+      "magicoporta.mp4",
+      "carcasa.mp4",
+      "navi.mp4",
+      "mayor.mp4",
+      "oscuro.mp4"
+    ].map((archivo, indice) => ({
+      slot: `gallery${indice + 1}`,
+      url: new URL(`videos/${archivo}`, FRONTEND_BASE_URL).href
+    }))
+  });
 
   function resolverApiBaseBranding() {
     if (window.ESTAMPAIDER_CONFIG?.API_BASE) {
@@ -76,7 +99,7 @@
     return `${API_BASE}${url}?v=${version}`;
   }
 
-  async function fetchConTimeout(url, options = {}, timeoutMs = 7000) {
+  async function fetchConTimeout(url, options = {}, timeoutMs = 120000) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -90,14 +113,23 @@
   async function obtenerBrandingActual() {
     const API_BASE = resolverApiBaseBranding();
 
+    // La portada no depende de que Render o la base de datos estén despiertos:
+    // estos archivos forman parte del frontend publicado en GitHub Pages.
+    aplicarVideosInicio(API_BASE, VIDEOS_LOCALES);
+
     const cache = leerCacheBranding();
     if (cache && !brandingVacio(cache)) {
-      aplicarBranding(API_BASE, cache);
+      aplicarBranding(API_BASE, completarVideosFaltantes(cache));
     }
 
     try {
+      if (typeof window.activarBackend === "function") {
+        await window.activarBackend();
+      }
+
       const res = await fetchConTimeout(`${getAPI()}/api/branding/current`, {
-        method: "GET"
+        method: "GET",
+        cache: "no-store"
       });
 
       if (!res.ok) {
@@ -112,10 +144,24 @@
       }
 
       guardarCacheBranding(data);
-      aplicarBranding(API_BASE, data);
+      aplicarBranding(API_BASE, completarVideosFaltantes(data));
     } catch (error) {
       console.warn("No se pudo cargar branding dinámico:", error);
     }
+  }
+
+  function completarVideosFaltantes(data = {}) {
+    return {
+      ...data,
+      heroMainVideoUrl:
+        textoSeguro(data.heroMainVideoUrl).trim() || VIDEOS_LOCALES.heroMainVideoUrl,
+      highlightVideoUrl:
+        textoSeguro(data.highlightVideoUrl).trim() || VIDEOS_LOCALES.highlightVideoUrl,
+      galleryVideos:
+        Array.isArray(data.galleryVideos) && data.galleryVideos.length > 0
+          ? data.galleryVideos
+          : VIDEOS_LOCALES.galleryVideos
+    };
   }
 
   function aplicarBranding(API_BASE, data) {
@@ -264,8 +310,10 @@
 
     if (!Array.isArray(videos) || videos.length === 0) {
       if (estado) {
-        estado.hidden = false;
-        estado.textContent = "Los trabajos destacados estarán disponibles cuando se cargue el contenido multimedia.";
+        estado.hidden = contenedor.children.length > 0;
+        if (!estado.hidden) {
+          estado.textContent = "No fue posible cargar los trabajos destacados en este momento.";
+        }
       }
       return;
     }
@@ -291,6 +339,13 @@
       video.title = item.slot || "Video de galería";
       video.poster = "images/hero-bg.jpg";
       video.dataset.src = construirAssetUrl(API_BASE, item.url);
+      video.addEventListener("error", () => {
+        card.hidden = true;
+        if (estado && !contenedor.querySelector(".video-card:not([hidden])")) {
+          estado.hidden = false;
+          estado.textContent = "No fue posible reproducir los trabajos destacados en este momento.";
+        }
+      });
 
       card.appendChild(video);
       contenedor.appendChild(card);

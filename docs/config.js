@@ -24,6 +24,8 @@
   }
 
   const API_BASE = resolverApiBase();
+  const BACKEND_WAKE_TIMEOUT_MS = 120000;
+  let backendWakePromise = null;
 
   function reescribirApiUrl(input) {
     try {
@@ -75,11 +77,47 @@
     return fetchOriginal(input, init);
   };
 
+  function activarBackend() {
+    if (backendWakePromise) {
+      return backendWakePromise;
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), BACKEND_WAKE_TIMEOUT_MS);
+
+    backendWakePromise = fetchOriginal(`${API_BASE}/api/hello`, {
+      method: "GET",
+      cache: "no-store",
+      signal: controller.signal
+    })
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`El backend respondió ${response.status}`);
+        }
+
+        return true;
+      })
+      .catch((error) => {
+        console.warn("No se pudo activar el backend anticipadamente:", error);
+        backendWakePromise = null;
+        return false;
+      })
+      .finally(() => clearTimeout(timeout));
+
+    return backendWakePromise;
+  }
+
   window.ESTAMPAIDER_CONFIG = Object.freeze({
     API_BASE,
-    WHATSAPP_NUMBER: "573153625992"
+    WHATSAPP_NUMBER: "573153625992",
+    BACKEND_WAKE_TIMEOUT_MS
   });
 
   window.resolverApiBase = resolverApiBase;
   window.textoSeguro = textoSeguro;
+  window.activarBackend = activarBackend;
+
+  // Render puede suspender el servicio por inactividad. Esta llamada comienza
+  // a reactivarlo desde que se abre cualquier página, antes de autenticar.
+  activarBackend();
 })();

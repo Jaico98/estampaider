@@ -1,5 +1,6 @@
 const form = document.getElementById("loginForm");
 const errorMsg = document.getElementById("error");
+const submitButton = form?.querySelector('button[type="submit"]');
 
 const API_BASE =
   window.ESTAMPAIDER_CONFIG?.API_BASE ||
@@ -7,22 +8,64 @@ const API_BASE =
     ? resolverApiBase()
     : "https://estampaider.onrender.com");
 
+const AUTH_TIMEOUT_MS = 30000;
+const SUBMIT_TEXT = submitButton?.textContent || "Ingresar";
+
+function mostrarMensaje(texto, cargando = false) {
+  if (!errorMsg) return;
+  errorMsg.textContent = texto;
+  errorMsg.classList.toggle("loading", cargando);
+}
+
+function cambiarEstadoEnvio(cargando, texto = SUBMIT_TEXT) {
+  if (!submitButton) return;
+  submitButton.disabled = cargando;
+  submitButton.textContent = texto;
+  submitButton.setAttribute("aria-busy", cargando ? "true" : "false");
+}
+
+async function esperarBackend() {
+  if (typeof window.activarBackend !== "function") return;
+
+  mostrarMensaje("⏳ Activando el servidor; esto solo puede tardar en la primera entrada…", true);
+  const disponible = await window.activarBackend();
+  if (!disponible) throw new Error("BACKEND_NO_DISPONIBLE");
+}
+
+async function enviarAutenticacion(url, options) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), AUTH_TIMEOUT_MS);
+
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 if (form) {
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
     const usuario = document.getElementById("usuario")?.value.trim() || "";
-    const password = document.getElementById("password")?.value.trim() || "";
+    const password = document.getElementById("password")?.value || "";
 
-    errorMsg.textContent = "";
+    mostrarMensaje("");
 
     if (!usuario || !password) {
-      errorMsg.textContent = "⚠️ Ingresa usuario y contraseña";
+      mostrarMensaje("⚠️ Ingresa usuario y contraseña");
       return;
     }
 
+    let redireccionando = false;
+    cambiarEstadoEnvio(true, "Conectando…");
+
     try {
-      const response = await fetch(`${API_BASE}/api/auth/login`, {
+      await esperarBackend();
+      mostrarMensaje("⏳ Verificando credenciales…", true);
+      cambiarEstadoEnvio(true, "Verificando…");
+
+      const response = await enviarAutenticacion(`${API_BASE}/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -33,15 +76,17 @@ if (form) {
 
       if (!response.ok) {
         const detalle = await response.text();
-        errorMsg.textContent = `❌ ${detalle || "Error de autenticación"}`;
+        mostrarMensaje(`❌ ${detalle || "Error de autenticación"}`);
         return;
       }
+
       const data = await response.json();
 
       const authGuardado = JSON.stringify({
         ok: data.ok,
         rol: data.rol,
         nombre: data.nombre,
+        correo: data.correo,
         telefono: data.telefono,
         token: data.token
       });
@@ -53,6 +98,9 @@ if (form) {
         sessionStorage.getItem("redirectAfterLogin") ||
         localStorage.getItem("redirectAfterLogin");
 
+      redireccionando = true;
+      cambiarEstadoEnvio(true, "Acceso correcto…");
+
       if (redirect) {
         sessionStorage.removeItem("redirectAfterLogin");
         localStorage.removeItem("redirectAfterLogin");
@@ -60,14 +108,17 @@ if (form) {
         return;
       }
 
-      if (data.rol === "ADMIN") {
-        window.location.href = "../pedidos.html";
-      } else {
-        window.location.href = "../mi-pedido.html";
-      }
-    } catch (err) {
-      console.error("Error login:", err);
-      errorMsg.textContent = "⚠️ Error de conexión con el servidor";
+      window.location.href = data.rol === "ADMIN"
+        ? "../pedidos.html"
+        : "../mi-pedido.html";
+    } catch (error) {
+      console.error("Error login:", error);
+      const mensaje = error?.name === "AbortError"
+        ? "⚠️ El servidor tardó demasiado en responder. Intenta nuevamente."
+        : "⚠️ No fue posible conectar con el servidor. Intenta nuevamente.";
+      mostrarMensaje(mensaje);
+    } finally {
+      if (!redireccionando) cambiarEstadoEnvio(false);
     }
   });
 }

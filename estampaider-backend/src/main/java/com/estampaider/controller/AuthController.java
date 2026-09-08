@@ -9,9 +9,10 @@ import com.estampaider.repository.UsuarioRepository;
 import com.estampaider.security.JwtService;
 import com.estampaider.service.WhatsAppService;
 import java.time.LocalDateTime;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -47,23 +48,29 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
-        if (usuarioRepository.existsByTelefono(request.getTelefono())) {
+        String nombre = textoLimpio(request.getNombre());
+        String telefono = textoLimpio(request.getTelefono());
+        String correo = textoLimpio(request.getCorreo()).toLowerCase(Locale.ROOT);
+        String password = request.getPassword() != null ? request.getPassword() : "";
+
+        if (nombre.isBlank() || telefono.isBlank() || correo.isBlank() || password.isBlank()) {
+            return ResponseEntity.badRequest().body("Nombre, teléfono, correo y contraseña son obligatorios");
+        }
+
+        var existentes = usuarioRepository.findAllByTelefonoOrCorreo(telefono, correo);
+        if (existentes.stream().anyMatch(usuario -> telefono.equals(usuario.getTelefono()))) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("El teléfono ya está registrado");
         }
-        if (request.getCorreo() == null || request.getCorreo().isBlank()) {
-            return ResponseEntity.badRequest().body("El correo es obligatorio");
-        }
-        
-        if (usuarioRepository.findByCorreo(request.getCorreo()).isPresent()) {
+        if (!existentes.isEmpty()) {
             return ResponseEntity.badRequest().body("Ya existe un usuario con ese correo");
         }
 
         Usuario nuevoUsuario = new Usuario();
-        nuevoUsuario.setNombre(request.getNombre());
-        nuevoUsuario.setCorreo(request.getCorreo());
-        nuevoUsuario.setTelefono(request.getTelefono());
+        nuevoUsuario.setNombre(nombre);
+        nuevoUsuario.setCorreo(correo);
+        nuevoUsuario.setTelefono(telefono);
         nuevoUsuario.setRol(Rol.CLIENTE);
-        nuevoUsuario.setPassword(passwordEncoder.encode(request.getPassword()));
+        nuevoUsuario.setPassword(passwordEncoder.encode(password));
         usuarioRepository.save(nuevoUsuario);
 
         String token = jwtService.generateToken(nuevoUsuario.getTelefono(), nuevoUsuario.getRol().name());
@@ -80,42 +87,48 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-    String identificador = request.getUsuario() != null ? request.getUsuario().trim() : "";
-    String password = request.getPassword() != null ? request.getPassword().trim() : "";
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        String identificador = textoLimpio(request.getUsuario());
+        String password = request.getPassword() != null ? request.getPassword() : "";
 
-    if (identificador.isBlank() || password.isBlank()) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Usuario y contraseña son obligatorios");
+        if (identificador.isBlank() || password.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Usuario y contraseña son obligatorios");
+        }
+
+        // Una sola consulta cubre tanto el usuario del administrador como el
+        // teléfono del cliente. Antes, el acceso por teléfono hacía dos viajes
+        // consecutivos a la base de datos remota.
+        var coincidencias = usuarioRepository.findAllByUsuarioOrTelefono(identificador, identificador);
+        Usuario usuario = coincidencias.stream()
+                .filter(item -> identificador.equals(item.getUsuario()))
+                .findFirst()
+                .orElseGet(() -> coincidencias.stream().findFirst().orElse(null));
+
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no encontrado");
+        }
+
+        if (!passwordEncoder.matches(password, usuario.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
+        }
+
+        String subject = (usuario.getUsuario() != null && !usuario.getUsuario().isBlank())
+                ? usuario.getUsuario()
+                : usuario.getTelefono();
+
+        String token = jwtService.generateToken(subject, usuario.getRol().name());
+
+        LoginResponse response = new LoginResponse(
+                true,
+                usuario.getRol().name(),
+                usuario.getNombre(),
+                usuario.getCorreo(),
+                usuario.getTelefono(),
+                token
+        );
+
+        return ResponseEntity.ok(response);
     }
-
-    Usuario usuario = usuarioRepository.findByUsuario(identificador)
-            .orElseGet(() -> usuarioRepository.findByTelefono(identificador).orElse(null));
-
-    if (usuario == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Usuario no encontrado");
-    }
-
-    if (!passwordEncoder.matches(password, usuario.getPassword())) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Credenciales inválidas");
-    }
-
-    String subject = (usuario.getUsuario() != null && !usuario.getUsuario().isBlank())
-            ? usuario.getUsuario()
-            : usuario.getTelefono();
-
-    String token = jwtService.generateToken(subject, usuario.getRol().name());
-
-    LoginResponse response = new LoginResponse(
-            true,
-            usuario.getRol().name(),
-            usuario.getNombre(),
-            usuario.getCorreo(),
-            usuario.getTelefono(),
-            token
-    );
-
-    return ResponseEntity.ok(response);
-}
 
     @PostMapping("/send-code")
     public ResponseEntity<?> sendCode(@RequestBody Map<String, String> request) {
@@ -214,4 +227,8 @@ public ResponseEntity<?> login(@RequestBody LoginRequest request) {
     }
 
     private record RecoveryData(String codigo, LocalDateTime expiracion) { }
+
+    private String textoLimpio(String valor) {
+        return valor != null ? valor.trim() : "";
+    }
 }
