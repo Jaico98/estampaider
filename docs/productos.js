@@ -8,14 +8,24 @@ const API_BASE =
 
 const API_URL = `${API_BASE}/api/productos`;
 const PRODUCTOS_CACHE_KEY = "estampaider_productos_cache_v1";
-const PRODUCTOS_TIMEOUT_MS = 8000;
+const PRODUCTOS_TIMEOUT_MS = 120000;
+let cargaProductosEnCurso = false;
 
-async function fetchConTimeout(url, options = {}, timeoutMs = PRODUCTOS_TIMEOUT_MS) {
+async function obtenerCatalogo(url, timeoutMs = PRODUCTOS_TIMEOUT_MS) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    return await fetch(url, { ...options, signal: controller.signal });
+    const response = await fetch(url, {
+      headers: { Accept: "application/json" },
+      cache: "no-store",
+      signal: controller.signal
+    });
+    if (!response.ok) throw new Error(`El catálogo respondió HTTP ${response.status}`);
+    // El límite también cubre la descarga y lectura del cuerpo de la respuesta.
+    const productos = await response.json();
+    if (!Array.isArray(productos)) throw new Error("La respuesta del catálogo no es válida");
+    return productos;
   } finally {
     clearTimeout(timeout);
   }
@@ -222,46 +232,71 @@ function renderizarProductos(productos) {
 
 async function cargarProductos() {
   const contenedor = document.getElementById("productos-container");
-  if (!contenedor) return;
+  if (!contenedor || cargaProductosEnCurso) return;
+  cargaProductosEnCurso = true;
+
+  let estado = document.getElementById("estado-catalogo");
+  if (!estado) {
+    estado = document.createElement("div");
+    estado.id = "estado-catalogo";
+    estado.setAttribute("role", "status");
+    estado.setAttribute("aria-live", "polite");
+    contenedor.before(estado);
+  }
+  estado.replaceChildren();
+  estado.hidden = true;
+  contenedor.setAttribute("aria-busy", "true");
 
   const cache = leerProductosCache();
+  const tieneCache = Array.isArray(cache) && cache.length > 0;
 
-  if (cache && Array.isArray(cache) && cache.length) {
+  if (tieneCache) {
     renderizarProductos(cache);
   } else {
     contenedor.innerHTML = "<p>Cargando productos...</p>";
   }
 
+  const avisoLento = setTimeout(() => {
+    estado.hidden = false;
+    estado.textContent = tieneCache
+      ? "Actualizando el catálogo. Los productos mostrados corresponden a la última consulta."
+      : "La carga está tardando más de lo habitual. Seguimos consultando el catálogo; no necesitas actualizar la página.";
+  }, 8000);
+
   try {
-    const response = await fetchConTimeout(API_URL, {
-      headers: { Accept: "application/json" }
-    });
-
-    if (!response.ok) {
-      throw new Error("Error al consultar la API");
-    }
-
-    const productos = await response.json();
+    const productos = await obtenerCatalogo(API_URL);
 
     guardarProductosCache(productos);
 
     const cacheTexto = JSON.stringify(cache || []);
     const productosTexto = JSON.stringify(productos || []);
 
-    if (cacheTexto !== productosTexto) {
+    if (!tieneCache || cacheTexto !== productosTexto) {
       renderizarProductos(productos);
     }
+    estado.replaceChildren();
+    estado.hidden = true;
   } catch (err) {
-    console.error(err);
-
-    if (cache && Array.isArray(cache) && cache.length) {
-      return;
-    }
+    console.warn("No se pudo actualizar el catálogo:", err);
 
     const mensaje = err?.name === "AbortError"
-      ? "El catálogo está tardando en responder. Intenta actualizar en unos segundos."
-      : "Error al cargar productos. Intenta más tarde 😢";
-    contenedor.innerHTML = `<p>${mensaje}</p>`;
+      ? "El catálogo no respondió a tiempo. Puedes volver a intentarlo."
+      : "No pudimos actualizar el catálogo. Comprueba tu conexión y vuelve a intentarlo.";
+    if (!tieneCache) contenedor.replaceChildren();
+    estado.hidden = false;
+    const aviso = document.createElement("p");
+    aviso.textContent = tieneCache
+      ? `${mensaje} Se conserva la última consulta; los precios y la disponibilidad pueden haber cambiado.`
+      : mensaje;
+    const reintentar = document.createElement("button");
+    reintentar.type = "button";
+    reintentar.textContent = "Reintentar carga";
+    reintentar.addEventListener("click", cargarProductos);
+    estado.replaceChildren(aviso, reintentar);
+  } finally {
+    clearTimeout(avisoLento);
+    cargaProductosEnCurso = false;
+    contenedor.setAttribute("aria-busy", "false");
   }
 }
 
