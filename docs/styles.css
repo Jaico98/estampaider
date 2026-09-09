@@ -4673,6 +4673,10 @@ button.eliminar:hover {
   opacity: 0.78;
 }
 
+.msg-estado-entrega {
+  font-weight: 600;
+}
+
 .typing {
   font-style: italic;
   opacity: 0.92;

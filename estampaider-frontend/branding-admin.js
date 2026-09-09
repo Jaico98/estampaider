@@ -3,6 +3,8 @@
 // Panel de administración de branding (fondo, videos, redes)
 // ============================================================
 
+const TOTAL_VIDEOS_GALERIA_BASE = 10;
+
 function getAPI() {
   return window.ESTAMPAIDER_CONFIG?.API_BASE || "http://localhost:8080";
 }
@@ -136,13 +138,30 @@ function obtenerVideoPorSlot(data, slot) {
 }
 
 function obtenerSlotsGaleriaOcupados(data) {
-  if (!Array.isArray(data?.galleryVideos)) return new Set();
-
-  return new Set(
-    data.galleryVideos
-      .map(item => item?.slot)
-      .filter(slot => /^gallery\d+$/.test(String(slot || "")))
+  const ocupados = new Set(
+    Array.from(
+      { length: TOTAL_VIDEOS_GALERIA_BASE },
+      (_, indice) => `gallery${indice + 1}`
+    )
   );
+
+  if (!Array.isArray(data?.galleryVideos)) return ocupados;
+
+  data.galleryVideos
+    .map(item => item?.slot)
+    .filter(slot => /^gallery\d+$/.test(String(slot || "")))
+    .forEach(slot => {
+      if (!ocupados.has(slot)) {
+        ocupados.add(slot);
+        return;
+      }
+
+      let indice = TOTAL_VIDEOS_GALERIA_BASE + 1;
+      while (ocupados.has(`gallery${indice}`)) indice++;
+      ocupados.add(`gallery${indice}`);
+    });
+
+  return ocupados;
 }
 
 function obtenerPrimerSlotLibre(data) {
@@ -187,7 +206,11 @@ function actualizarOpcionesGaleria(data) {
 
   const maxIndiceExistente = indices.length ? Math.max(...indices) : 0;
   const siguienteLibre = obtenerIndiceGaleriaDesdeSlot(obtenerPrimerSlotLibre(data)) || 1;
-  const totalMostrar = Math.max(maxIndiceExistente, siguienteLibre, 8);
+  const totalMostrar = Math.max(
+    maxIndiceExistente,
+    siguienteLibre,
+    TOTAL_VIDEOS_GALERIA_BASE
+  );
 
   const opcionNuevo = selector.querySelector('option[value="new"]');
 

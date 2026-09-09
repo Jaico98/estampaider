@@ -30,6 +30,7 @@
       url: new URL(`videos/${archivo}`, FRONTEND_BASE_URL).href
     }))
   });
+  const TOTAL_VIDEOS_GALERIA_BASE = VIDEOS_LOCALES.galleryVideos.length;
 
   function resolverApiBaseBranding() {
     if (window.ESTAMPAIDER_CONFIG?.API_BASE) {
@@ -157,11 +158,38 @@
         textoSeguro(data.heroMainVideoUrl).trim() || VIDEOS_LOCALES.heroMainVideoUrl,
       highlightVideoUrl:
         textoSeguro(data.highlightVideoUrl).trim() || VIDEOS_LOCALES.highlightVideoUrl,
-      galleryVideos:
-        Array.isArray(data.galleryVideos) && data.galleryVideos.length > 0
-          ? data.galleryVideos
-          : VIDEOS_LOCALES.galleryVideos
+      galleryVideos: combinarGaleriaBaseConCargas(data.galleryVideos)
     };
+  }
+
+  function combinarGaleriaBaseConCargas(videosDinamicos) {
+    const resultado = VIDEOS_LOCALES.galleryVideos.map((item) => ({ ...item }));
+    const urlsAgregadas = new Set(resultado.map((item) => item.url));
+    const slotsAgregados = new Set(resultado.map((item) => item.slot));
+    let siguienteIndice = TOTAL_VIDEOS_GALERIA_BASE + 1;
+
+    for (const item of Array.isArray(videosDinamicos) ? videosDinamicos : []) {
+      const url = textoSeguro(item?.url).trim();
+      if (!url || urlsAgregadas.has(url)) continue;
+
+      let slot = textoSeguro(item?.slot).trim().toLowerCase();
+      const indice = obtenerIndiceGaleria(slot);
+
+      // Los diez primeros lugares pertenecen a los videos incluidos con el sitio.
+      // Las cargas administrativas se agregan después para no ocultar la galería base.
+      if (indice <= TOTAL_VIDEOS_GALERIA_BASE || slotsAgregados.has(slot)) {
+        while (slotsAgregados.has(`gallery${siguienteIndice}`)) {
+          siguienteIndice++;
+        }
+        slot = `gallery${siguienteIndice++}`;
+      }
+
+      resultado.push({ ...item, slot, url });
+      urlsAgregadas.add(url);
+      slotsAgregados.add(slot);
+    }
+
+    return resultado;
   }
 
   function aplicarBranding(API_BASE, data) {
@@ -265,7 +293,7 @@
     `).forEach((el) => {
       el.style.setProperty("--branding-bg-url", `url('${finalUrl}')`);
       el.style.backgroundImage = `
-        linear-gradient(rgba(8, 27, 56, 0.45), rgba(8, 27, 56, 0.45)),
+        linear-gradient(rgba(8, 27, 56, 0.68), rgba(8, 27, 56, 0.68)),
         url('${finalUrl}')
       `;
       el.style.backgroundSize = "cover";

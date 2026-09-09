@@ -34,6 +34,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/api/branding")
 public class BrandingController {
 
+    private static final int TOTAL_VIDEOS_GALERIA_BASE = 10;
     private static final Pattern GALLERY_SLOT_PATTERN =
             Pattern.compile("^gallery(\\d+)$", Pattern.CASE_INSENSITIVE);
 
@@ -212,11 +213,23 @@ public class BrandingController {
 
     private String obtenerPrimerSlotLibre(List<Map<String, String>> galeria) {
         Set<Integer> ocupados = new HashSet<>();
+        for (int i = 1; i <= TOTAL_VIDEOS_GALERIA_BASE; i++) {
+            ocupados.add(i);
+        }
+
         for (Map<String, String> item : galeria) {
             int indice = obtenerIndiceGaleria(item.get("slot"));
-            if (indice > 0) ocupados.add(indice);
+            if (indice <= 0) continue;
+
+            if (ocupados.contains(indice)) {
+                int indiceAdicional = TOTAL_VIDEOS_GALERIA_BASE + 1;
+                while (ocupados.contains(indiceAdicional)) indiceAdicional++;
+                ocupados.add(indiceAdicional);
+            } else {
+                ocupados.add(indice);
+            }
         }
-        int i = 1;
+        int i = TOTAL_VIDEOS_GALERIA_BASE + 1;
         while (ocupados.contains(i)) i++;
         return "gallery" + i;
     }

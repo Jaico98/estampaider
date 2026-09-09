@@ -36,57 +36,6 @@
         #fff;
     }
     img,video{max-width:100%;display:block}
-    .header-hover-zone{height:12px}
-    .header{
-      position:sticky;
-      top:0;
-      z-index:1000;
-      backdrop-filter:blur(14px);
-      background:rgba(185, 218, 240, 0.88);
-      border-bottom:1px solid rgba(226,232,240,.9);
-    }
-    .header-container{
-      max-width:var(--max);
-      margin:0 auto;
-      padding:14px 20px;
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:18px;
-    }
-    .logo img{height:52px;object-fit:contain}
-    .menu{
-      display:flex;
-      align-items:center;
-      gap:18px;
-      flex-wrap:wrap;
-    }
-    .menu a{
-      text-decoration:none;
-      color:var(--ink);
-      font-weight:700;
-      position:relative;
-    }
-    .menu a.active,
-    .menu a:hover{color:var(--brand)}
-    .menu-toggle{
-      display:none;
-      border:1px solid var(--line);
-      background:#fff;
-      border-radius:14px;
-      padding:10px 12px;
-      cursor:pointer;
-      font-size:1.1rem;
-    }
-    .cart-link{
-      display:inline-flex;
-      align-items:center;
-      gap:8px;
-      padding:10px 14px;
-      border-radius:999px;
-      background:linear-gradient(135deg, rgba(255,75,43,.12), rgba(255,138,0,.12));
-      border:1px solid rgba(255,75,43,.18);
-    }
     .hero{
       max-width:var(--max);
       margin:0 auto;
@@ -576,28 +525,10 @@
       .hero-panel{max-width:680px;margin-inline:auto}
     }
     @media (max-width: 760px){
-      .menu-toggle{display:block}
-      .menu{
-        position:absolute;
-        top:84px;
-        left:16px;
-        right:16px;
-        display:none;
-        flex-direction:column;
-        align-items:flex-start;
-        padding:18px;
-        border-radius:20px;
-        background:rgba(255,255,255,.98);
-        border:1px solid var(--line);
-        box-shadow:var(--shadow-lg);
-      }
-      .menu.show{display:flex}
-      .hero{padding-top:28px}
+      .hero{padding-top:100px}
       .hero-stats,.benefits-grid,.steps-grid,.productos-grid,.gallery-grid{grid-template-columns:1fr}
       .section,.consultar-pedido,.cta-final{padding-left:16px;padding-right:16px}
       .consulta-wrap,.cta-contenido,.card,.hero-panel{padding:22px}
-      .header-container{padding-inline:16px}
-      .logo img{height:46px}
     }
   </style>
 </head>

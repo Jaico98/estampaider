@@ -5,10 +5,12 @@ import com.estampaider.model.EstadoMensaje;
 import com.estampaider.model.Mensaje;
 import com.estampaider.repository.ChatMensajeRepository;
 import com.estampaider.repository.MensajeRepository;
+import com.estampaider.service.ChatPresenceService;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -24,15 +26,18 @@ public class ChatController {
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatMensajeRepository repo;
     private final MensajeRepository mensajeRepository;
+    private final ChatPresenceService presenceService;
 
     public ChatController(
             SimpMessagingTemplate messagingTemplate,
             ChatMensajeRepository repo,
-            MensajeRepository mensajeRepository
+            MensajeRepository mensajeRepository,
+            ChatPresenceService presenceService
     ) {
         this.messagingTemplate = messagingTemplate;
         this.repo = repo;
         this.mensajeRepository = mensajeRepository;
+        this.presenceService = presenceService;
     }
 
     @MessageMapping("/chat")
@@ -40,9 +45,8 @@ public class ChatController {
         final String telefono = normalizarTelefono(mensaje.getTelefono());
         mensaje.setTelefono(telefono);
 
-        if (mensaje.getTipo() == null || mensaje.getTipo().isBlank()) {
-            mensaje.setTipo("CLIENTE");
-        }
+        String tipo = normalizarActor(mensaje.getTipo());
+        mensaje.setTipo(tipo.isBlank() ? "CLIENTE" : tipo);
 
         if (mensaje.getId() == null || mensaje.getId().isBlank()) {
             mensaje.setId(UUID.randomUUID().toString());
@@ -56,6 +60,9 @@ public class ChatController {
             mensaje.setNombre("Cliente");
         }
 
+        mensaje.setLeido(false);
+        mensaje.setRecibido(false);
+
         repo.save(mensaje);
         sincronizarBandejaAdmin(mensaje);
 
@@ -64,15 +71,37 @@ public class ChatController {
     }
 
     @MessageMapping("/chat/leido")
-    public void marcarLeido(@Payload String telefonoPayload) {
-        final String telefono = normalizarTelefono(telefonoPayload);
+    public void marcarLeido(@Payload ChatMensaje solicitud) {
+        final String telefono = normalizarTelefono(solicitud.getTelefono());
+        final String lector = normalizarActor(solicitud.getTipo());
+        final String emisor = actorOpuesto(lector);
+        if (telefono.isBlank() || emisor.isBlank()) {
+            return;
+        }
+
         List<ChatMensaje> mensajes = repo.findByTelefonoOrderByFechaAsc(telefono);
-        mensajes.forEach(m -> m.setLeido(true));
-        repo.saveAll(mensajes);
+        List<ChatMensaje> actualizados = mensajes.stream()
+                .filter(m -> emisor.equalsIgnoreCase(m.getTipo()) && !m.isLeido())
+                .peek(m -> {
+                    m.setRecibido(true);
+                    m.setLeido(true);
+                })
+                .toList();
+
+        if (actualizados.isEmpty()) {
+            return;
+        }
+
+        repo.saveAll(actualizados);
+        List<String> ids = actualizados.stream().map(ChatMensaje::getId).toList();
+
+        if ("ADMIN".equals(lector)) {
+            marcarBandejaComoLeida(telefono);
+        }
 
         messagingTemplate.convertAndSend(
                 "/topic/chat/" + telefono,
-                new EstadoMensaje("LEIDO", telefono)
+                new EstadoMensaje("LEIDO", telefono, lector, Instant.now(), ids)
         );
     }
 
@@ -90,26 +119,31 @@ public class ChatController {
     }
 
     @MessageMapping("/chat/recibido")
-    public void marcarRecibido(@Payload String telefonoPayload) {
-        final String telefono = normalizarTelefono(telefonoPayload);
+    public void marcarRecibido(@Payload ChatMensaje solicitud) {
+        final String telefono = normalizarTelefono(solicitud.getTelefono());
+        final String receptor = normalizarActor(solicitud.getTipo());
+        final String emisor = actorOpuesto(receptor);
+        if (telefono.isBlank() || emisor.isBlank()) {
+            return;
+        }
+
         List<ChatMensaje> mensajes = repo.findByTelefonoOrderByFechaAsc(telefono);
+        List<ChatMensaje> actualizados = mensajes.stream()
+                .filter(m -> emisor.equalsIgnoreCase(m.getTipo()) && !m.isRecibido())
+                .peek(m -> m.setRecibido(true))
+                .toList();
 
-        mensajes.stream()
-                .filter(m -> !m.isLeido())
-                .forEach(m -> m.setRecibido(true));
+        if (actualizados.isEmpty()) {
+            return;
+        }
 
-        repo.saveAll(mensajes);
+        repo.saveAll(actualizados);
+        List<String> ids = actualizados.stream().map(ChatMensaje::getId).toList();
 
         messagingTemplate.convertAndSend(
                 "/topic/chat/" + telefono,
-                new EstadoMensaje("RECIBIDO", telefono)
+                new EstadoMensaje("RECIBIDO", telefono, receptor, Instant.now(), ids)
         );
-    }
-
-    @MessageMapping("/chat/online")
-    public void usuarioOnline(@Payload String telefonoPayload) {
-        final String telefono = normalizarTelefono(telefonoPayload);
-        messagingTemplate.convertAndSend("/topic/online/" + telefono, "ONLINE");
     }
 
     @GetMapping("/{telefono}")
@@ -137,6 +171,30 @@ public class ChatController {
         }
 
         return ResponseEntity.ok(repo.findByTelefonoOrderByFechaAsc(telefonoNormalizado));
+    }
+
+    @GetMapping("/{telefono}/presencia")
+    public ResponseEntity<?> obtenerPresencia(
+            @PathVariable String telefono,
+            Authentication authentication
+    ) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body("No autenticado");
+        }
+
+        String telefonoNormalizado = normalizarTelefono(telefono);
+        boolean esAdmin = authentication.getAuthorities()
+                .stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+
+        if (!esAdmin && !telefonoNormalizado.equals(normalizarTelefono(authentication.getName()))) {
+            return ResponseEntity.status(403).body("No autorizado para consultar esta presencia");
+        }
+
+        return ResponseEntity.ok(Map.of(
+                "telefono", telefonoNormalizado,
+                "online", presenceService.estaEnLinea(telefonoNormalizado)
+        ));
     }
 
     @DeleteMapping("/{telefono}")
@@ -207,6 +265,19 @@ public class ChatController {
         );
     }
 
+    private void marcarBandejaComoLeida(String telefono) {
+        mensajeRepository.findFirstByWhatsappOrderByFechaDesc(telefono).ifPresent(registro -> {
+            if (!registro.isLeido()) {
+                registro.setLeido(true);
+                mensajeRepository.save(registro);
+                messagingTemplate.convertAndSend(
+                        "/topic/mensajes",
+                        new MensajeController.AdminMensajeResponse(registro)
+                );
+            }
+        });
+    }
+
     private String normalizarTelefono(String telefono) {
         if (telefono == null) {
             return "";
@@ -223,5 +294,16 @@ public class ChatController {
         }
 
         return limpio.startsWith("57") ? limpio : "57" + limpio;
+    }
+
+    private String normalizarActor(String actor) {
+        String valor = actor == null ? "" : actor.trim().toUpperCase();
+        return valor.equals("CLIENTE") || valor.equals("ADMIN") ? valor : "";
+    }
+
+    private String actorOpuesto(String actor) {
+        if ("CLIENTE".equals(actor)) return "ADMIN";
+        if ("ADMIN".equals(actor)) return "CLIENTE";
+        return "";
     }
 }

@@ -24,7 +24,9 @@ public class ChatMensaje {
 
     @PrePersist
     public void prePersist() {
-        this.fecha = Instant.now();
+        if (this.fecha == null) {
+            this.fecha = Instant.now();
+        }
     }
 
     private boolean leido = false;

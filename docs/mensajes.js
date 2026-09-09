@@ -53,7 +53,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let chatSubscription = null;
   let onlineSubscription = null;
   let typingSubscription = null;
-  
+  let clienteEnLinea = false;
+  let typingTimer = null;
+  let reconnectChatTimer = null;
+
   let inboxSocketClient = null;
   let inboxSubscription = null;
   const porPagina = 5;
@@ -80,6 +83,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const d = new Date(fecha);
     if (Number.isNaN(d.getTime())) return "Sin fecha";
     return d.toLocaleString("es-CO");
+  }
+
+  function formatearHora(fecha) {
+    const d = fecha ? new Date(fecha) : new Date();
+    if (Number.isNaN(d.getTime())) return "ahora";
+    return d.toLocaleTimeString("es-CO", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   }
 
   function mostrarToast(mensaje) {
@@ -287,12 +299,56 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const meta = document.createElement("span");
     meta.className = "msg-meta";
-    meta.textContent = formatearFecha(msg.fecha);
+
+    const hora = document.createElement("span");
+    hora.textContent = formatearFecha(msg.fecha);
+    meta.appendChild(hora);
+
+    if (msg.tipo === "ADMIN") {
+      const entrega = document.createElement("span");
+      entrega.className = "msg-estado-entrega";
+      entrega.textContent = msg.leido
+        ? " • Leído"
+        : msg.recibido
+          ? " • Entregado"
+          : " • Enviado";
+      meta.appendChild(entrega);
+    }
 
     div.append(texto, meta);
     row.appendChild(div);
 
     return row;
+  }
+
+  function actualizarEstadoEntrega(evento) {
+    const ids = Array.isArray(evento?.mensajeIds)
+      ? new Set(evento.mensajeIds.map(textoSeguro))
+      : new Set();
+    if (!ids.size) return;
+
+    const texto = evento.tipo === "LEIDO"
+      ? ` • Leído a las ${formatearHora(evento.fecha)}`
+      : " • Entregado";
+
+    chatMensajes?.querySelectorAll(".msg-admin[data-id]").forEach((burbuja) => {
+      if (!ids.has(textoSeguro(burbuja.dataset.id))) return;
+      const estado = burbuja.querySelector(".msg-estado-entrega");
+      if (estado) estado.textContent = texto;
+    });
+  }
+
+  function enviarConfirmacion(tipo) {
+    if (!stompClient?.connected || !telefonoActivo) return;
+    stompClient.send(
+      `/app/chat/${tipo}`,
+      {},
+      JSON.stringify({ telefono: telefonoActivo, tipo: "ADMIN" })
+    );
+  }
+
+  function confirmarSegunVisibilidad() {
+    enviarConfirmacion(document.visibilityState === "visible" ? "leido" : "recibido");
   }
 
   function agregarMensajeChat(msg) {
@@ -355,6 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const historial = await res.json();
+      if (telefonoActivo !== telefono) return;
       chatMensajes.innerHTML = "";
 
       if (!Array.isArray(historial) || !historial.length) {
@@ -366,7 +423,9 @@ document.addEventListener("DOMContentLoaded", () => {
       chatMensajes.scrollTop = chatMensajes.scrollHeight;
     } catch (error) {
       console.error("Error historial chat:", error);
-      chatMensajes.innerHTML = `<div class="vacio">No se pudo cargar el historial del chat.</div>`;
+      if (telefonoActivo === telefono) {
+        chatMensajes.innerHTML = `<div class="vacio">No se pudo cargar el historial del chat.</div>`;
+      }
     }
   }
 
@@ -390,15 +449,41 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function desconectarSocket() {
+    clearTimeout(typingTimer);
+    clearTimeout(reconnectChatTimer);
     try { chatSubscription?.unsubscribe(); } catch {}
     try { onlineSubscription?.unsubscribe(); } catch {}
     try { typingSubscription?.unsubscribe(); } catch {}
     try { stompClient?.disconnect(() => {}); } catch {}
-  
+
     chatSubscription = null;
     onlineSubscription = null;
     typingSubscription = null;
     stompClient = null;
+    clienteEnLinea = false;
+  }
+
+  function actualizarPresencia(enLinea) {
+    clienteEnLinea = Boolean(enLinea);
+    setEstadoChat(clienteEnLinea ? "En línea" : "Desconectado", clienteEnLinea);
+  }
+
+  async function consultarPresenciaCliente(telefonoConsultado) {
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/chat/${encodeURIComponent(telefonoConsultado)}/presencia`,
+        { headers: getHeaders() }
+      );
+      if (!res.ok) throw new Error(`No se pudo consultar presencia (${res.status})`);
+
+      const data = await res.json();
+      if (telefonoActivo === telefonoConsultado) {
+        actualizarPresencia(Boolean(data.online));
+      }
+    } catch (error) {
+      console.warn("No se pudo consultar la presencia del cliente:", error);
+      if (telefonoActivo === telefonoConsultado) actualizarPresencia(false);
+    }
   }
 
   function conectarInboxSocket() {
@@ -408,7 +493,10 @@ document.addEventListener("DOMContentLoaded", () => {
     inboxSocketClient = Stomp.over(socket);
     inboxSocketClient.debug = () => {};
   
-    inboxSocketClient.connect({}, () => {
+    inboxSocketClient.connect({
+      Authorization: `Bearer ${auth.token}`,
+      tipo: "ADMIN",
+    }, () => {
       inboxSubscription = inboxSocketClient.subscribe("/topic/mensajes", (frame) => {
         try {
           const data = JSON.parse(frame.body);
@@ -444,6 +532,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!telefonoActivo) return;
 
     desconectarSocket();
+    const telefonoConexion = telefonoActivo;
 
     const socket = new SockJS(WS_BASE);
     stompClient = Stomp.over(socket);
@@ -452,26 +541,45 @@ document.addEventListener("DOMContentLoaded", () => {
     stompClient.connect(
       {
         Authorization: `Bearer ${auth.token}`,
+        tipo: "ADMIN",
       },
-      () => {
-      setEstadoChat("En línea", true);
+      async () => {
+      if (telefonoActivo !== telefonoConexion) return;
+      setEstadoChat("Consultando estado...", false);
 
-      chatSubscription = stompClient.subscribe(`/topic/chat/${telefonoActivo}`, (frame) => {
-        const data = JSON.parse(frame.body);
+      chatSubscription = stompClient.subscribe(`/topic/chat/${telefonoConexion}`, (frame) => {
+        let data;
+        try {
+          data = JSON.parse(frame.body);
+        } catch (error) {
+          console.warn("Evento de chat inválido:", error);
+          return;
+        }
 
         if (data.tipo === "LEIDO" || data.tipo === "RECIBIDO") {
+          actualizarEstadoEntrega(data);
           return;
         }
 
         agregarMensajeChat(data);
+        if (data.tipo === "CLIENTE") confirmarSegunVisibilidad();
         cargarMensajes();
       });
 
-      onlineSubscription = stompClient.subscribe(`/topic/online/${telefonoActivo}`, () => {
-        setEstadoChat("En línea", true);
+      onlineSubscription = stompClient.subscribe(`/topic/online/${telefonoConexion}`, (frame) => {
+        let data;
+        try {
+          data = JSON.parse(frame.body);
+        } catch {
+          data = { tipo: textoSeguro(frame.body) };
+        }
+
+        if (telefonoActivo !== telefonoConexion) return;
+        if (data.tipo === "ONLINE") actualizarPresencia(true);
+        if (data.tipo === "OFFLINE") actualizarPresencia(false);
       });
 
-      typingSubscription = stompClient.subscribe(`/topic/chat/${telefonoActivo}/typing`, (frame) => {
+      typingSubscription = stompClient.subscribe(`/topic/chat/${telefonoConexion}/typing`, (frame) => {
         let data;
         try {
           data = JSON.parse(frame.body);
@@ -481,9 +589,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (data.tipo === "CLIENTE") {
           setEstadoChat("Escribiendo...", false);
-          setTimeout(() => setEstadoChat("En línea", true), 1200);
+          clearTimeout(typingTimer);
+          typingTimer = setTimeout(() => actualizarPresencia(clienteEnLinea), 1400);
         }
       });
+
+      await consultarPresenciaCliente(telefonoConexion);
+      confirmarSegunVisibilidad();
+    }, () => {
+      if (telefonoActivo !== telefonoConexion) return;
+      setEstadoChat("Chat desconectado", false);
+      reconnectChatTimer = setTimeout(() => {
+        if (telefonoActivo === telefonoConexion) conectarSocket();
+      }, 3000);
     });
   }
 
@@ -509,6 +627,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setEstadoChat("Cargando...", false);
     await cargarHistorialTelefono(telefonoActivo);
+    if (telefonoActivo !== normalizarTelefono(mensaje?.telefono || mensaje?.whatsapp || "")) {
+      return;
+    }
 
     if (!mensaje.leido && mensaje.id) {
       await marcarLeido(mensaje.id);
@@ -532,16 +653,14 @@ document.addEventListener("DOMContentLoaded", () => {
       fecha: new Date().toISOString(),
     };
 
-    agregarMensajeChat(payload);
-
     try {
       if (!stompClient?.connected) {
         throw new Error("Socket no conectado");
       }
 
       stompClient.send("/app/chat", {}, JSON.stringify(payload));
+      agregarMensajeChat(payload);
       chatInput.value = "";
-      setEstadoChat("En línea", true);
       cargarMensajes();
     } catch (error) {
       console.error("Error enviando chat:", error);
@@ -941,7 +1060,18 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   cargarMensajes();
-conectarInboxSocket();
-activarFiltro("TODOS");
-setInterval(cargarMensajes, 15000);
+  conectarInboxSocket();
+  activarFiltro("TODOS");
+  setInterval(cargarMensajes, 15000);
+
+  window.addEventListener("pagehide", () => {
+    telefonoActivo = "";
+    desconectarSocket();
+    try { inboxSubscription?.unsubscribe(); } catch {}
+    try { inboxSocketClient?.disconnect(() => {}); } catch {}
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") enviarConfirmacion("leido");
+  });
 });
