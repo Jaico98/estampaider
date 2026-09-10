@@ -219,8 +219,10 @@ CREATE TABLE IF NOT EXISTS branding_redes (
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Compatibilidad operativa del código heredado de WhatsApp.
--- Estas tablas no forman parte del modelo 3FN de la aplicación web principal.
+-- Estructuras complementarias al núcleo relacional normalizado.
+-- chat_mensaje se utiliza activamente para persistir el historial del chat interno.
+-- cotizacion se conserva como estructura heredada de compatibilidad.
+-- Estas estructuras no forman parte de las 18 tablas del núcleo lógico normalizado en 3FN.
 CREATE TABLE IF NOT EXISTS chat_mensaje (
     id VARCHAR(255) NOT NULL,
     nombre VARCHAR(255) NULL,
