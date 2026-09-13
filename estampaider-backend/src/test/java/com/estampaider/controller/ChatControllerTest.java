@@ -11,6 +11,7 @@ import com.estampaider.model.EstadoMensaje;
 import com.estampaider.repository.ChatMensajeRepository;
 import com.estampaider.repository.MensajeRepository;
 import com.estampaider.service.ChatPresenceService;
+import com.estampaider.service.ChatUsuarioService;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,6 +31,8 @@ class ChatControllerTest {
     private MensajeRepository mensajeRepository;
     @Mock
     private ChatPresenceService presenceService;
+    @Mock
+    private ChatUsuarioService chatUsuarioService;
 
     @Test
     void lecturaDelAdminSoloMarcaMensajesDelCliente() {
@@ -42,7 +45,8 @@ class ChatControllerTest {
                 messagingTemplate,
                 chatRepository,
                 mensajeRepository,
-                presenceService
+                presenceService,
+                chatUsuarioService
         );
         ChatMensaje solicitud = new ChatMensaje();
         solicitud.setTelefono("315 362 5992");

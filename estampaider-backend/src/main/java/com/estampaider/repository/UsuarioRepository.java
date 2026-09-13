@@ -11,6 +11,8 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     Optional<Usuario> findByTelefono(String telefono);
 
+    List<Usuario> findAllByTelefonoIn(java.util.Collection<String> telefonos);
+
     Optional<Usuario> findByUsuario(String usuario);
 
     List<Usuario> findAllByUsuarioOrTelefono(String usuario, String telefono);

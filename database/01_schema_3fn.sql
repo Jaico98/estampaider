@@ -219,10 +219,10 @@ CREATE TABLE IF NOT EXISTS branding_redes (
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Compatibilidad operativa del código heredado de WhatsApp.
--- Estas tablas no forman parte del modelo 3FN de la aplicación web principal.
+-- Tabla 19 del núcleo relacional: chat interno (RF-18, HU-20 y HU-21).
 CREATE TABLE IF NOT EXISTS chat_mensaje (
     id VARCHAR(255) NOT NULL,
+    usuario_id BIGINT NULL,
     nombre VARCHAR(255) NULL,
     correo VARCHAR(255) NULL,
     mensaje TEXT NULL,
@@ -231,17 +231,9 @@ CREATE TABLE IF NOT EXISTS chat_mensaje (
     fecha TIMESTAMP NULL,
     leido BOOLEAN NOT NULL DEFAULT FALSE,
     recibido BOOLEAN NOT NULL DEFAULT FALSE,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    CONSTRAINT fk_chat_mensaje_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE IF NOT EXISTS cotizacion (
-    id BIGINT NOT NULL AUTO_INCREMENT,
-    telefono VARCHAR(255) NULL,
-    producto VARCHAR(255) NULL,
-    cantidad VARCHAR(255) NULL,
-    estampado VARCHAR(255) NULL,
-    fecha DATETIME NULL,
-    precio DOUBLE NULL,
-    total DOUBLE NULL,
-    PRIMARY KEY (id)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- El bot experimental de cotizaciones se retiró del backend.
+-- En bases existentes usar 05_archive_legacy_cotizacion.sql después del despliegue.

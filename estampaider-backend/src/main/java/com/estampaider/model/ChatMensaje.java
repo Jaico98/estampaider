@@ -2,13 +2,25 @@ package com.estampaider.model;
 
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.Instant;
 
 @Entity
+@Table(name = "chat_mensaje")
 public class ChatMensaje {
 
     @Id
     private String id;
+
+    // Cuenta del cliente cuya conversación contiene el mensaje, también en respuestas del administrador.
+    // Es opcional para conservar mensajes históricos que no se puedan asociar de forma inequívoca.
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "usuario_id", foreignKey = @ForeignKey(name = "fk_chat_mensaje_usuario"))
+    @JsonIgnore
+    private Usuario usuario;
+
+    public Usuario getUsuario() { return usuario; }
+    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
 
     private String nombre;
     private String correo;
