@@ -219,7 +219,14 @@ CREATE TABLE IF NOT EXISTS branding_redes (
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+<<<<<<< HEAD
 -- Tabla 19 del núcleo relacional: chat interno (RF-18, HU-20 y HU-21).
+=======
+-- Estructuras complementarias al núcleo relacional normalizado.
+-- chat_mensaje se utiliza activamente para persistir el historial del chat interno.
+-- cotizacion se conserva como estructura heredada de compatibilidad.
+-- Estas estructuras no forman parte de las 18 tablas del núcleo lógico normalizado en 3FN.
+>>>>>>> e2e0e3926ef81c757ec71c411ec61c2b929ebf10
 CREATE TABLE IF NOT EXISTS chat_mensaje (
     id VARCHAR(255) NOT NULL,
     usuario_id BIGINT NULL,

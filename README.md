@@ -36,6 +36,7 @@ La plataforma incluye las siguientes funcionalidades principales:
 * Gestión de mensajes recibidos.
 * Gestión de contenido multimedia mediante Cloudinary.
 * Gestión de branding y elementos visuales del sitio.
+* Chat interno en tiempo real entre clientes autenticados y administrador, con persistencia del historial de conversaciones.
 
 ## Delimitación del alcance
 
@@ -100,21 +101,25 @@ estampaider/
 └── README.md
 ```
 
+<<<<<<< HEAD
 Los scripts de creación, migración y verificación se encuentran en `database/`. El modelo objetivo contiene 19 tablas e incluye `chat_mensaje` como parte del chat interno formal (RF-18, HU-20/HU-21, CU-20/CU-21). Su relación opcional con `usuarios` conserva mensajes históricos sin cuenta identificable. El bot experimental y su módulo `Cotizacion` fueron retirados del backend; los enlaces públicos que abren WhatsApp se conservan. Antes de desplegar esta versión sobre una base existente se debe aplicar `database/04_integrate_chat.sql` y validar sus resultados. El retiro recuperable de la tabla heredada se realiza posteriormente con `database/05_archive_legacy_cotizacion.sql`. Ninguno de estos scripts se ejecuta automáticamente.
+=======
+Los scripts de creación, migración y verificación del esquema se encuentran en database/. El núcleo relacional normalizado está compuesto por 18 tablas. La base implementada conserva adicionalmente chat_mensaje como estructura operativa complementaria utilizada por el chat interno y cotizacion como estructura heredada de compatibilidad.
+>>>>>>> e2e0e3926ef81c757ec71c411ec61c2b929ebf10
 
 ## Arquitectura general
 
-El sistema utiliza una arquitectura cliente-servidor. El frontend consume servicios REST expuestos por el backend. El backend procesa la lógica de negocio, gestiona la autenticación administrativa mediante JWT, se comunica con la base de datos MySQL alojada en Railway y utiliza Cloudinary para el almacenamiento de imágenes y videos.
+El sistema utiliza una arquitectura cliente-servidor. El frontend consume servicios REST expuestos por el backend y utiliza WebSocket/STOMP con SockJS para la comunicación bidireccional del chat interno. El backend procesa la lógica de negocio, gestiona la autenticación mediante JWT, se comunica con MySQL alojado en Railway y utiliza Cloudinary para el almacenamiento de imágenes y videos.
 
 ## Módulos principales
 
 ### Módulo cliente
 
-Permite consultar productos, filtrar el catálogo, gestionar el carrito, registrar pedidos, consultar pedidos mediante número de WhatsApp, enviar mensajes y visualizar reseñas.
+Permite consultar productos, filtrar el catálogo, gestionar el carrito, registrar pedidos, consultar los pedidos asociados con la cuenta autenticada, utilizar el chat interno para comunicarse con el administrador, enviar mensajes de contacto y visualizar reseñas.
 
 ### Módulo administrador
 
-Permite iniciar sesión, gestionar productos, consultar pedidos, actualizar estados, revisar mensajes, gestionar reseñas, cargar contenido multimedia y modificar elementos visuales del sitio.
+Permite iniciar sesión, gestionar productos, consultar pedidos, actualizar estados, revisar mensajes de contacto, consultar y responder conversaciones del chat interno, gestionar reseñas, cargar contenido multimedia y modificar elementos visuales del sitio.
 
 ### Módulo de pedidos
 
