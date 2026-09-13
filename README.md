@@ -101,11 +101,8 @@ estampaider/
 └── README.md
 ```
 
-<<<<<<< HEAD
 Los scripts de creación, migración y verificación se encuentran en `database/`. El modelo objetivo contiene 19 tablas e incluye `chat_mensaje` como parte del chat interno formal (RF-18, HU-20/HU-21, CU-20/CU-21). Su relación opcional con `usuarios` conserva mensajes históricos sin cuenta identificable. El bot experimental y su módulo `Cotizacion` fueron retirados del backend; los enlaces públicos que abren WhatsApp se conservan. Antes de desplegar esta versión sobre una base existente se debe aplicar `database/04_integrate_chat.sql` y validar sus resultados. El retiro recuperable de la tabla heredada se realiza posteriormente con `database/05_archive_legacy_cotizacion.sql`. Ninguno de estos scripts se ejecuta automáticamente.
-=======
 Los scripts de creación, migración y verificación del esquema se encuentran en database/. El núcleo relacional normalizado está compuesto por 18 tablas. La base implementada conserva adicionalmente chat_mensaje como estructura operativa complementaria utilizada por el chat interno y cotizacion como estructura heredada de compatibilidad.
->>>>>>> e2e0e3926ef81c757ec71c411ec61c2b929ebf10
 
 ## Arquitectura general
 
