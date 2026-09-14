@@ -9,7 +9,7 @@ WHERE table_schema = DATABASE()
       'producto_color', 'usuarios', 'direcciones_entrega', 'metodo_pago',
       'estados_pedido', 'pedidos', 'detalle_pedido', 'pedido_historial',
       'mensajes', 'resenas', 'branding_config', 'branding_galeria',
-      'branding_redes'
+      'branding_redes', 'chat_mensaje'
   )
 ORDER BY FIELD(
     table_name,
@@ -17,7 +17,7 @@ ORDER BY FIELD(
     'producto_color', 'usuarios', 'direcciones_entrega', 'metodo_pago',
     'estados_pedido', 'pedidos', 'detalle_pedido', 'pedido_historial',
     'mensajes', 'resenas', 'branding_config', 'branding_galeria',
-    'branding_redes'
+    'branding_redes', 'chat_mensaje'
   );
 
 SELECT 'categorias' AS tabla, COUNT(*) AS registros FROM categorias
@@ -37,7 +37,19 @@ UNION ALL SELECT 'mensajes', COUNT(*) FROM mensajes
 UNION ALL SELECT 'resenas', COUNT(*) FROM resenas
 UNION ALL SELECT 'branding_config', COUNT(*) FROM branding_config
 UNION ALL SELECT 'branding_galeria', COUNT(*) FROM branding_galeria
-UNION ALL SELECT 'branding_redes', COUNT(*) FROM branding_redes;
+UNION ALL SELECT 'branding_redes', COUNT(*) FROM branding_redes
+UNION ALL SELECT 'chat_mensaje', COUNT(*) FROM chat_mensaje;
+
+-- Requiere 04_integrate_chat.sql sobre bases existentes.
+SELECT 'chat_sin_cuenta_asociada' AS verificacion, COUNT(*) AS casos
+FROM chat_mensaje WHERE usuario_id IS NULL;
+SELECT 'chat_referencias_invalidas' AS verificacion, COUNT(*) AS casos
+FROM chat_mensaje c LEFT JOIN usuarios u ON u.id = c.usuario_id
+WHERE c.usuario_id IS NOT NULL AND u.id IS NULL;
+SELECT column_name, referenced_table_name, referenced_column_name
+FROM information_schema.key_column_usage
+WHERE table_schema = DATABASE() AND table_name = 'chat_mensaje'
+  AND column_name = 'usuario_id' AND referenced_table_name IS NOT NULL;
 
 SELECT 'productos_sin_categoria' AS verificacion, COUNT(*) AS casos
 FROM productos WHERE categoria_id IS NULL;

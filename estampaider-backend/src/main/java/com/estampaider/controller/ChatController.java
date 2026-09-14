@@ -6,6 +6,7 @@ import com.estampaider.model.Mensaje;
 import com.estampaider.repository.ChatMensajeRepository;
 import com.estampaider.repository.MensajeRepository;
 import com.estampaider.service.ChatPresenceService;
+import com.estampaider.service.ChatUsuarioService;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -27,17 +28,20 @@ public class ChatController {
     private final ChatMensajeRepository repo;
     private final MensajeRepository mensajeRepository;
     private final ChatPresenceService presenceService;
+    private final ChatUsuarioService chatUsuarioService;
 
     public ChatController(
             SimpMessagingTemplate messagingTemplate,
             ChatMensajeRepository repo,
             MensajeRepository mensajeRepository,
-            ChatPresenceService presenceService
+            ChatPresenceService presenceService,
+            ChatUsuarioService chatUsuarioService
     ) {
         this.messagingTemplate = messagingTemplate;
         this.repo = repo;
         this.mensajeRepository = mensajeRepository;
         this.presenceService = presenceService;
+        this.chatUsuarioService = chatUsuarioService;
     }
 
     @MessageMapping("/chat")
@@ -63,6 +67,7 @@ public class ChatController {
         mensaje.setLeido(false);
         mensaje.setRecibido(false);
 
+        chatUsuarioService.asociarCuenta(mensaje);
         repo.save(mensaje);
         sincronizarBandejaAdmin(mensaje);
 

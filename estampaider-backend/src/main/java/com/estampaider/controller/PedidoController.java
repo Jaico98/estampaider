@@ -1,10 +1,8 @@
 package com.estampaider.controller;
 
 import com.estampaider.dto.CrearPedidoRequest;
-import com.estampaider.model.Cotizacion;
 import com.estampaider.model.DetallePedido;
 import com.estampaider.model.Pedido;
-import com.estampaider.repository.CotizacionRepository;
 import com.estampaider.service.PedidoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +20,6 @@ import java.util.Set;
 public class PedidoController {
 
     private final PedidoService pedidoService;
-    private final CotizacionRepository cotizacionRepository;
 
     private static final Set<String> ESTADOS_VALIDOS = Set.of(
         "RECIBIDO",
@@ -32,9 +29,8 @@ public class PedidoController {
         "CANCELADO"
     );
 
-    public PedidoController(PedidoService pedidoService, CotizacionRepository cotizacionRepository) {
+    public PedidoController(PedidoService pedidoService) {
         this.pedidoService = pedidoService;
-        this.cotizacionRepository = cotizacionRepository;
     }
 
     @GetMapping
@@ -159,11 +155,6 @@ public class PedidoController {
     public ResponseEntity<Void> eliminarPedido(@PathVariable Long id) {
         pedidoService.eliminarPedido(id);
         return ResponseEntity.noContent().build();
-    }
-
-    @GetMapping("/cotizaciones")
-    public ResponseEntity<List<Cotizacion>> verCotizaciones() {
-        return ResponseEntity.ok(cotizacionRepository.findAll());
     }
 
     @GetMapping("/stats")

@@ -34,7 +34,6 @@ public class JwtFilter extends OncePerRequestFilter {
                 || path.startsWith("/api/metodos-pago")
                 || path.startsWith("/images")
                 || path.startsWith("/uploads")
-                || path.equals("/webhook")
                 || path.equals("/notificar")
                 || path.equals("/api/branding/current");
     }
