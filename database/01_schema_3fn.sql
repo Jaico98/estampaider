@@ -219,14 +219,7 @@ CREATE TABLE IF NOT EXISTS branding_redes (
     PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-<<<<<<< HEAD
 -- Tabla 19 del núcleo relacional: chat interno (RF-18, HU-20 y HU-21).
-=======
--- Estructuras complementarias al núcleo relacional normalizado.
--- chat_mensaje se utiliza activamente para persistir el historial del chat interno.
--- cotizacion se conserva como estructura heredada de compatibilidad.
--- Estas estructuras no forman parte de las 18 tablas del núcleo lógico normalizado en 3FN.
->>>>>>> e2e0e3926ef81c757ec71c411ec61c2b929ebf10
 CREATE TABLE IF NOT EXISTS chat_mensaje (
     id VARCHAR(255) NOT NULL,
     usuario_id BIGINT NULL,
@@ -242,5 +235,6 @@ CREATE TABLE IF NOT EXISTS chat_mensaje (
     CONSTRAINT fk_chat_mensaje_usuario FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- El bot experimental de cotizaciones se retiró del backend.
--- En bases existentes usar 05_archive_legacy_cotizacion.sql después del despliegue.
+-- El bot experimental y la tabla cotizacion no forman parte del modelo objetivo.
+-- En bases existentes, archivar la tabla heredada con 05_archive_legacy_cotizacion.sql
+-- después del respaldo y del despliegue del backend actualizado.
