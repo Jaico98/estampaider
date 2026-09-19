@@ -101,7 +101,11 @@ estampaider/
 └── README.md
 ```
 
-Los scripts de creación, migración y verificación se encuentran en `database/`. El modelo objetivo contiene 19 tablas e incluye `chat_mensaje` como parte del chat interno formal (RF-18, HU-20/HU-21, CU-20/CU-21). Su relación opcional con `usuarios` conserva mensajes históricos sin cuenta identificable. El bot experimental y su módulo `Cotizacion` fueron retirados del backend; los enlaces públicos que abren WhatsApp se conservan. Antes de desplegar esta versión sobre una base existente se debe aplicar `database/04_integrate_chat.sql` y validar sus resultados. El retiro recuperable de la tabla heredada se realiza posteriormente con `database/05_archive_legacy_cotizacion.sql`. Ninguno de estos scripts se ejecuta automáticamente.
+Los scripts de creación, migración y verificación se encuentran en `database/`. El modelo normalizado contiene 19 tablas e incluye `chat_mensaje` como parte del chat interno formal (RF-18, HU-20/HU-21, CU-20/CU-21). En bases existentes puede haber 20 tablas físicas porque `cotizacion` permanece como estructura heredada: ningún componente de la versión entregada la utiliza y no forma parte del modelo normalizado. El bot experimental y su módulo backend fueron retirados; los enlaces públicos que abren WhatsApp se conservan. Antes de desplegar esta versión sobre una base existente se debe aplicar `database/04_integrate_chat.sql` y validar sus resultados. `database/05_archive_legacy_cotizacion.sql` queda como tarea posterior y manual para retirar la tabla heredada cuando corresponda. Ninguno de estos scripts se ejecuta automáticamente.
+
+## Versión entregada y política de versiones
+
+La versión preparada localmente para la entrega se identifica como **1.0.0** en `estampaider-backend/pom.xml`. Su publicación debe quedar asociada al commit final, a una etiqueta Git y al despliegue verificado; cambiar el número local no acredita una entrega en producción. La política utiliza versionado semántico: un incremento de versión mayor corresponde a cambios incompatibles; el incremento menor incorpora funcionalidades compatibles; y el incremento de parche corrige errores o ajustes de mantenimiento sin cambiar el alcance funcional. Cada cambio debe quedar registrado en Git y acompañado por la actualización de las pruebas y de la documentación técnica cuando corresponda.
 
 ## Arquitectura general
 

@@ -1,5 +1,9 @@
--- Ejecutar SOLO después de desplegar el backend sin Cotizacion/WhatsAppWebhookController.
--- Hacer respaldo externo primero. Este script elimina la estructura heredada.
+-- Operación posterior y opcional de mantenimiento; no forma parte del arranque.
+-- Ejecutar SOLO después de conservar un respaldo externo y verificar que ningún
+-- componente de la versión entregada utiliza la tabla heredada.
+-- La versión entregada mantiene cotizacion físicamente, aunque fuera del modelo
+-- normalizado y sin consumidor en el backend. Este script la elimina de forma
+-- deliberada cuando se decida cerrar esa compatibilidad histórica.
 -- Si ambas tablas existen, revisar manualmente. No se ejecuta al iniciar la aplicación.
 SET @legacy_exists = (SELECT COUNT(*) FROM information_schema.tables
     WHERE table_schema = DATABASE() AND table_name = 'cotizacion');

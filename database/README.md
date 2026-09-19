@@ -8,7 +8,7 @@ Estos archivos documentan el esquema relacional objetivo en tercera forma normal
 - `02_migrate_legacy_to_3fn.sql`: copia datos del esquema anterior hacia las estructuras normalizadas y conserva las columnas heredadas durante la transición.
 - `03_verify_3fn.sql`: verifica tablas, conteos, relaciones y registros que no pudieron ser asociados.
 - `04_integrate_chat.sql`: migración aditiva para bases existentes; agrega `chat_mensaje.usuario_id`, asocia cuentas inequívocas y crea su FK sin eliminar mensajes.
-- `05_archive_legacy_cotizacion.sql`: retira la tabla heredada del modelo activo mediante un cambio de nombre recuperable, después del despliegue y de conservar un respaldo externo.
+- `05_archive_legacy_cotizacion.sql`: operación de mantenimiento opcional para retirar posteriormente la tabla heredada `cotizacion`, después de conservar un respaldo externo y validar que no exista ningún consumidor.
 
 ## Transición original desde el esquema heredado
 
@@ -28,7 +28,7 @@ La migración no debe ejecutarse directamente sobre Railway sin respaldo y sin r
 3. Ejecutar `03_verify_3fn.sql`. Las referencias inválidas deben ser cero. Revisar los mensajes sin cuenta; pueden conservar NULL y nunca deben asignarse a una cuenta genérica.
 4. Desplegar el backend compilado. No usar `ddl-auto=update` para sustituir la migración: con `validate` la nueva columna debe existir antes del inicio.
 5. Repetir CP-26, CP-27 y PI-06 (historial anterior, mensajes nuevos y respuestas), más las comprobaciones de catálogo, acceso y pedidos.
-6. Después del despliegue y respaldo, ejecutar opcionalmente `05_archive_legacy_cotizacion.sql`. El archivo de tabla no forma parte de las 19 tablas funcionales, aunque puede aumentar el conteo físico de la instancia.
+6. En la versión entregada, `cotizacion` permanece físicamente en la base de datos como estructura heredada, pero no es utilizada por el backend ni forma parte del modelo normalizado. `05_archive_legacy_cotizacion.sql` queda documentado como una tarea posterior de mantenimiento; no se ejecuta automáticamente.
 
 Para una base vacía basta con `01_schema_3fn.sql`; no aplicar la transición histórica `02`.
 
@@ -42,4 +42,4 @@ Por eso la relación se describe como «Usuario tiene mensajes en su conversaci�
 
 ## Retiro del módulo heredado
 
-Se retiraron Cotizacion, CotizacionRepository, WhatsAppWebhookController y GET /api/pedidos/cotizaciones. El usuario confirmó que utiliza la redirección a WhatsApp y no el bot automático. El código es recuperable desde Git. El script 05 conserva los datos mediante archivado recuperable; su ejecución en producción está pendiente hasta realizarla explícitamente.
+El backend no contiene `Cotizacion`, `CotizacionRepository`, `WhatsAppWebhookController` ni `GET /api/pedidos/cotizaciones`. El usuario confirmó que utiliza la redirección a WhatsApp y no el bot automático. La tabla física heredada `cotizacion` puede permanecer en bases existentes por compatibilidad histórica, pero ningún componente de la versión entregada la utiliza. Su eventual retiro requiere respaldo, revisión de dependencias y ejecución manual del script 05.

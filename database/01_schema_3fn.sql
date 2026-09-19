@@ -236,5 +236,5 @@ CREATE TABLE IF NOT EXISTS chat_mensaje (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- El bot experimental y la tabla cotizacion no forman parte del modelo objetivo.
--- En bases existentes, archivar la tabla heredada con 05_archive_legacy_cotizacion.sql
--- después del respaldo y del despliegue del backend actualizado.
+-- En bases existentes, la tabla heredada cotizacion puede permanecer físicamente
+-- sin formar parte del modelo normalizado ni ser utilizada por el backend.

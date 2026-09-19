@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.estampaider</groupId>
 	<artifactId>estampaider-backend</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+		<version>1.0.0</version>
 	<name>estampaider-backend</name>
 	<description>Backend para pedidos de Estampaider</description>
 	<url/>

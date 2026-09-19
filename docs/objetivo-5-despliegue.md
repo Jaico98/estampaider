@@ -8,7 +8,7 @@
 4. Ejecutar `database/03_verify_3fn.sql` y comprobar autenticación, pedidos, catálogo y chat.
 5. Registrar la causa y los cambios antes de reintentar.
 
-La migración del chat es aditiva. La eliminación de `cotizacion` se ejecuta después de validar el backend actualizado y de conservar un respaldo externo.
+La migración del chat es aditiva. En la versión entregada, `cotizacion` permanece físicamente como estructura heredada sin consumidor en el backend y fuera del modelo normalizado. Su eliminación se documenta como una tarea posterior y manual, condicionada a un respaldo externo y a una revisión de dependencias.
 
 ## Disponibilidad del plan gratuito
 
@@ -21,7 +21,7 @@ En producción configure `APP_CORS_ALLOWED_ORIGINS` con el origen exacto del fro
 ## Procedimiento de despliegue
 
 1. Generar el respaldo con `database/backup_local_interactivo.ps1`.
-2. Desplegar el backend con `JPA_DDL_AUTO=validate`.
-3. Ejecutar `database/04_integrate_chat.sql` y luego `database/03_verify_3fn.sql`.
+2. Sobre una base existente, aplicar `database/04_integrate_chat.sql` y luego `database/03_verify_3fn.sql` antes de iniciar el backend que requiere la nueva columna. Validar primero sobre una copia.
+3. Desplegar el backend con `JPA_DDL_AUTO=validate` después de comprobar que el esquema satisface sus entidades.
 4. Probar el flujo de login, pedidos y chat desde el frontend publicado.
-5. Ejecutar `database/05_archive_legacy_cotizacion.sql` para retirar la tabla heredada.
+5. Mantener `cotizacion` durante la versión validada o ejecutar `database/05_archive_legacy_cotizacion.sql` únicamente como tarea posterior, después de verificar el respaldo y las dependencias.
