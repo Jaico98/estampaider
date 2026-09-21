@@ -1,5 +1,6 @@
 -- Estampaider - esquema relacional objetivo en tercera forma normal
--- Este archivo crea el esquema objetivo en una base de datos nueva.
+-- Crea las 19 tablas y las columnas físicas de compatibilidad requeridas por
+-- el backend actual. Estas columnas heredadas no agregan entidades al modelo.
 -- No debe ejecutarse sobre producción sin respaldo y sin validar la migración.
 --
 -- Decisión documentada: usuarios.usuario es opcional y único cuando existe,
@@ -116,6 +117,16 @@ CREATE TABLE IF NOT EXISTS pedidos (
     estado_pago VARCHAR(40) NULL,
     fecha DATETIME NOT NULL,
     total DECIMAL(12,2) NOT NULL,
+    -- Compatibilidad con Pedido.java; no retirar en instalaciones existentes.
+    cliente VARCHAR(255) NOT NULL,
+    telefono VARCHAR(20) NOT NULL,
+    estado VARCHAR(255) NOT NULL,
+    metodo_pago VARCHAR(255) NOT NULL,
+    direccion VARCHAR(255) NOT NULL,
+    ciudad VARCHAR(255) NOT NULL,
+    departamento VARCHAR(255) NOT NULL,
+    barrio VARCHAR(255) NOT NULL,
+    referencia VARCHAR(255) NULL,
     PRIMARY KEY (id),
     CONSTRAINT fk_pedidos_usuario
         FOREIGN KEY (usuario_id) REFERENCES usuarios (id),
@@ -136,6 +147,10 @@ CREATE TABLE IF NOT EXISTS detalle_pedido (
     cantidad INT NOT NULL,
     talla_id BIGINT NULL,
     color_id BIGINT NULL,
+    -- Compatibilidad con DetallePedido.java y su contrato histórico.
+    producto VARCHAR(255) NOT NULL,
+    talla VARCHAR(255) NULL,
+    color VARCHAR(255) NULL,
     PRIMARY KEY (id),
     CONSTRAINT fk_detalle_pedido_pedido
         FOREIGN KEY (pedido_id) REFERENCES pedidos (id),

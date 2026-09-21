@@ -3,6 +3,7 @@ package com.estampaider.config;
 import com.estampaider.model.Rol;
 import com.estampaider.model.Usuario;
 import com.estampaider.repository.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,63 +11,36 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 public class AdminInitializer {
-
     @Bean
-    CommandLineRunner initAdmin(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder) {
+    CommandLineRunner initAdmin(UsuarioRepository repository, PasswordEncoder encoder,
+            @Value("${app.bootstrap-admin.enabled:false}") boolean enabled,
+            @Value("${app.bootstrap-admin.username:}") String username,
+            @Value("${app.bootstrap-admin.password:}") String password,
+            @Value("${app.bootstrap-admin.email:}") String email,
+            @Value("${app.bootstrap-admin.phone:}") String phone) {
         return args -> {
-            String adminUsuario = "ADMIN";
-            String adminPassword = "Jaico*98";
-            String adminCorreo = "admin@estampaider.com";
-            String adminTelefono = "3000000000";
-
-            Usuario admin = usuarioRepository.findByUsuario(adminUsuario).orElse(null);
-
-            if (admin == null) {
-                admin = new Usuario();
-                admin.setNombre("Administrador");
-                admin.setUsuario(adminUsuario);
-                admin.setCorreo(adminCorreo);
-                admin.setTelefono(adminTelefono);
-                admin.setRol(Rol.ADMIN);
-                admin.setPassword(passwordEncoder.encode(adminPassword));
-
-                usuarioRepository.save(admin);
-                System.out.println("✅ Admin creado automáticamente");
-            } else {
-                boolean actualizado = false;
-
-                if (admin.getRol() != Rol.ADMIN) {
-                    admin.setRol(Rol.ADMIN);
-                    actualizado = true;
-                }
-
-                if (admin.getUsuario() == null || admin.getUsuario().isBlank()) {
-                    admin.setUsuario(adminUsuario);
-                    actualizado = true;
-                }
-
-                if (admin.getCorreo() == null || admin.getCorreo().isBlank()) {
-                    admin.setCorreo(adminCorreo);
-                    actualizado = true;
-                }
-
-                if (admin.getTelefono() == null || admin.getTelefono().isBlank()) {
-                    admin.setTelefono(adminTelefono);
-                    actualizado = true;
-                }
-
-                if (admin.getPassword() == null || !passwordEncoder.matches(adminPassword, admin.getPassword())) {
-                    admin.setPassword(passwordEncoder.encode(adminPassword));
-                    actualizado = true;
-                }
-
-                if (actualizado) {
-                    usuarioRepository.save(admin);
-                    System.out.println("✅ Admin actualizado automáticamente");
-                } else {
-                    System.out.println("ℹ️ Admin ya existe correctamente");
-                }
+            if (!enabled) return;
+            if (username.isBlank()) {
+                throw new IllegalStateException("Configura ADMIN_BOOTSTRAP_USERNAME para crear la cuenta inicial");
             }
+            // No promover, modificar ni restablecer cuentas existentes.
+            if (repository.findByUsuario(username.trim()).isPresent()) return;
+            if (password.isBlank() || password.length() < 12
+                    || password.getBytes(java.nio.charset.StandardCharsets.UTF_8).length > 72
+                    || email.isBlank() || phone.isBlank()) {
+                throw new IllegalStateException("La cuenta inicial requiere correo, teléfono y contraseña de al menos 12 caracteres y máximo 72 bytes");
+            }
+            if (!repository.findAllByTelefonoOrCorreo(phone.trim(), email.trim()).isEmpty()) {
+                throw new IllegalStateException("No se crea la cuenta inicial: correo o teléfono ya registrado");
+            }
+            Usuario admin = new Usuario();
+            admin.setNombre("Administrador");
+            admin.setUsuario(username.trim());
+            admin.setCorreo(email.trim());
+            admin.setTelefono(phone.trim());
+            admin.setRol(Rol.ADMIN);
+            admin.setPassword(encoder.encode(password));
+            repository.save(admin);
         };
     }
 }

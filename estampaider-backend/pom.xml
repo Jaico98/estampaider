@@ -31,6 +31,11 @@
 	</properties>
 
 <dependencies>
+    <dependency>
+        <groupId>com.h2database</groupId>
+        <artifactId>h2</artifactId>
+        <scope>test</scope>
+    </dependency>
 <!-- Lombok para simplificar código con anotaciones como @Data -->
 <dependency>
     <groupId>org.projectlombok</groupId>

@@ -30,7 +30,39 @@ La migración no debe ejecutarse directamente sobre Railway sin respaldo y sin r
 5. Repetir CP-26, CP-27 y PI-06 (historial anterior, mensajes nuevos y respuestas), más las comprobaciones de catálogo, acceso y pedidos.
 6. En la versión entregada, `cotizacion` permanece físicamente en la base de datos como estructura heredada, pero no es utilizada por el backend ni forma parte del modelo normalizado. `05_archive_legacy_cotizacion.sql` queda documentado como una tarea posterior de mantenimiento; no se ejecuta automáticamente.
 
-Para una base vacía basta con `01_schema_3fn.sql`; no aplicar la transición histórica `02`.
+Para una base vacía utilizar `01_schema_3fn.sql`; no aplicar la transición histórica `02`.
+El archivo crea las 19 tablas y las columnas físicas heredadas que todavía mapean
+`Pedido` y `DetallePedido`. Estas columnas de compatibilidad no agregan tablas al
+modelo normalizado y no deben retirarse mientras el backend las utilice.
+`CREATE TABLE IF NOT EXISTS` no modifica tablas existentes: este cambio no es una
+migración para producción. Respaldar y revisar por separado cualquier base parcial.
+
+## Cuenta administrativa inicial
+
+El arranque ya no tiene una contraseña administrativa fija ni restablece cuentas.
+Las instalaciones existentes no requieren nuevas variables: se conserva su cuenta,
+contraseña y rol. Para crear una cuenta en una instalación nueva, configurar:
+
+- `ADMIN_BOOTSTRAP_ENABLED=true`
+- `ADMIN_BOOTSTRAP_USERNAME`: identificador de la nueva cuenta.
+- `ADMIN_BOOTSTRAP_PASSWORD`: secreto de al menos 12 caracteres y máximo 72 bytes UTF-8.
+- `ADMIN_BOOTSTRAP_EMAIL`: correo no utilizado por otra cuenta.
+- `ADMIN_BOOTSTRAP_PHONE`: teléfono no utilizado por otra cuenta.
+
+Después de comprobar el acceso, desactivar la opción y retirar el secreto inicial
+del entorno. Si ya existe ese identificador, no se modifica ni se promueve la cuenta.
+Si el teléfono o correo pertenece a otra cuenta, se rechaza la creación. Nunca
+publicar estos valores. Cambiar de forma privada cualquier contraseña que hubiera
+sido expuesta en versiones anteriores; eliminarla del código no borra el historial Git.
+
+## Verificación local aislada
+
+Desde `estampaider-backend`, ejecutar `./mvnw.cmd clean verify` con Java 17.
+Las pruebas usan H2 en modo MySQL, cargan el script SQL y arrancan Hibernate con
+`validate`, sin conectarse a Railway. Esto comprueba las columnas y el contexto del
+backend, pero no sustituye una prueba sobre MySQL real ni acredita el despliegue.
+Los resultados de esta suite no deben presentarse como una nueva ejecución de
+los casos funcionales del documento de grado.
 
 ## Relación y trazabilidad del chat
 
