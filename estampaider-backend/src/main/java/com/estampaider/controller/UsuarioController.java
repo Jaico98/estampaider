@@ -14,7 +14,6 @@ import com.estampaider.model.Pedido;
 import com.estampaider.model.Usuario;
 import com.estampaider.repository.UsuarioRepository;
 
-@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/usuarios")
 public class UsuarioController {

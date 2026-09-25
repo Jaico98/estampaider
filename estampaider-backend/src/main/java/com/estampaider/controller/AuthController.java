@@ -8,11 +8,14 @@ import com.estampaider.model.Usuario;
 import com.estampaider.repository.UsuarioRepository;
 import com.estampaider.security.JwtService;
 import com.estampaider.service.WhatsAppService;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -22,12 +25,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
     private static final Map<String, RecoveryData> RECOVERY_CODES = new ConcurrentHashMap<>();
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
 
     private final UsuarioRepository usuarioRepository;
     private final JwtService jwtService;
@@ -147,29 +151,23 @@ public class AuthController {
         try {
             Usuario usuario = optionalUsuario.get();
 
-            String codigo = String.valueOf((int) (Math.random() * 900000) + 100000);
+            String codigo = String.valueOf(SECURE_RANDOM.nextInt(900000) + 100000);
 
             RECOVERY_CODES.put(telefono, new RecoveryData(codigo, LocalDateTime.now().plusMinutes(5)));
-
-            System.out.println("=== RECOVERY DEBUG ===");
-            System.out.println("Usuario encontrado: " + usuario.getNombre());
-            System.out.println("Telefono BD: " + usuario.getTelefono());
-            System.out.println("Telefono request: " + telefono);
-            System.out.println("Codigo generado: " + codigo);
 
             whatsAppService.enviarCodigoRecuperacion(usuario.getTelefono(), codigo);
 
             return ResponseEntity.ok("Código enviado por WhatsApp");
         } catch (IllegalStateException e) {
-            e.printStackTrace();
+            LOGGER.warn("La recuperación de contraseña no está disponible: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                     .body("La integración de WhatsApp no está configurada correctamente.");
-                } catch (RuntimeException e) {
-                    e.printStackTrace();
-                    return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                            .body(e.getMessage());
-                } catch (Exception e) {
-            e.printStackTrace();
+        } catch (RuntimeException e) {
+            LOGGER.warn("No fue posible enviar el código de recuperación: {}", e.getClass().getSimpleName());
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body("No fue posible enviar el código de recuperación.");
+        } catch (Exception e) {
+            LOGGER.error("Error inesperado al solicitar un código de recuperación: {}", e.getClass().getSimpleName());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error interno enviando el código.");
         }

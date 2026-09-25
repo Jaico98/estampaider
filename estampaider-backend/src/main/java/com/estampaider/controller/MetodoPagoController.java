@@ -8,7 +8,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/metodos-pago")
-@CrossOrigin
 public class MetodoPagoController {
 
     private final MetodoPagoRepository repo;

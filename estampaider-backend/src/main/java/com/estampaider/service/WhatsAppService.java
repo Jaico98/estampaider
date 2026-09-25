@@ -9,12 +9,16 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 @Service
 public class WhatsAppService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(WhatsAppService.class);
 
     @Value("${whatsapp.access.token:}")
     private String accessToken;
@@ -73,12 +77,6 @@ public class WhatsAppService {
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
-        System.out.println("=== WhatsApp DEBUG ===");
-        System.out.println("Phone Number ID: " + phoneNumberId);
-        System.out.println("Numero original: " + numero);
-        System.out.println("Numero normalizado: " + numeroNormalizado);
-        System.out.println("Tipo envio: recuperacion");
-
         try {
             ResponseEntity<String> response = restTemplate.exchange(
                     url,
@@ -87,24 +85,16 @@ public class WhatsAppService {
                     String.class
             );
 
-            System.out.println("WhatsApp status: " + response.getStatusCode());
-            System.out.println("WhatsApp body: " + response.getBody());
-
             if (!response.getStatusCode().is2xxSuccessful()) {
-                throw new RuntimeException("Error enviando mensaje por WhatsApp: " + response.getBody());
+                LOGGER.warn("La API de WhatsApp rechazó una solicitud de envío con estado {}", response.getStatusCode());
+                throw new RuntimeException("La API de WhatsApp rechazó la solicitud");
             }
         } catch (HttpStatusCodeException e) {
-            String detalle = e.getResponseBodyAsString();
-
-            System.err.println("WhatsApp error status: " + e.getStatusCode());
-            System.err.println("WhatsApp error body: " + detalle);
-
-            throw new RuntimeException(
-                    "WhatsApp API rechazó la solicitud: " + e.getStatusCode() +
-                    (detalle != null && !detalle.isBlank() ? " - " + detalle : "")
-            );
+            LOGGER.warn("La API de WhatsApp rechazó una solicitud de envío con estado {}", e.getStatusCode());
+            throw new RuntimeException("La API de WhatsApp rechazó la solicitud");
         } catch (Exception e) {
-            throw new RuntimeException("No se pudo conectar con WhatsApp API: " + e.getMessage(), e);
+            LOGGER.warn("No fue posible completar una solicitud de envío a WhatsApp: {}", e.getClass().getSimpleName());
+            throw new RuntimeException("No fue posible completar la solicitud a WhatsApp");
         }
     }
 
