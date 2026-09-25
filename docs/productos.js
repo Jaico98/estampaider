@@ -10,10 +10,13 @@ const API_URL = `${API_BASE}/api/productos`;
 const PRODUCTOS_CACHE_KEY = "estampaider_productos_cache_v1";
 const PRODUCTOS_TIMEOUT_MS = 120000;
 let cargaProductosEnCurso = false;
+let controladorCatalogoActivo = null;
+let recargaCatalogoPendiente = false;
 
 async function obtenerCatalogo(url, timeoutMs = PRODUCTOS_TIMEOUT_MS) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  controladorCatalogoActivo = controller;
 
   try {
     const response = await fetch(url, {
@@ -28,7 +31,44 @@ async function obtenerCatalogo(url, timeoutMs = PRODUCTOS_TIMEOUT_MS) {
     return productos;
   } finally {
     clearTimeout(timeout);
+    if (controladorCatalogoActivo === controller) {
+      controladorCatalogoActivo = null;
+    }
   }
+}
+
+function mostrarAvisoCatalogo(estado, tieneCache) {
+  const tarjeta = document.createElement("div");
+  tarjeta.className = "catalogo-estado";
+
+  const contenido = document.createElement("div");
+  contenido.className = "catalogo-estado__contenido";
+
+  const icono = document.createElement("span");
+  icono.className = "catalogo-estado__icono";
+  icono.setAttribute("aria-hidden", "true");
+  icono.textContent = "↻";
+
+  const texto = document.createElement("div");
+  const titulo = document.createElement("strong");
+  titulo.textContent = tieneCache
+    ? "Estamos actualizando los productos"
+    : "Estamos cargando el catálogo";
+  const descripcion = document.createElement("p");
+  descripcion.textContent = tieneCache
+    ? "Puedes seguir explorando mientras buscamos la información más reciente."
+    : "La consulta está tardando un poco más de lo habitual.";
+  texto.append(titulo, descripcion);
+  contenido.append(icono, texto);
+
+  const actualizar = document.createElement("button");
+  actualizar.type = "button";
+  actualizar.className = "catalogo-estado__boton";
+  actualizar.textContent = "Actualizar productos";
+  actualizar.addEventListener("click", () => cargarProductos({ forzar: true }));
+
+  tarjeta.append(contenido, actualizar);
+  estado.replaceChildren(tarjeta);
 }
 
 function resolverSrcImagen(imagenUrl) {
@@ -230,9 +270,18 @@ function renderizarProductos(productos) {
   inicializarFiltros();
 }
 
-async function cargarProductos() {
+async function cargarProductos({ forzar = false } = {}) {
   const contenedor = document.getElementById("productos-container");
-  if (!contenedor || cargaProductosEnCurso) return;
+  if (!contenedor) return;
+
+  if (cargaProductosEnCurso) {
+    if (forzar && controladorCatalogoActivo) {
+      recargaCatalogoPendiente = true;
+      controladorCatalogoActivo.abort();
+    }
+    return;
+  }
+
   cargaProductosEnCurso = true;
 
   let estado = document.getElementById("estado-catalogo");
@@ -258,9 +307,7 @@ async function cargarProductos() {
 
   const avisoLento = setTimeout(() => {
     estado.hidden = false;
-    estado.textContent = tieneCache
-      ? "Actualizando el catálogo. Los productos mostrados corresponden a la última consulta."
-      : "La carga está tardando más de lo habitual. Seguimos consultando el catálogo; no necesitas actualizar la página.";
+    mostrarAvisoCatalogo(estado, tieneCache);
   }, 8000);
 
   try {
@@ -278,6 +325,10 @@ async function cargarProductos() {
     estado.hidden = true;
   } catch (err) {
     console.warn("No se pudo actualizar el catálogo:", err);
+
+    if (err?.name === "AbortError" && recargaCatalogoPendiente) {
+      return;
+    }
 
     const mensaje = err?.name === "AbortError"
       ? "El catálogo no respondió a tiempo. Puedes volver a intentarlo."
@@ -297,6 +348,11 @@ async function cargarProductos() {
     clearTimeout(avisoLento);
     cargaProductosEnCurso = false;
     contenedor.setAttribute("aria-busy", "false");
+
+    if (recargaCatalogoPendiente) {
+      recargaCatalogoPendiente = false;
+      cargarProductos();
+    }
   }
 }
 
